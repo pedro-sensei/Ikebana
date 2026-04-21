@@ -3,9 +3,10 @@ using System.Net.Sockets;
 using Unity.Multiplayer.PlayMode;
 using UnityEngine;
 
-//=^..^=   =^..^=   VERSION 1.0.3 (April 2026)    =^..^=    =^..^=
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
 //                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
+
 
 
 // A better random AI brain avoids penalty if possible.
@@ -13,11 +14,17 @@ using UnityEngine;
 public class GoodRandomAIBrain : IPlayerAIBrain
 
 { 
-
+    #region FIELDS AND PARAMETERS
     public virtual string BrainName => "GoodRandom";
     private System.Random _random = new System.Random();
+    #endregion
+
+    #region CONSTRUCTORS
     public GoodRandomAIBrain() { }
     public GoodRandomAIBrain(int seed) {_random = new System.Random(seed); }
+    #endregion
+
+    #region IPlayerAIBrain
 
     public GameMove ChooseMove(GameModel model, List<GameMove> validMoves)
     {
@@ -35,6 +42,7 @@ public class GoodRandomAIBrain : IPlayerAIBrain
         }
         return validMoves[index];
     }
+    #endregion
 }
 #endregion
 
@@ -44,11 +52,17 @@ public class GoodRandomAIBrain : IPlayerAIBrain
 public class MinGoodRandomBrain : IMinimalAIBrain
 
 {
-
+    #region FIELDS AND PARAMETERS
     public virtual string BrainName => "GoodRandom";
     private System.Random _random = new System.Random();
+    #endregion
+
+    #region CONSTRUCTORS
     public MinGoodRandomBrain() { }
     public MinGoodRandomBrain(int seed) { _random = new System.Random(seed); }
+    #endregion
+
+    #region IMinimalAIBrain
 
     public int ChooseMoveIndex(MinimalGM model, GameMove[] moves, int moveCount)
     {
@@ -66,6 +80,7 @@ public class MinGoodRandomBrain : IMinimalAIBrain
         }
         return index;
     }
+    #endregion
 }
 
 #endregion

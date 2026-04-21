@@ -211,4 +211,24 @@ public class MainMenuController : MonoBehaviour
         else
             gc.ResumeGame();
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (mainMenuPanel == null)
+            Debug.LogWarning("[MainMenuController] Main menu panel is not assigned.", this);
+
+        if (newGamePanel == null)
+            Debug.LogWarning("[MainMenuController] New game panel is not assigned.", this);
+
+        if (loadGamePanel == null)
+            Debug.LogWarning("[MainMenuController] Load game panel is not assigned.", this);
+
+        if (settingsPanel == null)
+            Debug.LogWarning("[MainMenuController] Settings panel is not assigned.", this);
+
+        if (creditsPanel == null)
+            Debug.LogWarning("[MainMenuController] Credits panel is not assigned.", this);
+    }
+#endif
 }

@@ -2,15 +2,17 @@ using System;
 using System.Collections.Generic;
 using Unity.InferenceEngine;
 
-//=^..^=   =^..^=   VERSION 1.0.3 (April 2026)    =^..^=    =^..^=
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
 //                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
+
 
 //Optimizer brain: uses the heuristics and adjustable weights.
 //Requires a SO with the weights or use defaults.
 #region OPTIMIZER AI BRAIN
 public class OptimizerAIBrain : OptimalHeuristicBase, IPlayerAIBrain, IEvolvableBrain
 {
+    #region FIELDS AND PARAMETERS
     public string BrainName => "Optimizer AI";
 
     // Gene layout
@@ -33,6 +35,9 @@ public class OptimizerAIBrain : OptimalHeuristicBase, IPlayerAIBrain, IEvolvable
     private GameModel _model;
     private PlayerModel _me;
     private PlayerModel _opp;
+    #endregion
+
+    #region CONSTRUCTORS
 
     
     public OptimizerAIBrain() { LoadConfigFromGlobal(); }
@@ -42,6 +47,9 @@ public class OptimizerAIBrain : OptimalHeuristicBase, IPlayerAIBrain, IEvolvable
         LoadConfigFromGlobal();
         ApplyGenomeWeights(genome);
     }
+    #endregion
+
+    #region IPlayerAIBrain
 
     //Interface
     public GameMove ChooseMove(GameModel model, List<GameMove> validMoves)
@@ -74,6 +82,7 @@ public class OptimizerAIBrain : OptimalHeuristicBase, IPlayerAIBrain, IEvolvable
             move.TargetLineIndex, move.flowerCount, move.IsPenalty,
             model.CentralDisplay.HasFirstPlayerToken);
     }
+    #endregion
 
     #region IEvolvableBrain
 
@@ -252,14 +261,18 @@ public class OptimizerAIBrain : OptimalHeuristicBase, IPlayerAIBrain, IEvolvable
 #region MINIMAL OPTIMIZER BRAIN
 public class MinOptimizerBrain : OptimalHeuristicBase, IMinimalAIBrain
 {
-    private MinimalGM _model;
-    private MinimalPlayer _me;
-    private MinimalPlayer _opp;
-
+    #region FIELDS AND PARAMETERS
     public virtual string BrainName
     {
         get { return "Optimizer (Minimal)"; }
     }
+
+    private MinimalGM _model;
+    private MinimalPlayer _me;
+    private MinimalPlayer _opp;
+    #endregion
+
+    #region CONSTRUCTORS
 
     public MinOptimizerBrain()
     {
@@ -297,6 +310,9 @@ public class MinOptimizerBrain : OptimalHeuristicBase, IMinimalAIBrain
         LoadConfig(config);
         SetGenesFromArray(genes);
     }
+    #endregion
+
+    #region IMinimalAIBrain
 
     private void SetGenesFromArray(float[] src)
     {
@@ -356,6 +372,7 @@ public class MinOptimizerBrain : OptimalHeuristicBase, IMinimalAIBrain
             move.TargetLineIndex, move.flowerCount, move.IsPenalty,
             model.CentralHasToken);
     }
+    #endregion
 
     protected override bool MyWallOccupied(int row, int col)
     {

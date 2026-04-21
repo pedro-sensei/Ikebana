@@ -1,19 +1,24 @@
 using System.Collections.Generic;
 
-//=^..^=   =^..^=   VERSION 1.0.3 (April 2026)    =^..^=    =^..^=
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
 //                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
+
 
 // AI brain that just picks a random valid move.
 #region RANDOM BRAIN
 public class RandomAIBrain : IPlayerAIBrain
 {
-    private System.Random _random;
-
+    #region FIELDS AND PARAMETERS
     public string BrainName
     {
         get { return "Random AI"; }
     }
+
+    private System.Random _random;
+    #endregion
+
+    #region CONSTRUCTORS
 
     public RandomAIBrain()
     {
@@ -24,12 +29,16 @@ public class RandomAIBrain : IPlayerAIBrain
     {
         _random = new System.Random(seed);
     }
+    #endregion
+
+    #region IPlayerAIBrain
 
     public GameMove ChooseMove(GameModel model, List<GameMove> validMoves)
     {
         int index = _random.Next(validMoves.Count);
         return validMoves[index];
     }
+    #endregion
 }
 #endregion
 
@@ -38,12 +47,16 @@ public class RandomAIBrain : IPlayerAIBrain
 #region MINIMAL RANDOM BRAIN
 public class MinimalRandomBrain : IMinimalAIBrain
 {
-    private readonly System.Random _rng;
-
+    #region FIELDS AND PARAMETERS
     public string BrainName
     {
         get { return "Random (Minimal)"; }
     }
+
+    private readonly System.Random _rng;
+    #endregion
+
+    #region CONSTRUCTORS
 
     public MinimalRandomBrain(int seed = 0)
     {
@@ -52,11 +65,15 @@ public class MinimalRandomBrain : IMinimalAIBrain
         else
             _rng = new System.Random(seed);
     }
+    #endregion
+
+    #region IMinimalAIBrain
 
     public int ChooseMoveIndex(MinimalGM model, GameMove[] moves, int moveCount)
     {
         return _rng.Next(moveCount);
     }
+    #endregion
 }
 
 #endregion

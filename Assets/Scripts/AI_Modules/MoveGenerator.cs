@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 
-//=^..^=   =^..^=   VERSION 1.0.2 (April 2026)    =^..^=    =^..^=
-//                    Last Update 01/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 //TODO: UPDATE TO USE IGameModel AND SUPPORT DIFFERENT GAME MODEL VERSIONS

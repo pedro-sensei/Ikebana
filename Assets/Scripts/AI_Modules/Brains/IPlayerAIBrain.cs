@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 
-//=^..^=   =^..^=   VERSION 1.0.3 (April 2026)    =^..^=    =^..^=
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
 //                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
+
 
 // Interface for AI brains.
 // Gets the game state and list of valid moves, returns the chosen one.

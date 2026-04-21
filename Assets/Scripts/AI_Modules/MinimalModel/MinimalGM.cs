@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 
-//=^..^=   =^..^=   VERSION 1.0.3 (April 2026)    =^..^=    =^..^=
-//                    Last Update 21/042026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
+
 
 
 //Minimal game model

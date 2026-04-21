@@ -1,167 +1,234 @@
 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
+//=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
+
+
 // -----------------------------------------------------------------------
 //  MinMaxBrain  -  IPlayerAIBrain adapter.
 //  Wires up MinMax + MinMaxGameAdapter + IMinMaxEvaluator and converts
 //  between the live GameModel world and the MinimalGM search model.
 //
-//  Default evaluator: ProjectedScoreEvaluator (pure game-rule derived).
-//  The evaluator can be swapped via SetEvaluator() for any
-//  IMinMaxEvaluator (neural net, different heuristic, etc.).
-// -----------------------------------------------------------------------
+//  Default evaluator: ProjectedScoreEvaluator 
 using System.Diagnostics;
+using System.Collections.Generic;
 
 public class MinMaxBrain : IPlayerAIBrain
 {
-    private readonly int _maxDepth;
-    private float _timeLimitMs;
-    private readonly bool _useIterativeDeepening;
-    private readonly bool _enableDebugLog;
+    #region FIELDS AND PARAMETERS
+    public string BrainName { get { return "MinMax (d=" + _maxSearchDepth + ")"; } }
 
-    private readonly MinMaxGameAdapter _adapter;
-    private readonly MinMax _minMaxAlgo;
-    private readonly MinMaxDebugLogger _logger;
-    private bool _timedOutLastSearch;
+    private readonly int _maxSearchDepth;
+    private float _searchTimeLimitMs;
+    private readonly bool _usesIterativeDeepening;
+    private readonly bool _writesDebugLogs;
 
-    private readonly MinimalMoveRecord[] _rootMoves =
+    private readonly MinMaxGameAdapter _searchAdapter;
+    private readonly MinMax _searchEngine;
+    private readonly MinMaxDebugLogger _debugLogger;
+    private bool _lastSearchTimedOut;
+
+    private readonly MinimalMoveRecord[] _rootMoveBuffer =
         new MinimalMoveRecord[MinimalGM.MAX_MINMAX_MOVES];
 
-    private MinimalGM _searchModel;
+    private MinimalGM _reusableMinimalModel;
+    #endregion
 
-    public string BrainName { get { return "MinMax (d=" + _maxDepth + ")"; } }
+    #region CONSTRUCTORS
 
     public MinMaxBrain(int maxDepth = 15, float timeLimitMs = 10000f,
                        bool useIterativeDeepening = true, bool enableDebugLog = false)
     {
-        _maxDepth = UnityEngine.Mathf.Max(1, maxDepth);
-        _timeLimitMs = timeLimitMs;
-        _useIterativeDeepening = useIterativeDeepening;
-        _enableDebugLog = enableDebugLog;
+        _maxSearchDepth = UnityEngine.Mathf.Max(1, maxDepth);
+        _searchTimeLimitMs = timeLimitMs;
+        _usesIterativeDeepening = useIterativeDeepening;
+        _writesDebugLogs = enableDebugLog;
 
-        _adapter = new MinMaxGameAdapter(_maxDepth);
-        IMinMaxEvaluator evaluator = new ProjectedScoreEvaluator(_adapter);
-        _adapter.SetEvaluator(evaluator);
-        _minMaxAlgo = new MinMax(_maxDepth, _adapter);
+        _searchAdapter = new MinMaxGameAdapter(_maxSearchDepth);
+        IMinMaxEvaluator evaluator = new ProjectedScoreEvaluator(_searchAdapter);
+        _searchAdapter.SetEvaluator(evaluator);
+        _searchEngine = new MinMax(_maxSearchDepth, _searchAdapter);
 
-        if (_enableDebugLog)
+        if (_writesDebugLogs)
         {
-            _logger = new MinMaxDebugLogger();
-            _minMaxAlgo.Logger = _logger;
+            _debugLogger = new MinMaxDebugLogger();
+            _searchEngine.Logger = _debugLogger;
         }
     }
+    #endregion
+
+    #region PUBLIC API
 
     public void SetEvaluator(IMinMaxEvaluator evaluator)
     {
-        _adapter.SetEvaluator(evaluator);
+        _searchAdapter.SetEvaluator(evaluator);
     }
 
     public void SetTimeLimitMs(float ms)
     {
-        _timeLimitMs = UnityEngine.Mathf.Max(100f, ms);
+        _searchTimeLimitMs = UnityEngine.Mathf.Max(100f, ms);
     }
 
-    public GameMove ChooseMove(GameModel model, System.Collections.Generic.List<GameMove> validMoves)
+    public GameMove ChooseMove(GameModel model, List<GameMove> validMoves)
     {
         if (validMoves.Count <= 1) return validMoves[0];
 
-        _searchModel = GameModelToMinimal.Convert(model, _searchModel);
+        _reusableMinimalModel = GameModelToMinimal.Convert(model, _reusableMinimalModel);
 
-        int moveCount = _searchModel.GetValidMovesMinMax(_rootMoves);
+        int moveCount = _reusableMinimalModel.GetValidMovesMinMax(_rootMoveBuffer);
         if (moveCount == 0)
         {
             UnityEngine.Debug.LogWarning("[MinMaxBrain] MinimalGM generated 0 moves; falling back.");
-            _logger?.RecordZeroMoves();
-            _logger?.FlushToUnityLog();
+            if (_debugLogger != null)
+            {
+                _debugLogger.RecordZeroMoves();
+                _debugLogger.FlushToUnityLog();
+            }
             return validMoves[0];
         }
 
-        // Configure adapter for this search
-        _adapter.SetModel(_searchModel);
-        _adapter.SetRootMoves(_rootMoves);
+        _searchAdapter.SetModel(_reusableMinimalModel);
+        _searchAdapter.SetRootMoves(_rootMoveBuffer);
 
-        int maxPlayer = _searchModel.CurrentPlayer;
-        int estimatedPly = _adapter.EstimateRemainingPly();
-        int clampedDepth = System.Math.Min(_maxDepth, estimatedPly);
+        int maximizingPlayerIndex = _reusableMinimalModel.CurrentPlayer;
+        int estimatedRemainingMoves = _searchAdapter.EstimateRemainingMoves();
+        int depthToSearch = System.Math.Min(_maxSearchDepth, estimatedRemainingMoves);
 
-        if (_logger != null)
-            _logger.BeginTurn(model.CurrentPlayerIndex, model.CurrentRound,
-                              model.TurnNumber, moveCount, estimatedPly, clampedDepth);
+        if (_debugLogger != null)
+        {
+            _debugLogger.BeginTurn(
+                model.CurrentPlayerIndex,
+                model.CurrentRound,
+                model.TurnNumber,
+                moveCount,
+                estimatedRemainingMoves,
+                depthToSearch);
+        }
 
-        int bestIdx = _useIterativeDeepening
-            ? IterativeDeepening(moveCount, maxPlayer)
-            : FlatSearch(moveCount, maxPlayer, model);
+        int bestMoveIndex;
+        if (_usesIterativeDeepening)
+            bestMoveIndex = RunIterativeDeepeningSearch(moveCount, maximizingPlayerIndex);
+        else
+            bestMoveIndex = RunSingleDepthSearch(moveCount, maximizingPlayerIndex, model);
 
-        if (bestIdx < 0 || bestIdx >= moveCount) bestIdx = 0;
-        GameMove chosen = MapMinimalMoveToGameMove(_rootMoves[bestIdx], validMoves);
+        if (bestMoveIndex < 0 || bestMoveIndex >= moveCount)
+            bestMoveIndex = 0;
 
-        _logger?.FlushToUnityLog();
-        return chosen;
+        GameMove chosenMove = MapMinimalMoveToGameMove(_rootMoveBuffer[bestMoveIndex], validMoves);
+
+        if (_debugLogger != null)
+            _debugLogger.FlushToUnityLog();
+
+        return chosenMove;
     }
+    #endregion
 
-    private int FlatSearch(int moveCount, int maxPlayer, GameModel srcModel)
+    #region INTERNAL HELPERS
+
+    private int RunSingleDepthSearch(int moveCount, int maximizingPlayerIndex, GameModel sourceModel)
     {
-        SearchResult result = _minMaxAlgo.FindBestMove(
-            moveCount, _maxDepth, maxPlayer, _timeLimitMs);
-        if (_enableDebugLog) LogResult(srcModel, result, _maxDepth);
-        _logger?.RecordResult(result.BestIndex, result.BestEval, result.DepthSearched,
-                              result.NodesEvaluated, result.ElapsedMs, result.TimedOut);
+        SearchResult result = _searchEngine.FindBestMove(
+            moveCount,
+            _maxSearchDepth,
+            maximizingPlayerIndex,
+            _searchTimeLimitMs);
+
+        if (_writesDebugLogs)
+            LogSearchResult(sourceModel, result, _maxSearchDepth);
+
+        if (_debugLogger != null)
+        {
+            _debugLogger.RecordResult(
+                result.BestIndex,
+                result.BestEval,
+                result.DepthSearched,
+                result.NodesEvaluated,
+                result.ElapsedMs,
+                result.TimedOut);
+        }
+
         return result.BestIndex;
     }
 
-    private int IterativeDeepening(int moveCount, int maxPlayer)
+    private int RunIterativeDeepeningSearch(int moveCount, int maximizingPlayerIndex)
     {
-        Stopwatch sw = Stopwatch.StartNew();
-        int bestIdx = 0;
-        float bestEval = float.NegativeInfinity;
-        int lastCompletedDepth = 0;
-        _timedOutLastSearch = false;
+        Stopwatch timer = Stopwatch.StartNew();
+        int bestMoveIndex = 0;
+        float bestMoveEvaluation = float.NegativeInfinity;
+        int deepestCompletedLayer = 0;
+        _lastSearchTimedOut = false;
 
-        for (int d = 1; d <= _maxDepth; d++)
+        for (int currentDepth = 1; currentDepth <= _maxSearchDepth; currentDepth++)
         {
-            float remaining = _timeLimitMs - (float)sw.Elapsed.TotalMilliseconds;
-            if (remaining <= 0) break;
+            float remainingTimeMs = _searchTimeLimitMs - (float)timer.Elapsed.TotalMilliseconds;
+            if (remainingTimeMs <= 0) break;
 
-            SearchResult result = _minMaxAlgo.FindBestMove(
-                moveCount, d, maxPlayer, remaining);
+            SearchResult result = _searchEngine.FindBestMove(
+                moveCount,
+                currentDepth,
+                maximizingPlayerIndex,
+                remainingTimeMs);
 
-            if (!result.TimedOut || d == 1)
+            if (!result.TimedOut || currentDepth == 1)
             {
-                bestIdx = result.BestIndex;
-                bestEval = result.BestEval;
-                lastCompletedDepth = d;
+                bestMoveIndex = result.BestIndex;
+                bestMoveEvaluation = result.BestEval;
+                deepestCompletedLayer = currentDepth;
             }
 
-            _logger?.RecordIDLayer(d, result.BestEval, result.NodesEvaluated,
-                                   result.ElapsedMs, result.TimedOut);
+            if (_debugLogger != null)
+            {
+                _debugLogger.RecordIDLayer(
+                    currentDepth,
+                    result.BestEval,
+                    result.NodesEvaluated,
+                    result.ElapsedMs,
+                    result.TimedOut);
+            }
 
-            if (_enableDebugLog)
-                UnityEngine.Debug.Log("[MinMax] ID depth=" + d + " eval=" + result.BestEval +
-                          " nodes=" + result.NodesEvaluated +
-                          " time=" + result.ElapsedMs.ToString("F1") + "ms" +
-                          " timedOut=" + result.TimedOut);
+            if (_writesDebugLogs)
+            {
+                UnityEngine.Debug.Log("[MinMax] ID depth=" + currentDepth + " eval=" + result.BestEval +
+                                      " nodes=" + result.NodesEvaluated +
+                                      " time=" + result.ElapsedMs.ToString("F1") + "ms" +
+                                      " timedOut=" + result.TimedOut);
+            }
 
             if (result.TimedOut)
             {
-                _timedOutLastSearch = true;
-                if (_enableDebugLog)
-                    UnityEngine.Debug.Log("[MinMax] ID timed out at depth " + d +
-                              "; using best from depth " + lastCompletedDepth);
+                _lastSearchTimedOut = true;
+                if (_writesDebugLogs)
+                {
+                    UnityEngine.Debug.Log("[MinMax] ID timed out at depth " + currentDepth +
+                                          "; using best from depth " + deepestCompletedLayer);
+                }
                 break;
             }
         }
 
-        float totalMs = (float)sw.Elapsed.TotalMilliseconds;
-        _logger?.RecordResult(bestIdx, bestEval, lastCompletedDepth,
-                              0, totalMs, _timedOutLastSearch);
+        float totalSearchTimeMs = (float)timer.Elapsed.TotalMilliseconds;
+        if (_debugLogger != null)
+        {
+            _debugLogger.RecordResult(
+                bestMoveIndex,
+                bestMoveEvaluation,
+                deepestCompletedLayer,
+                0,
+                totalSearchTimeMs,
+                _lastSearchTimedOut);
+        }
 
-        if (_enableDebugLog)
-            UnityEngine.Debug.Log("[MinMax] ID finished: depth=" + lastCompletedDepth + "/" + _maxDepth +
-                      " eval=" + bestEval + " index=" + bestIdx +
-                      " totalTime=" + totalMs.ToString("F1") + "ms");
+        if (_writesDebugLogs)
+        {
+            UnityEngine.Debug.Log("[MinMax] ID finished: depth=" + deepestCompletedLayer + "/" + _maxSearchDepth +
+                                  " eval=" + bestMoveEvaluation + " index=" + bestMoveIndex +
+                                  " totalTime=" + totalSearchTimeMs.ToString("F1") + "ms");
+        }
 
-        return bestIdx;
+        return bestMoveIndex;
     }
 
-    private void LogResult(GameModel model, SearchResult result, int depth)
+    private void LogSearchResult(GameModel model, SearchResult result, int depth)
     {
         UnityEngine.Debug.Log("[MinMax] Player=" + model.CurrentPlayerIndex +
                   " Round=" + model.CurrentRound + " Turn=" + model.TurnNumber +
@@ -171,33 +238,47 @@ public class MinMaxBrain : IPlayerAIBrain
     }
 
     private GameMove MapMinimalMoveToGameMove(
-        MinimalMoveRecord rec,
-        System.Collections.Generic.List<GameMove> validMoves)
+        MinimalMoveRecord moveRecord,
+        List<GameMove> validMoves)
     {
-        FlowerColor expectedColor = (FlowerColor)rec.ColorIndex;
-        MoveSource expectedSource = rec.IsCentralSource ? MoveSource.Central : MoveSource.Factory;
-        MoveTarget expectedTarget = rec.TargetIsPenalty ? MoveTarget.PenaltyLine : MoveTarget.PlacementLine;
-        int expectedLine = rec.TargetLineIndex;
-        int expectedFactory = rec.FactoryIndex;
+        FlowerColor expectedColor = (FlowerColor)moveRecord.ColorIndex;
 
-        foreach (GameMove gm in validMoves)
+        MoveSource expectedSource = MoveSource.Factory;
+        if (moveRecord.IsCentralSource)
+            expectedSource = MoveSource.Central;
+
+        MoveTarget expectedTarget = MoveTarget.PlacementLine;
+        if (moveRecord.TargetIsPenalty)
+            expectedTarget = MoveTarget.PenaltyLine;
+
+        int expectedLine = moveRecord.TargetLineIndex;
+        int expectedFactory = moveRecord.FactoryIndex;
+
+        foreach (GameMove candidateMove in validMoves)
         {
-            if (gm.Color != expectedColor) continue;
-            if (gm.SourceEnum != expectedSource) continue;
-            if (gm.TargetEnum != expectedTarget) continue;
-            if (!gm.IsPenalty && gm.TargetLineIndex != expectedLine) continue;
-            if (expectedSource == MoveSource.Factory && gm.FactoryIndex != expectedFactory) continue;
-            return gm;
+            if (candidateMove.Color != expectedColor) continue;
+            if (candidateMove.SourceEnum != expectedSource) continue;
+            if (candidateMove.TargetEnum != expectedTarget) continue;
+            if (!candidateMove.IsPenalty && candidateMove.TargetLineIndex != expectedLine) continue;
+            if (expectedSource == MoveSource.Factory && candidateMove.FactoryIndex != expectedFactory) continue;
+            return candidateMove;
         }
-        foreach (GameMove gm in validMoves)
+
+        foreach (GameMove candidateMove in validMoves)
         {
-            if (gm.Color == expectedColor && gm.TargetEnum == expectedTarget &&
-                (gm.IsPenalty || gm.TargetLineIndex == expectedLine))
-                return gm;
+            bool hasSameColor = candidateMove.Color == expectedColor;
+            bool hasSameTargetType = candidateMove.TargetEnum == expectedTarget;
+            bool hasCompatibleLine = candidateMove.IsPenalty || candidateMove.TargetLineIndex == expectedLine;
+
+            if (hasSameColor && hasSameTargetType && hasCompatibleLine)
+                return candidateMove;
         }
 
         UnityEngine.Debug.LogWarning("[MinMaxBrain] Could not map MinimalMoveRecord; using first.");
-        _logger?.RecordFallback();
+        if (_debugLogger != null)
+            _debugLogger.RecordFallback();
+
         return validMoves[0];
     }
+    #endregion
 }

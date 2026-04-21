@@ -171,7 +171,11 @@ public sealed class MinMaxDebugLogger
                 if (i > 0 && prevEval != float.NegativeInfinity)
                 {
                     float delta = r.BestEval - prevEval;
-                    _sb.Append("(").Append(delta >= 0 ? "+" : "").Append(delta.ToString("F2")).Append(")");
+                    string deltaPrefix = "";
+                    if (delta >= 0f)
+                        deltaPrefix = "+";
+
+                    _sb.Append("(").Append(deltaPrefix).Append(delta.ToString("F2")).Append(")");
                 }
                 _sb.Append(" n=").Append(r.Nodes)
                    .Append(" t=").Append(r.ElapsedMs.ToString("F1")).Append("ms");
@@ -195,7 +199,9 @@ public sealed class MinMaxDebugLogger
                 int v   = _visits[d];
                 int c   = _cuts[d];
                 int tot = v + c;
-                float cutPct = tot > 0 ? 100f * c / tot : 0f;
+                float cutPct = 0f;
+                if (tot > 0)
+                    cutPct = 100f * c / tot;
                 _sb.Append("  d").Append(d)
                    .Append(":v=").Append(v)
                    .Append(",c=").Append(c)

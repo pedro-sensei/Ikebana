@@ -56,4 +56,21 @@ public class CreditsMenuController : MonoBehaviour
         if (mainMenuController != null)
             mainMenuController.OnBackToMainMenu();
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (backButton == null)
+            Debug.LogWarning("[CreditsMenuController] Back button is not assigned.", this);
+
+        if (mainMenuController == null)
+            Debug.LogWarning("[CreditsMenuController] MainMenuController reference is not assigned.", this);
+
+        if (scrollRect == null)
+            Debug.LogWarning("[CreditsMenuController] ScrollRect is not assigned.", this);
+
+        if (autoScrollSpeed < 0f)
+            autoScrollSpeed = 0f;
+    }
+#endif
 }

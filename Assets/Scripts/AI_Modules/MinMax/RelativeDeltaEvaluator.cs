@@ -54,13 +54,16 @@ public class RelativeDeltaEvaluator : IMinMaxEvaluator
         float immediateScoreDelta = SimulateEndOfRoundScoreDelta(model, maximizingPlayer, out terminalReachedInSimulation);
 
         bool terminalReached = model.IsGameOver || terminalReachedInSimulation;
-        float terminalScoreDelta = terminalReached ? immediateScoreDelta : currentScoreDelta;
+        float terminalScoreDelta = currentScoreDelta;
+        if (terminalReached)
+            terminalScoreDelta = immediateScoreDelta;
+
         float scoreDeltaImprovement = terminalScoreDelta - currentScoreDelta;
 
         float expectedMoveValue = _optimizerEvaluator.Evaluate(model, maximizingPlayer);
-        float immediatePhaseScale = UsePhaseAwareImmediateWeight
-            ? ComputeImmediatePhaseScale(model)
-            : 1f;
+        float immediatePhaseScale = 1f;
+        if (UsePhaseAwareImmediateWeight)
+            immediatePhaseScale = ComputeImmediatePhaseScale(model);
 
         return (immediateScoreDelta * ImmediateSimulationWeight * immediatePhaseScale)
              + (scoreDeltaImprovement * TerminalDeltaWeight)
@@ -72,9 +75,11 @@ public class RelativeDeltaEvaluator : IMinMaxEvaluator
         SaveState(model);
         bool gameEnding = model.ScoreEndOfRoundMinMax();
         terminalReached = gameEnding;
-        float scoreDelta = gameEnding
-            ? ComputeScoreDeltaWithEndGameBonuses(model, maximizingPlayer)
-            : ComputeScoreDelta(model, maximizingPlayer);
+        float scoreDelta;
+        if (gameEnding)
+            scoreDelta = ComputeScoreDeltaWithEndGameBonuses(model, maximizingPlayer);
+        else
+            scoreDelta = ComputeScoreDelta(model, maximizingPlayer);
         RestoreState(model);
         return scoreDelta;
     }

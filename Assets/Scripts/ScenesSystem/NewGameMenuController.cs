@@ -43,10 +43,22 @@ public class NewGameMenuController : MonoBehaviour
 
     private static readonly Color[] PlayerColors = new Color[]
     {
-        new Color(0.26f, 0.54f, 0.96f),
-        new Color(0.92f, 0.34f, 0.34f),
-        new Color(0.29f, 0.73f, 0.36f),
-        new Color(0.95f, 0.78f, 0.24f)
+        new Color(0.23f, 0.51f, 0.96f), // Blue
+        new Color(0.92f, 0.26f, 0.26f), // Red
+        new Color(0.18f, 0.72f, 0.34f), // Green
+        new Color(0.96f, 0.78f, 0.16f), // Yellow
+        new Color(0.58f, 0.34f, 0.92f), // Purple
+        new Color(0.96f, 0.47f, 0.16f), // Orange
+        new Color(0.12f, 0.74f, 0.78f), // Cyan
+        new Color(0.95f, 0.22f, 0.63f), // Pink
+        new Color(0.44f, 0.30f, 0.18f), // Brown
+        new Color(0.55f, 0.55f, 0.60f), // Gray
+        new Color(0.50f, 0.00f, 0.50f), // Magenta
+        new Color(0.00f, 0.50f, 0.50f), // Teal
+        new Color(0.40f, 0.20f, 0.00f), // Maroon
+        new Color(0.00f, 0.20f, 0.60f), // Navy
+        new Color(0.50f, 0.50f, 0.00f), // Olive
+        new Color(0.00f, 0.40f, 0.00f)  // Dark Green
     };
 
 
@@ -123,13 +135,10 @@ public class NewGameMenuController : MonoBehaviour
     {
         if (slotIndex < 0 || slotIndex >= _selectedColorIndices.Length) return;
 
-        int current = _selectedColorIndices[slotIndex];
-        int next = current;
-        if (PlayerColors.Length > 1)
-        {
-            while (next == current)
-                next = UnityEngine.Random.Range(0, PlayerColors.Length);
-        }
+        if (PlayerColors.Length <= 0) return;
+
+        int current = Mathf.Clamp(_selectedColorIndices[slotIndex], 0, PlayerColors.Length - 1);
+        int next = (current + 1) % PlayerColors.Length;
         _selectedColorIndices[slotIndex] = next;
         ApplyColorToSlotVisual(slotIndex);
     }
@@ -237,13 +246,25 @@ public class NewGameMenuController : MonoBehaviour
         if (opp == null) return;
 
         if (slot.NameInput != null)
-            slot.NameInput.text = string.IsNullOrEmpty(opp.OpponentName) ? slot.NameInput.text : opp.OpponentName;
+        {
+            string currentName = slot.NameInput.text;
+            bool useDefaultName = string.IsNullOrEmpty(currentName) || currentName.StartsWith("Player ");
+            if (useDefaultName && !string.IsNullOrEmpty(opp.OpponentName))
+                slot.NameInput.text = opp.OpponentName;
+        }
 
         if (slot.PortraitImage != null && opp.Portrait != null)
-            slot.PortraitImage.sprite = opp.Portrait;
+        {
+            // Only apply opponent portrait as default when slot has no portrait yet.
+            if (slot.PortraitImage.sprite == null)
+                slot.PortraitImage.sprite = opp.Portrait;
+        }
 
-        int portraitIndex = FindPortraitIndex(opp.Portrait);
-        if (portraitIndex >= 0) _portraitIndices[slotIndex] = portraitIndex;
+        if (slot.PortraitImage != null)
+        {
+            int portraitIndex = FindPortraitIndex(slot.PortraitImage.sprite);
+            if (portraitIndex >= 0) _portraitIndices[slotIndex] = portraitIndex;
+        }
     }
 
     private int FindPortraitIndex(Sprite portrait)
@@ -334,6 +355,28 @@ public class NewGameMenuController : MonoBehaviour
                 selectorImage.color = c;
         }
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (setupData == null)
+            Debug.LogWarning("[NewGameMenuController] GameSetupData reference is missing.", this);
+
+        if (playerCountDropdown == null)
+            Debug.LogWarning("[NewGameMenuController] Player count dropdown is not assigned.", this);
+
+        if (startGameButton == null)
+            Debug.LogWarning("[NewGameMenuController] Start game button is not assigned.", this);
+
+        if (backButton == null)
+            Debug.LogWarning("[NewGameMenuController] Back button is not assigned.", this);
+
+        if (playerSlotUIs == null || playerSlotUIs.Length == 0)
+            Debug.LogWarning("[NewGameMenuController] Player slot UI array is empty.", this);
+        else if (playerSlotUIs.Length < 4)
+            Debug.LogWarning("[NewGameMenuController] Player slot UI array should usually contain 4 slots.", this);
+    }
+#endif
 }
 
 //Player panel in the UI.

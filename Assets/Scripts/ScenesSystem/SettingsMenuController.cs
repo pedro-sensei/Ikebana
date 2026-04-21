@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System;
+using UnityEngine.Serialization;
 
 //=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
 //                    Last Update 21/04/2026 
@@ -49,8 +50,11 @@ public class SettingsMenuController : MonoBehaviour
     [SerializeField] private Toggle scoringHelperToggle;
 
     [Header("Flower Sprite Selectors")]
+    [FormerlySerializedAs("spriteLibrary")]
     [SerializeField] private FlowerSpriteRepository flowerSpriteLibrary;
+    [FormerlySerializedAs("spriteData")]
     [SerializeField] private FlowerSpriteData flowerSpriteData;
+    [FormerlySerializedAs("spriteRows")]
     [SerializeField] private FlowerSelectorRow[] flowerSelectorRows;
 
 
@@ -96,6 +100,8 @@ public class SettingsMenuController : MonoBehaviour
             if (flowerSpriteData == null) flowerSpriteData = GameResources.Instance.SpriteData;
         }
 
+        WireFlowerSelectorButtons();
+
     }
 
     private void OnEnable()
@@ -115,6 +121,7 @@ public class SettingsMenuController : MonoBehaviour
             boardRotationToggle.isOn = PlayerPrefs.GetInt(BoardRotationPrefKey, 1) == 1;
         if (scoringHelperToggle != null)
             scoringHelperToggle.isOn = PlayerPrefs.GetInt(ScoringHelperPrefKey, 1) == 1;
+        WireFlowerSelectorButtons();
         RefreshFlowerSelectorUI();
 
     }
@@ -257,5 +264,22 @@ public class SettingsMenuController : MonoBehaviour
     public void NextPinkFlowerSprite()   { ChangeFlowerSpriteVariant(FlowerColor.Pink, +1); }
     public void PrevGreenFlowerSprite()  { ChangeFlowerSpriteVariant(FlowerColor.Green, -1); }
     public void NextGreenFlowerSprite()  { ChangeFlowerSpriteVariant(FlowerColor.Green, +1); }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (backButton == null)
+            Debug.LogWarning("[SettingsMenuController] Back button is not assigned.", this);
+
+        if (flowerSelectorRows != null && flowerSelectorRows.Length > 0)
+        {
+            if (flowerSpriteLibrary == null)
+                Debug.LogWarning("[SettingsMenuController] Flower sprite library is missing while selector rows are configured.", this);
+
+            if (flowerSpriteData == null)
+                Debug.LogWarning("[SettingsMenuController] Flower sprite data is missing while selector rows are configured.", this);
+        }
+    }
+#endif
 }
 

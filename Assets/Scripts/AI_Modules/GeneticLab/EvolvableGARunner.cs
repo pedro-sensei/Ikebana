@@ -2,9 +2,10 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
-//=^..^=   =^..^=   VERSION 1.0.3 (April 2026)    =^..^=    =^..^=
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
 //                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
+
 // EvolvableGARunner — Modified version of original to accomodate new heuristics.
 
 // MonoBehaviour runner for EvolvableGeneticAlgo.
@@ -37,7 +38,6 @@ public class EvolvableGARunner : MonoBehaviour
 
     [Header("Output")]
     [SerializeField] private bool logEachGeneration = true;
-    [SerializeField] private bool saveToJson = true;
 
     [Header("Brain Template")]
     [SerializeField] private bool useEmilyTemplate = false;
@@ -168,43 +168,12 @@ public class EvolvableGARunner : MonoBehaviour
             logOutput.text += $"\n{summary}";
         }
 
-        if (saveToJson)
-            SaveBestGenesToJson();
-
         if (useEmilyTemplate)
             ApplyBestEmilyGenesToAssets();
         else if (targetOptimizerGenomeAsset != null)
             ApplyBestGenesToAsset();
 
         _ga.Dispose();
-    }
-
-    private void SaveBestGenesToJson()
-    {
-        float[] genes = _ga.BestGenes;
-        if (genes == null) return;
-
-        if (_template == null)
-            _template = useEmilyTemplate ? (IEvolvableBrain)new EmilyAIBrain() : new OptimizerAIBrain();
-
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        sb.AppendLine("{");
-        sb.AppendLine($"  \"fitness\": {_ga.BestFitness:F4},");
-        sb.AppendLine($"  \"geneCount\": {genes.Length},");
-        sb.AppendLine("  \"genes\": {");
-        for (int i = 0; i < genes.Length; i++)
-        {
-            string comma = i < genes.Length - 1 ? "," : "";
-            sb.AppendLine($"    \"{_template.GetGeneName(i)}\": {genes[i]:F4}{comma}");
-        }
-        sb.AppendLine("  }");
-        sb.AppendLine("}");
-
-        string path = System.IO.Path.Combine(Application.persistentDataPath, "BestOptimizerGenome.json");
-        System.IO.File.WriteAllText(path, sb.ToString());
-        Debug.Log($"Best genome saved to: {path}");
-        if (logOutput != null)
-            logOutput.text += $"\nBest genome saved to: {path}";
     }
 
     //NOT FLEXIBLE, need 1 for each brain type.

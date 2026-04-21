@@ -1,14 +1,11 @@
-// Interface for evaluating a game state from a specific player's perspective.
-// -----------------------------------------------------------------------
-//  IMinMaxEvaluator  -  game-state scoring interface for MinMax search.
-//
-//  Implementations are interchangeable: heuristic, projected score,
-//  neural network, etc.  The MinMax algorithm and the game adapter
-//  never depend on the evaluation logic directly.
-// -----------------------------------------------------------------------
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
+//=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
+
+
+
+// Interface for evaluating a game state in minmax algorithm.
 public interface IMinMaxEvaluator
 {
-    // Returns a score for the current game state from the perspective of
-    // the given player.  Higher = better for that player.
-    float Evaluate(MinimalGM model, int playerIndex);
+    float Evaluate(MinimalGM model, int maximizingPlayer);
 }

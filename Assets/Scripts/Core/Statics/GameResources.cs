@@ -18,7 +18,7 @@ public class GameResources : MonoBehaviour
     [SerializeField] private FlowerSpriteData spriteData;
 
     [Tooltip("Library of all available sprite variants per flower color.")]
-    [SerializeField] private FlowerSpriteLibrary spriteLibrary;
+    [SerializeField] private FlowerSpriteRepository spriteLibrary;
 
     [Header("Canvases")]
     [Tooltip("Top canvas used for dragged flowers and AI ghosts so they render on top.")]
@@ -47,7 +47,7 @@ public class GameResources : MonoBehaviour
     {
         get { return spriteData; }
     }
-    public FlowerSpriteLibrary SpriteLibrary
+    public FlowerSpriteRepository SpriteLibrary
     {
         get { return spriteLibrary; }
     }

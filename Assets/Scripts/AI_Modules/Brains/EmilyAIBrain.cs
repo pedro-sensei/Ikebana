@@ -1,4 +1,4 @@
-//=^..^=   =^..^=   VERSION 1.0.3 (April 2026)    =^..^=    =^..^=
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
 //                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
@@ -8,13 +8,17 @@ using System.Collections.Generic;
 #region EMILY BRAIN
 public class EmilyAIBrain : IPlayerAIBrain, IEvolvableBrain
 {
+    #region FIELDS AND PARAMETERS
+    public string BrainName => "Emily";
+
     private const int StageCount = 3;
 
     private readonly OptimizerAIBrain _worker;
     private readonly float[][] _stageGenes;
     private readonly int _genesPerStage;
+    #endregion
 
-    public string BrainName => "Emily";
+    #region CONSTRUCTORS
 
     public EmilyAIBrain()
     {
@@ -36,17 +40,25 @@ public class EmilyAIBrain : IPlayerAIBrain, IEvolvableBrain
         SetGenes(genes);
     }
 
+    //Takes 3 genomes one for each stage.
     public EmilyAIBrain(BasicGAGenome early, BasicGAGenome mid, BasicGAGenome late) : this()
     {
         ApplyStageGenome(0, early);
         ApplyStageGenome(1, mid);
         ApplyStageGenome(2, late);
     }
+    #endregion
 
+    #region INTERFACE IMPLEMENTATION
+
+    //Implements IPlayerAIBrain.
     public GameMove ChooseMove(GameModel model, List<GameMove> validMoves)
     {
+        //Choose correct genome.
         int stage = GetStageIndexForRound(model.CurrentRound);
+        //Sets the values.
         _worker.SetGenes(_stageGenes[stage]);
+        //Use optimizer chooseMove.
         return _worker.ChooseMove(model, validMoves);
     }
 
@@ -85,6 +97,9 @@ public class EmilyAIBrain : IPlayerAIBrain, IEvolvableBrain
         string prefix = stage == 0 ? "Round1to2" : (stage == 1 ? "Round3to4" : "Round5Plus");
         return prefix + "." + _worker.GetGeneName(local);
     }
+    #endregion
+
+    #region HELPERS
 
     private static int GetStageIndexForRound(int round)
     {
@@ -104,6 +119,7 @@ public class EmilyAIBrain : IPlayerAIBrain, IEvolvableBrain
         temp.GetGenes(genes);
         _stageGenes[stageIndex] = genes;
     }
+    #endregion
 }
 #endregion
 // Minimal-model Emily for GA simulations.
@@ -111,6 +127,9 @@ public class EmilyAIBrain : IPlayerAIBrain, IEvolvableBrain
 
 public class MinEmilyBrain : IMinimalAIBrain, IEvolvableBrain
 {
+    #region FIELDS AND PARAMETERS
+    public string BrainName => "Emily (Minimal)";
+
     private const int StageCount = 3;
 
     private readonly float[][] _stageGenes;
@@ -118,8 +137,9 @@ public class MinEmilyBrain : IMinimalAIBrain, IEvolvableBrain
 
     private GameConfigSnapshot _config;
     private MinOptimizerBrain[] _workers;
+    #endregion
 
-    public string BrainName => "Emily (Minimal)";
+    #region CONSTRUCTORS
 
     public MinEmilyBrain()
     {
@@ -155,6 +175,9 @@ public class MinEmilyBrain : IMinimalAIBrain, IEvolvableBrain
         ApplyStageGenome(2, late);
         BuildWorkers();
     }
+    #endregion
+
+    #region INTERFACE IMPLEMENTATION
 
     public int ChooseMoveIndex(MinimalGM model, GameMove[] moves, int moveCount)
     {
@@ -199,6 +222,9 @@ public class MinEmilyBrain : IMinimalAIBrain, IEvolvableBrain
         string prefix = stage == 0 ? "Round1to2" : (stage == 1 ? "Round3to4" : "Round5Plus");
         return prefix + "." + new OptimizerAIBrain().GetGeneName(local);
     }
+    #endregion
+
+    #region HELPERS
 
     private void BuildWorkers()
     {
@@ -224,6 +250,7 @@ public class MinEmilyBrain : IMinimalAIBrain, IEvolvableBrain
         temp.GetGenes(genes);
         System.Array.Copy(genes, _stageGenes[stage], _genesPerStage);
     }
+    #endregion
 }
 
 #endregion

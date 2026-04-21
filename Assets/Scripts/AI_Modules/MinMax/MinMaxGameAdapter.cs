@@ -1,17 +1,10 @@
 ﻿using System;
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
+//=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 // -----------------------------------------------------------------------
-//  MinMaxGameAdapter  -  Ikebana/Azul-specific implementation of
-//  IMinMaxGameAdapter for the MinMax search.
-//
-//  Manages all game-specific operations: move generation, execute/undo,
-//  turn advancement, terminal detection, and eval-safe state
-//  save/restore.  Pre-allocates all buffers up front so the search
-//  loop produces zero heap allocations.
-//
-//  The MinMax algorithm interacts with the game ONLY through the
-//  IMinMaxGameAdapter interface.
-// -----------------------------------------------------------------------
+//Adapt to minimal GM model.
 public class MinMaxGameAdapter : IMinMaxGameAdapter
 {
     private readonly int _maxDepth;
@@ -90,10 +83,10 @@ public class MinMaxGameAdapter : IMinMaxGameAdapter
 
     public int GetCurrentPlayer() { return _model.CurrentPlayer; }
 
-    public int GenerateMoves(int depthIdx)
+    public int GenerateMoves(int plyDepth)
     {
-        int count = _model.GetValidMovesMinMax(_moveBuffers[depthIdx]);
-        SortMovesForPruning(_moveBuffers[depthIdx], count);
+        int count = _model.GetValidMovesMinMax(_moveBuffers[plyDepth]);
+        SortMovesForPruning(_moveBuffers[plyDepth], count);
         return count;
     }
 
@@ -133,45 +126,45 @@ public class MinMaxGameAdapter : IMinMaxGameAdapter
         }
     }
 
-    private static float QuickMoveScore(ref MinimalMoveRecord m, MinimalPlayer player)
+    private static float QuickMoveScore(ref MinimalMoveRecord moveRecord, MinimalPlayer player)
     {
-        if (m.TargetIsPenalty) return -500f;
+        if (moveRecord.TargetIsPenalty) return -500f;
 
-        int   line        = m.TargetLineIndex;
-        int   capacity    = player.GetLineCapacity(line);
-        int   current     = player.GetLineCount(line);
-        int   after       = Math.Min(current + m.FlowerCount, capacity);
-        float fillRatio   = (float)after / capacity;
+        int line = moveRecord.TargetLineIndex;
+        int capacity = player.GetLineCapacity(line);
+        int currentCount = player.GetLineCount(line);
+        int nextCount = Math.Min(currentCount + moveRecord.FlowerCount, capacity);
+        float fillRatio = (float)nextCount / capacity;
 
         float score = fillRatio * 100f;              // 0–100 based on fill achieved
-        if (after >= capacity) score += 500f;        // Line-completion bonus
-        if (!m.IsCentralSource)  score += 30f;       // Prefer factory pick
+        if (nextCount >= capacity) score += 500f;    // Line-completion bonus
+        if (!moveRecord.IsCentralSource) score += 30f; // Prefer factory pick
         return score;
     }
 
-    public bool ExecuteRootMoveAndAdvance(int depthIdx, int moveIdx)
+    public bool ExecuteRootMoveAndAdvance(int plyDepth, int moveIndex)
     {
-        _savedPlayer[depthIdx] = _model.CurrentPlayer;
-        _savedTurn[depthIdx]   = _model.TurnNumber;
-        _undoRecords[depthIdx] = _rootMoves[moveIdx];
-        _model.ExecuteMoveMinMax(ref _undoRecords[depthIdx]);
+        _savedPlayer[plyDepth] = _model.CurrentPlayer;
+        _savedTurn[plyDepth] = _model.TurnNumber;
+        _undoRecords[plyDepth] = _rootMoves[moveIndex];
+        _model.ExecuteMoveMinMax(ref _undoRecords[plyDepth]);
         return _model.AdvanceTurnMinMax();
     }
 
-    public bool ExecuteMoveAndAdvance(int depthIdx, int moveIdx)
+    public bool ExecuteMoveAndAdvance(int plyDepth, int moveIndex)
     {
-        _savedPlayer[depthIdx] = _model.CurrentPlayer;
-        _savedTurn[depthIdx]   = _model.TurnNumber;
-        _undoRecords[depthIdx] = _moveBuffers[depthIdx][moveIdx];
-        _model.ExecuteMoveMinMax(ref _undoRecords[depthIdx]);
+        _savedPlayer[plyDepth] = _model.CurrentPlayer;
+        _savedTurn[plyDepth] = _model.TurnNumber;
+        _undoRecords[plyDepth] = _moveBuffers[plyDepth][moveIndex];
+        _model.ExecuteMoveMinMax(ref _undoRecords[plyDepth]);
         return _model.AdvanceTurnMinMax();
     }
 
-    public void UndoAndRestore(int depthIdx)
+    public void UndoAndRestore(int plyDepth)
     {
-        _model.ForceCurrentPlayer(_savedPlayer[depthIdx]);
-        _model.ForceTurnNumber(_savedTurn[depthIdx]);
-        _model.UndoMoveMinMax(ref _undoRecords[depthIdx]);
+        _model.ForceCurrentPlayer(_savedPlayer[plyDepth]);
+        _model.ForceTurnNumber(_savedTurn[plyDepth]);
+        _model.UndoMoveMinMax(ref _undoRecords[plyDepth]);
     }
 
     public bool IsTerminal()
@@ -179,20 +172,20 @@ public class MinMaxGameAdapter : IMinMaxGameAdapter
         return _model.IsGameOver || _model.AreDisplaysEmpty();
     }
 
-    public int EstimateRemainingPly()
+    public int EstimateRemainingMoves()
     {
-        int picks = 0;
+        int estimatedMoveCount = 0;
 
-        for (int f = 0; f < _model.NumFactories; f++)
+        for (int factoryIndex = 0; factoryIndex < _model.NumFactories; factoryIndex++)
         {
-            if (_model.GetFactoryflowerCount(f) > 0)
-                picks += _model.CountDistinctColorsInFactory(f);
+            if (_model.GetFactoryflowerCount(factoryIndex) > 0)
+                estimatedMoveCount += _model.CountDistinctColorsInFactory(factoryIndex);
         }
 
         if (_model.CentralCount > 0)
-            picks += _model.CountDistinctColorsInCentral();
+            estimatedMoveCount += _model.CountDistinctColorsInCentral();
 
-        return Math.Max(1, picks);
+        return Math.Max(1, estimatedMoveCount);
     }
 
     public float Evaluate(int maximizingPlayer)
@@ -204,55 +197,55 @@ public class MinMaxGameAdapter : IMinMaxGameAdapter
 
     public void SaveStateForEval()
     {
-        int numPlayers = _model.NumPlayers;
-        int numLines   = _model.Config.NumPlacementLines;
+        int playerCount = _model.NumPlayers;
+        int lineCount = _model.Config.NumPlacementLines;
 
         _evalDiscardCount   = _model.DiscardCount;
         _evalStartingPlayer = _model.StartingPlayer;
         _evalIsGameOver     = _model.IsGameOver;
 
-        for (int p = 0; p < numPlayers; p++)
+        for (int playerIndex = 0; playerIndex < playerCount; playerIndex++)
         {
-            MinimalPlayer pl    = _model.Players[p];
-            _evalWallBits[p]    = pl.WallBits;
-            _evalScores[p]      = pl.Score;
-            _evalPenalties[p]   = pl.GetPenaltyCount();
-            _evalTokens[p]      = pl.HasFirstPlayerToken;
-            _evalCompleteRow[p] = pl.HasCompleteRow;
+            MinimalPlayer player = _model.Players[playerIndex];
+            _evalWallBits[playerIndex] = player.WallBits;
+            _evalScores[playerIndex] = player.Score;
+            _evalPenalties[playerIndex] = player.GetPenaltyCount();
+            _evalTokens[playerIndex] = player.HasFirstPlayerToken;
+            _evalCompleteRow[playerIndex] = player.HasCompleteRow;
 
-            int off = p * numLines;
-            for (int l = 0; l < numLines; l++)
+            int offset = playerIndex * lineCount;
+            for (int lineIndex = 0; lineIndex < lineCount; lineIndex++)
             {
-                _evalLineColors[off + l] = pl.GetLineColor(l);
-                _evalLineCounts[off + l] = pl.GetLineCount(l);
-                _evalForbidden[off + l]  = pl.GetForbidden(l);
+                _evalLineColors[offset + lineIndex] = player.GetLineColor(lineIndex);
+                _evalLineCounts[offset + lineIndex] = player.GetLineCount(lineIndex);
+                _evalForbidden[offset + lineIndex] = player.GetForbidden(lineIndex);
             }
         }
     }
 
     public void RestoreStateAfterEval()
     {
-        int numPlayers = _model.NumPlayers;
-        int numLines   = _model.Config.NumPlacementLines;
+        int playerCount = _model.NumPlayers;
+        int lineCount = _model.Config.NumPlacementLines;
 
         _model.ForceDiscardCount(_evalDiscardCount);
         _model.ForceStartingPlayer(_evalStartingPlayer);
         _model.ForceIsGameOver(_evalIsGameOver);
 
-        for (int p = 0; p < numPlayers; p++)
+        for (int playerIndex = 0; playerIndex < playerCount; playerIndex++)
         {
-            MinimalPlayer pl = _model.Players[p];
-            pl.Score               = _evalScores[p];
-            pl.HasFirstPlayerToken = _evalTokens[p];
-            pl.HasCompleteRow      = _evalCompleteRow[p];
-            pl.SetPenaltyCount(_evalPenalties[p]);
-            pl.RestoreWallBits(_evalWallBits[p]);
+            MinimalPlayer player = _model.Players[playerIndex];
+            player.Score = _evalScores[playerIndex];
+            player.HasFirstPlayerToken = _evalTokens[playerIndex];
+            player.HasCompleteRow = _evalCompleteRow[playerIndex];
+            player.SetPenaltyCount(_evalPenalties[playerIndex]);
+            player.RestoreWallBits(_evalWallBits[playerIndex]);
 
-            int off = p * numLines;
-            for (int l = 0; l < numLines; l++)
+            int offset = playerIndex * lineCount;
+            for (int lineIndex = 0; lineIndex < lineCount; lineIndex++)
             {
-                pl.SetLineState(l, _evalLineColors[off + l], _evalLineCounts[off + l]);
-                pl.SetForbiddenBits(l, _evalForbidden[off + l]);
+                player.SetLineState(lineIndex, _evalLineColors[offset + lineIndex], _evalLineCounts[offset + lineIndex]);
+                player.SetForbiddenBits(lineIndex, _evalForbidden[offset + lineIndex]);
             }
         }
     }

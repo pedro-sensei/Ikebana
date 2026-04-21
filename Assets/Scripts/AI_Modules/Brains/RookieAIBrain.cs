@@ -1,17 +1,18 @@
 using System.Collections.Generic;
-using System.Net.Sockets;
-using Unity.Multiplayer.PlayMode;
 using UnityEngine;
 
-//=^..^=   =^..^=   VERSION 1.0.2 (April 2026)    =^..^=    =^..^=
-//                    Last Update 01/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
+
 
 //Basic Greedy AI brain with simple heuristics for move evaluation.
 #region ROOKIE AI BRAIN
 public class RookieAIBrain : IPlayerAIBrain
 {
     #region WEIGHTS AND PARAMETERS
+
+    public virtual string BrainName => "Rookie";
 
     private GameModel _model;
     private PlayerModel _me;
@@ -89,8 +90,6 @@ public class RookieAIBrain : IPlayerAIBrain
     
 
     
-    public virtual string BrainName => "Rookie";
-
     public RookieAIBrain() { LoadConfigFromGlobal(); }
     public RookieAIBrain(int seed) { LoadConfigFromGlobal(); }
 

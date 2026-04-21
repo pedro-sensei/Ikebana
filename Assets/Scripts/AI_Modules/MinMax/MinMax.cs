@@ -1,10 +1,11 @@
 ﻿using System.Diagnostics;
 
-//=^..^=   =^..^=   VERSION 1.0.3 (April 2026)    =^..^=    =^..^=
-//                    Last Update 16/04/2026
-//=^..^=    =^..^=  By Pedro Sanchez Vazquez      =^..^=    =^..^=
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
+//=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
-//  MinMax  -  Alpha-beta search with iterative deepening.
+
+//  MinMax  with Alpha-beta and iterative deepening.
 //
 //  Score:
 //    positive = good for the maximizing player
@@ -13,14 +14,14 @@
 
 public class MinMax
 {
-    private readonly int _maxDepth;
-    private readonly IMinMaxGameAdapter _adapter;
+    private readonly int _searchDepthLimit;
+    private readonly IMinMaxGameAdapter _gameAdapter;
 
-    private long _timerTicks;
-    private bool _timeUp;
-    private int  _nodesEvaluated;
+    private long _deadlineTimestamp;
+    private bool _hasTimedOut;
+    private int _visitedNodeCount;
 
-    private const int MAX_NODES = 5_000_000;
+    private const int MaxNodeBudget = 5_000_000;
 
     //Debug, null default.
     public MinMaxDebugLogger Logger { get; set; }
@@ -28,8 +29,8 @@ public class MinMax
     public MinMax(int maxDepth, IMinMaxGameAdapter adapter)
     {
         if (maxDepth < 1) maxDepth = 1;
-        _maxDepth = maxDepth;
-        _adapter  = adapter;
+        _searchDepthLimit = maxDepth;
+        _gameAdapter = adapter;
     }
 
     
@@ -39,152 +40,174 @@ public class MinMax
         int maximizingPlayer,
         float timeLimitMs)
     {
-        if (depth < 1) depth = 1;
-        if (depth > _maxDepth) depth = _maxDepth;
+        int searchDepth = depth;
+        if (searchDepth < 1) searchDepth = 1;
+        if (searchDepth > _searchDepthLimit) searchDepth = _searchDepthLimit;
 
-        _nodesEvaluated = 0;
-        _timeUp         = false;
-        //Start timer
-        _timerTicks  = Stopwatch.GetTimestamp()
-                        + (long)(timeLimitMs * Stopwatch.Frequency / 1000.0);
+        _visitedNodeCount = 0;
+        _hasTimedOut = false;
+        _deadlineTimestamp = Stopwatch.GetTimestamp()
+                           + (long)(timeLimitMs * Stopwatch.Frequency / 1000.0);
         long startTicks = Stopwatch.GetTimestamp();
 
-        SearchResult result = new SearchResult
+        SearchResult searchResult = new SearchResult
         {
-            BestIndex = 0, BestEval = float.NegativeInfinity, DepthSearched = depth
+            BestIndex = 0,
+            BestEval = float.NegativeInfinity,
+            DepthSearched = searchDepth
         };
 
-        if (rootMoveCount == 0) { result.BestIndex = -1; return result; }
-        if (rootMoveCount == 1) { result.BestIndex =  0; result.BestEval = 0f; return result; }
+        if (rootMoveCount == 0)
+        {
+            searchResult.BestIndex = -1;
+            return searchResult;
+        }
+
+        if (rootMoveCount == 1)
+        {
+            searchResult.BestIndex = 0;
+            searchResult.BestEval = 0f;
+            return searchResult;
+        }
 
         float alpha = float.NegativeInfinity;
-        float beta  = float.PositiveInfinity;
+        float beta = float.PositiveInfinity;
 
-        for (int i = 0; i < rootMoveCount; i++)
+        for (int rootMoveIndex = 0; rootMoveIndex < rootMoveCount; rootMoveIndex++)
         {
-            if (_nodesEvaluated >= MAX_NODES || Stopwatch.GetTimestamp() >= _timerTicks)
+            if (IsOutOfSearchBudget())
             {
-                _timeUp = true;
+                _hasTimedOut = true;
                 break;
             }
 
-            if (_timeUp) break;
+            if (_hasTimedOut) break;
 
-            bool roundContinues = _adapter.ExecuteRootMoveAndAdvance(0, i);
+            bool roundContinues = _gameAdapter.ExecuteRootMoveAndAdvance(0, rootMoveIndex);
 
-            float eval;
-            if (!roundContinues || depth <= 1)
+            float moveEvaluation;
+            if (!roundContinues || searchDepth <= 1)
             {
-                _nodesEvaluated++;
-                // Evaluate leaf node
-                eval = _adapter.Evaluate(maximizingPlayer);
-                Logger?.RecordLeafEval(eval);
+                _visitedNodeCount++;
+                moveEvaluation = _gameAdapter.Evaluate(maximizingPlayer);
+                Logger?.RecordLeafEval(moveEvaluation);
 
-                if ((_nodesEvaluated & 0x3FF) == 0 && Stopwatch.GetTimestamp() >= _timerTicks)
-                    _timeUp = true;
+                if ((_visitedNodeCount & 0x3FF) == 0 && Stopwatch.GetTimestamp() >= _deadlineTimestamp)
+                    _hasTimedOut = true;
             }
             else
             {
-                bool nextIsMax = _adapter.GetCurrentPlayer() == maximizingPlayer;
-                // Recurse
-                eval = AlphaBeta(depth - 1, 1,
-                                 alpha, beta, nextIsMax, maximizingPlayer);
+                bool nextTurnIsMaximizing = _gameAdapter.GetCurrentPlayer() == maximizingPlayer;
+                moveEvaluation = AlphaBeta(
+                    searchDepth - 1,
+                    1,
+                    alpha,
+                    beta,
+                    nextTurnIsMaximizing,
+                    maximizingPlayer);
             }
 
-            //Undo move and restore state for next iteration
-            _adapter.UndoAndRestore(0);
+            _gameAdapter.UndoAndRestore(0);
 
-            if (eval > result.BestEval)
+            if (moveEvaluation > searchResult.BestEval)
             {
-                result.BestEval  = eval;
-                result.BestIndex = i;
+                searchResult.BestEval = moveEvaluation;
+                searchResult.BestIndex = rootMoveIndex;
             }
-            if (eval > alpha) alpha = eval;
+            if (moveEvaluation > alpha) alpha = moveEvaluation;
             if (alpha >= beta) break;
         }
 
         long endTicks = Stopwatch.GetTimestamp();
-        result.NodesEvaluated = _nodesEvaluated;
-        result.TimedOut       = _timeUp;
-        result.ElapsedMs      = (float)(endTicks - startTicks) * 1000f / Stopwatch.Frequency;
-        return result;
+        searchResult.NodesEvaluated = _visitedNodeCount;
+        searchResult.TimedOut = _hasTimedOut;
+        searchResult.ElapsedMs = (float)(endTicks - startTicks) * 1000f / Stopwatch.Frequency;
+        return searchResult;
     }
 
-    // -- Alpha-Beta -------------------------------------------------------
     private float AlphaBeta(
-        int depth, int depthIdx,
+        int remainingDepth,
+        int plyDepth,
         float alpha, float beta,
-        bool maximizing, int maximizingPlayer)
+        bool isMaximizingTurn,
+        int maximizingPlayer)
     {
-        // Time / node-budget check
-        if (_nodesEvaluated >= MAX_NODES || Stopwatch.GetTimestamp() >= _timerTicks)
+        if (IsOutOfSearchBudget())
         {
-            _timeUp = true;
-            _nodesEvaluated++;
-            return _adapter.Evaluate(maximizingPlayer);
+            _hasTimedOut = true;
+            _visitedNodeCount++;
+            return _gameAdapter.Evaluate(maximizingPlayer);
         }
 
-        // Terminal
-        if (depth <= 0 || _adapter.IsTerminal())
+        if (remainingDepth <= 0 || _gameAdapter.IsTerminal())
         {
-            _nodesEvaluated++;
-            return _adapter.Evaluate(maximizingPlayer);
+            _visitedNodeCount++;
+            return _gameAdapter.Evaluate(maximizingPlayer);
         }
 
-        // Generate moves
-        int moveCount = _adapter.GenerateMoves(depthIdx);
+        int moveCount = _gameAdapter.GenerateMoves(plyDepth);
         if (moveCount == 0)
         {
-            _nodesEvaluated++;
-            return _adapter.Evaluate(maximizingPlayer);
+            _visitedNodeCount++;
+            return _gameAdapter.Evaluate(maximizingPlayer);
         }
 
-        float best = maximizing ? float.NegativeInfinity : float.PositiveInfinity;
+        float bestEvaluation = isMaximizingTurn ? float.NegativeInfinity : float.PositiveInfinity;
 
-        for (int i = 0; i < moveCount; i++)
+        for (int moveIndex = 0; moveIndex < moveCount; moveIndex++)
         {
-            if (_timeUp) break;
+            if (_hasTimedOut) break;
 
-            Logger?.RecordVisit(depthIdx);
-            bool cont = _adapter.ExecuteMoveAndAdvance(depthIdx, i);
+            Logger?.RecordVisit(plyDepth);
+            bool roundContinues = _gameAdapter.ExecuteMoveAndAdvance(plyDepth, moveIndex);
 
-            float eval;
-            if (!cont || depth <= 1)
+            float moveEvaluation;
+            if (!roundContinues || remainingDepth <= 1)
             {
-                _nodesEvaluated++;
-                eval = _adapter.Evaluate(maximizingPlayer);
-                Logger?.RecordLeafEval(eval);
-                if ((_nodesEvaluated & 0xFFF) == 0 && Stopwatch.GetTimestamp() >= _timerTicks)
-                    _timeUp = true;
+                _visitedNodeCount++;
+                moveEvaluation = _gameAdapter.Evaluate(maximizingPlayer);
+                Logger?.RecordLeafEval(moveEvaluation);
+                if ((_visitedNodeCount & 0xFFF) == 0 && Stopwatch.GetTimestamp() >= _deadlineTimestamp)
+                    _hasTimedOut = true;
             }
             else
             {
-                bool nextIsMax = _adapter.GetCurrentPlayer() == maximizingPlayer;
-                eval = AlphaBeta(depth - 1, depthIdx + 1,
-                                 alpha, beta, nextIsMax, maximizingPlayer);
+                bool nextTurnIsMaximizing = _gameAdapter.GetCurrentPlayer() == maximizingPlayer;
+                moveEvaluation = AlphaBeta(
+                    remainingDepth - 1,
+                    plyDepth + 1,
+                    alpha,
+                    beta,
+                    nextTurnIsMaximizing,
+                    maximizingPlayer);
             }
 
-            _adapter.UndoAndRestore(depthIdx);
+            _gameAdapter.UndoAndRestore(plyDepth);
 
-            if (maximizing)
+            if (isMaximizingTurn)
             {
-                if (eval > best)  best  = eval;
-                if (eval > alpha) alpha = eval;
+                if (moveEvaluation > bestEvaluation) bestEvaluation = moveEvaluation;
+                if (moveEvaluation > alpha) alpha = moveEvaluation;
             }
             else
             {
-                if (eval < best) best = eval;
-                if (eval < beta) beta = eval;
+                if (moveEvaluation < bestEvaluation) bestEvaluation = moveEvaluation;
+                if (moveEvaluation < beta) beta = moveEvaluation;
             }
 
             if (beta <= alpha)
             {
-                Logger?.RecordCut(depthIdx);
+                Logger?.RecordCut(plyDepth);
                 break;
             }
         }
 
-        return best;
+        return bestEvaluation;
+    }
+
+    private bool IsOutOfSearchBudget()
+    {
+        return _visitedNodeCount >= MaxNodeBudget || Stopwatch.GetTimestamp() >= _deadlineTimestamp;
     }
 }
 

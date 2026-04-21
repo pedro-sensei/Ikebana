@@ -15,6 +15,9 @@ public class InGameSaveController : MonoBehaviour
     [Tooltip("Button to save the game.")]
     [SerializeField] private Button saveButton;
 
+    [Tooltip("Button to return/back from Save menu.")]
+    [SerializeField] private Button returnButton;
+
     [Tooltip("Custom save name field. Leave empty for auto-timestamp.")]
     [SerializeField] private TMP_InputField saveNameInput;
 
@@ -27,13 +30,26 @@ public class InGameSaveController : MonoBehaviour
 
     private Coroutine _feedbackCoroutine;
 
+    [Header("Navigation")]
+    [SerializeField] private MainMenuController mainMenuController;
+
     private void Awake()
     {
         if (saveButton != null)
             saveButton.onClick.AddListener(OnSaveClicked);
+        if (returnButton != null)
+            returnButton.onClick.AddListener(OnReturnClicked);
 
         if (feedbackLabel != null)
             feedbackLabel.gameObject.SetActive(false);
+    }
+
+    private void OnReturnClicked()
+    {
+        if (mainMenuController != null)
+            mainMenuController.OnBackToMainMenu();
+        else if (gameObject != null)
+            gameObject.SetActive(false);
     }
 
     private void OnSaveClicked()
@@ -84,4 +100,21 @@ public class InGameSaveController : MonoBehaviour
 
         _feedbackCoroutine = null;
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (saveButton == null)
+            Debug.LogWarning("[InGameSaveController] Save button is not assigned.", this);
+
+        if (returnButton == null)
+            Debug.LogWarning("[InGameSaveController] Return button is not assigned.", this);
+
+        if (mainMenuController == null)
+            Debug.LogWarning("[InGameSaveController] MainMenuController reference is not assigned.", this);
+
+        if (feedbackDuration < 0f)
+            feedbackDuration = 0f;
+    }
+#endif
 }

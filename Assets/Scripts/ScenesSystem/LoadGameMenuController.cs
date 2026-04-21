@@ -166,4 +166,27 @@ public class LoadGameMenuController : MonoBehaviour
         if (loadButton != null)   loadButton.interactable = !string.IsNullOrEmpty(_selectedSave);
         if (deleteButton != null) deleteButton.interactable = !string.IsNullOrEmpty(_selectedSave);
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (setupData == null)
+            Debug.LogWarning("[LoadGameMenuController] GameSetupData reference is missing.", this);
+
+        if (saveListContent == null)
+            Debug.LogWarning("[LoadGameMenuController] Save list content transform is missing.", this);
+
+        if (saveSlotPrefab == null)
+            Debug.LogWarning("[LoadGameMenuController] Save slot prefab is missing.", this);
+
+        if (loadButton == null)
+            Debug.LogWarning("[LoadGameMenuController] Load button is not assigned.", this);
+
+        if (deleteButton == null)
+            Debug.LogWarning("[LoadGameMenuController] Delete button is not assigned.", this);
+
+        if (backButton == null)
+            Debug.LogWarning("[LoadGameMenuController] Back button is not assigned.", this);
+    }
+#endif
 }

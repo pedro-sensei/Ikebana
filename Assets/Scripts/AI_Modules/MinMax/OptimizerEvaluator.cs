@@ -1,31 +1,21 @@
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
+//=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
+
 // -----------------------------------------------------------------------
-//  OptimizerEvaluator  -  IMinMaxEvaluator backed by the Optimizer
+//  OptimizerEvaluator  -  IMinMaxEvaluator with the Optimizer
 //  heuristics from OptimalHeuristicBase.
-//
-//  Scores a board position for a given player by evaluating:
-//    1. Current score minus accrued penalties.
-//    2. Placement-line progress: each non-empty line contributes a
-//       weighted combination of SimulateLineScoring, TilesPlacedWeight,
-//       LineCompletionWeight, and end-game-bonus-chase weights.
-//    3. Wall-tile progress toward end-game row / column / color bonuses
-//       (weighted by ChaseBonusRow/Column/ColorWeights).
-//
-//  Evaluate() returns  myPositionValue - bestOpponentPositionValue,
-//  consistent with the IMinMaxEvaluator contract.
-//
-//  Genome adjustable: use the constructor overloads that accept a
-//  BasicGAGenome or OptimizerGenomeWeights to drive weights from the
-//  genetic algorithm, exactly like OptimizerAIBrain / MinOptimizerBrain.
-// -----------------------------------------------------------------------
+
 public class OptimizerEvaluator : OptimalHeuristicBase, IMinMaxEvaluator
 {
-    // Per-evaluation context (set before each player board-value call).
-    private MinimalGM     _model;
-    private MinimalPlayer _me;
-    private MinimalPlayer _opp;
-    private int           _myPlayerIndex;
+    #region FIELDS AND PARAMETERS
+    private MinimalGM _model;
+    private MinimalPlayer _currentPlayer;
+    private MinimalPlayer _nextPlayer;
+    private int _currentPlayerIndex;
+    #endregion
 
-    // ?? Constructors ????????????????????????????????????????????????????
+    #region CONSTRUCTORS
 
     /// Default weights – mirrors MinOptimizerBrain defaults derived from
     /// the last GA training run.
@@ -56,8 +46,9 @@ public class OptimizerEvaluator : OptimalHeuristicBase, IMinMaxEvaluator
     {
         ApplyWeightsSnapshot(weights);
     }
+    #endregion
 
-    // ?? IMinMaxEvaluator ????????????????????????????????????????????????
+    #region IMinMaxEvaluator
 
     public float Evaluate(MinimalGM model, int maximizingPlayer)
     {
@@ -79,30 +70,31 @@ public class OptimizerEvaluator : OptimalHeuristicBase, IMinMaxEvaluator
 
         return myValue - bestOpp;
     }
+    #endregion
 
-    // ?? Board-position scoring ??????????????????????????????????????????
+    #region INTERNAL EVALUATION HELPERS
 
     /// Computes a heuristic value for playerIndex's current board state.
     private float ComputePlayerPositionValue(MinimalGM model, int playerIndex)
     {
-        _myPlayerIndex = playerIndex;
-        _me  = model.Players[playerIndex];
-        _opp = model.Players[(playerIndex + 1) % model.NumPlayers];
+        _currentPlayerIndex = playerIndex;
+        _currentPlayer = model.Players[playerIndex];
+        _nextPlayer = model.Players[(playerIndex + 1) % model.NumPlayers];
 
-        float value = _me.Score;
-        value += _me.CalculatePenalty(model);
+        float value = _currentPlayer.Score;
+        value += _currentPlayer.CalculatePenalty(model);
 
         // Placement-line progress: each non-empty line contributes
         // the same weights the Optimizer uses when evaluating a move.
         for (int line = 0; line < _numPlacementLines; line++)
         {
-            int count = _me.GetLineCount(line);
+            int count = _currentPlayer.GetLineCount(line);
             if (count == 0) continue;
 
-            FlowerColor color    = (FlowerColor)_me.GetLineColor(line);
-            int         capacity = _me.GetLineCapacity(line);
-            bool        completes = count >= capacity;
-            int         placed    = System.Math.Min(count, capacity);
+            FlowerColor color = (FlowerColor)_currentPlayer.GetLineColor(line);
+            int capacity = _currentPlayer.GetLineCapacity(line);
+            bool completes = count >= capacity;
+            int placed = System.Math.Min(count, capacity);
 
             // Projected immediate scoring if/when this line completes.
             value += SimulateLineScoring(color, line, completes) * SimulateScoringWeight;
@@ -132,26 +124,26 @@ public class OptimizerEvaluator : OptimalHeuristicBase, IMinMaxEvaluator
 
         return value;
     }
+    #endregion
 
-    // ?? OptimalHeuristicBase abstract implementations ???????????????????
-    // (mirrors MinOptimizerBrain)
+    #region OptimalHeuristicBase OVERRIDES
 
-    protected override bool MyWallOccupied(int row, int col)     => _me.IsWallOccupied(row, col);
-    protected override bool MyLineFull(int line)                 => _me.IsLineFull(line);
-    protected override byte MyLineColor(int line)                => _me.GetLineColor(line);
-    protected override int  MyLineCount(int line)                => _me.GetLineCount(line);
-    protected override bool MyLineEmpty(int line)                => _me.GetLineCount(line) == 0;
-    protected override int  MyLineCapacity(int line)             => _me.GetLineCapacity(line);
-    protected override int  MyPenaltyCount()                     => _me.GetPenaltyCount();
-    protected override int  MyCalculatePenalty()                 => _me.CalculatePenalty(_model);
+    protected override bool MyWallOccupied(int row, int col)     => _currentPlayer.IsWallOccupied(row, col);
+    protected override bool MyLineFull(int line)                 => _currentPlayer.IsLineFull(line);
+    protected override byte MyLineColor(int line)                => _currentPlayer.GetLineColor(line);
+    protected override int  MyLineCount(int line)                => _currentPlayer.GetLineCount(line);
+    protected override bool MyLineEmpty(int line)                => _currentPlayer.GetLineCount(line) == 0;
+    protected override int  MyLineCapacity(int line)             => _currentPlayer.GetLineCapacity(line);
+    protected override int  MyPenaltyCount()                     => _currentPlayer.GetPenaltyCount();
+    protected override int  MyCalculatePenalty()                 => _currentPlayer.CalculatePenalty(_model);
 
     protected override int MyGetWallColumn(int row, int colorIndex)
-        => _gameConfigSnapshot.GetWallColumn(_myPlayerIndex, row, colorIndex);
+        => _gameConfigSnapshot.GetWallColumn(_currentPlayerIndex, row, colorIndex);
 
-    protected override bool OppCanPlaceInLine(int line, byte color) => _opp.CanPlaceInLine(line, color);
-    protected override byte OppLineColor(int line)                  => _opp.GetLineColor(line);
-    protected override int  OppLineCount(int line)                  => _opp.GetLineCount(line);
-    protected override int  OppLineCapacity(int line)               => _opp.GetLineCapacity(line);
+    protected override bool OppCanPlaceInLine(int line, byte color) => _nextPlayer.CanPlaceInLine(line, color);
+    protected override byte OppLineColor(int line)                  => _nextPlayer.GetLineColor(line);
+    protected override int  OppLineCount(int line)                  => _nextPlayer.GetLineCount(line);
+    protected override int  OppLineCapacity(int line)               => _nextPlayer.GetLineCapacity(line);
 
     protected override int GetNumFactories() => _model.NumFactories;
 
@@ -173,4 +165,5 @@ public class OptimizerEvaluator : OptimalHeuristicBase, IMinMaxEvaluator
         => _model.CountColorInCentral((FlowerColor)colorIndex);
 
     protected override int GetCurrentRound() => _model.CurrentRound;
+    #endregion
 }

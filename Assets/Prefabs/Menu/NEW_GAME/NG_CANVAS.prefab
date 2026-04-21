@@ -777,7 +777,7 @@ MonoBehaviour:
     OpponentDropdown: {fileID: 6635219852101659336}
     ColorSelectorImage: {fileID: 5272850946901876540}
     ColorPreview: {fileID: 4654170539274504803}
-    PortraitNextButton: {fileID: 8243781251000224213}
+    PortraitNextButton: {fileID: 4538963757769614056}
     PortraitPrevButton: {fileID: 8243781251000224213}
     PortraitImage: {fileID: 2892451809915149899}
   - Root: {fileID: 3692826078163596293}
@@ -2297,6 +2297,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2da0c512f12947e489f739169773d7ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TMP_InputField
+--- !u!114 &4538963757769614056 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4078030241472797387, guid: 676ceb4328687d543a29c0605e3892c1, type: 3}
+  m_PrefabInstance: {fileID: 460969806631516195}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!114 &4654170539274504803 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5112534363761291840, guid: 676ceb4328687d543a29c0605e3892c1, type: 3}

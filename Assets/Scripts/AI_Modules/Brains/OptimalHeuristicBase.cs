@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 
-//=^..^=   =^..^=   VERSION 1.0.3 (April 2026)    =^..^=    =^..^=
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
 //                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
+
 
 //Base heuristic for all optimizer brains with adjustable weights.
 public abstract class OptimalHeuristicBase
@@ -255,16 +256,20 @@ public abstract class OptimalHeuristicBase
         {
             if (MyWallOccupied(r, col))
                 v++;
-            else if (MyLineFull(r) && MyGetWallColumn(r, MyLineColor(r)) == col)
-                v++;
+            else if (MyLineFull(r))
+            {
+                byte projectedColor = MyLineColor(r);
+                if (projectedColor != 255 && MyGetWallColumn(r, projectedColor) == col)
+                    v++;
+                else
+                    break;
+            }
             else
                 break;
         }
         for (int r = row + 1; r < _gridSize; r++)
         {
             if (MyWallOccupied(r, col))
-                v++;
-            else if (MyLineFull(r) && MyGetWallColumn(r, MyLineColor(r)) == col)
                 v++;
             else
                 break;

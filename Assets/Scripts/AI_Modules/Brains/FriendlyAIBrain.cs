@@ -4,9 +4,10 @@ using System.Net.Sockets;
 using Unity.Multiplayer.PlayMode;
 using UnityEngine;
 
-//=^..^=   =^..^=   VERSION 1.0.3 (April 2026)    =^..^=    =^..^=
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
 //                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
+
 
 
 //Fixed heuristic brain with hardcoded weights.
@@ -15,6 +16,8 @@ using UnityEngine;
 public class FriendlyAIBrain : IPlayerAIBrain
 {
     #region WEIGHTS AND PARAMETERS
+
+    public virtual string BrainName => "Friendly";
 
     private GameModel _model;
     private PlayerModel _me;
@@ -31,7 +34,6 @@ public class FriendlyAIBrain : IPlayerAIBrain
     protected int   _numPlacementLines;
     protected int   _penaltyCapacity;
     protected int[] _penaltyValues;
-
 
     // Config snapshot
     protected GameConfigSnapshot _gameConfigSnapshot;
@@ -110,11 +112,21 @@ public class FriendlyAIBrain : IPlayerAIBrain
         int v = 1;
         for (int r = row - 1; r >= 0; r--)
         {
-            if (_grid.IsOccupied(r, col)) v++;
+            if (_grid.IsOccupied(r, col))
+                v++;
+            else if (_me.PlacementLines[r].IsFull &&
+                     _me.PlacementLines[r].CurrentColor.HasValue &&
+                     _grid.GetColumnForColor(r, _me.PlacementLines[r].CurrentColor.Value) == col)
+                v++;
+            else
+                break;
         }
         for (int r = row + 1; r < _gridSize; r++)
         {
-            if (_grid.IsOccupied(r, col)) v++;   
+            if (_grid.IsOccupied(r, col))
+                v++;
+            else
+                break;
         }
 
         if (h == 1 && v == 1) return 1f;
@@ -124,7 +136,6 @@ public class FriendlyAIBrain : IPlayerAIBrain
         return pts;
     }
 
-    public virtual string BrainName => "Friendly";
 
     public FriendlyAIBrain() { 
         LoadConfigFromGlobal();
@@ -178,13 +189,13 @@ public class FriendlyAIBrain : IPlayerAIBrain
 public class MinFriendlyBrain : IMinimalAIBrain
 {
     // Weights matching FriendlyAIBrain defaults.
+    public string BrainName => "Friendly (Minimal)";
+
     private const float SIMULATE_SCORING_WEIGHT = 3f;
     private const float PENALTY_WEIGHT          = 3f;
     private const float TILES_PLACED_WEIGHT     = 1f;
     private const float LINE_COMPLETION_WEIGHT  = 1f;
     private const int   GRID_SIZE               = 5;
-
-    public string BrainName => "Friendly (Minimal)";
 
     public int ChooseMoveIndex(MinimalGM model, GameMove[] moves, int moveCount)
     {
@@ -242,8 +253,22 @@ public class MinFriendlyBrain : IMinimalAIBrain
         for (int c = col + 1; c < GRID_SIZE && me.IsWallOccupied(row, c); c++) h++;
 
         int v = 1;
-        for (int r = row - 1; r >= 0 && me.IsWallOccupied(r, col); r--) v++;
-        for (int r = row + 1; r < GRID_SIZE && me.IsWallOccupied(r, col); r++) v++;
+        for (int r = row - 1; r >= 0; r--)
+        {
+            if (me.IsWallOccupied(r, col))
+                v++;
+            else if (me.IsLineFull(r) && model.Config.GetWallColumn(model.CurrentPlayer, r, me.GetLineColor(r)) == col)
+                v++;
+            else
+                break;
+        }
+        for (int r = row + 1; r < GRID_SIZE; r++)
+        {
+            if (me.IsWallOccupied(r, col))
+                v++;
+            else
+                break;
+        }
 
         if (h == 1 && v == 1) return 1f;
         float pts = 0f;

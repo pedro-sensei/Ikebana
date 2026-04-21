@@ -1,46 +1,44 @@
-// -----------------------------------------------------------------------
-//  IMinMaxGameAdapter  –  game-agnostic interface for MinMax search.
-//
-//  The MinMax algorithm depends ONLY on this interface and IMinMaxEvaluator.
-//  All game-specific logic (move generation, execute/undo, terminal
-//  detection, state save/restore) lives in a concrete implementation.
-//
-//  Replacing the game only requires a new implementation of this
-//  interface — the MinMax algorithm never changes.
-// -----------------------------------------------------------------------
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
+//=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
+
+
+//  IMinMaxGameAdapter  –  game-agnostic interface for MinMax.
+
 public interface IMinMaxGameAdapter
 {
-    // Returns the index of the player whose turn it is.
+    // Returns the index of the player.
     int GetCurrentPlayer();
 
-    // Generates all legal moves for the current player at the given
-    // search depth into an internal buffer.  Returns the move count.
-    int GenerateMoves(int depthIdx);
+    // Generates all legal moves for the current player and returns the move count.
+    int GenerateMoves(int plyDepth);
 
-    // Executes the i-th move from an EXTERNAL root-move buffer at
-    // the given depth, saves undo state, and advances the turn.
-    // Returns true if the round continues (more moves possible).
-    bool ExecuteRootMoveAndAdvance(int depthIdx, int moveIdx);
-
-    // Executes the i-th move from the INTERNAL buffer at the given
-    // depth, saves undo state, and advances the turn.
+    // Executes the i-th move from EXTERNAL buffer
+    // at the given depth
+    // saves undo state
+    // advances the turn
     // Returns true if the round continues.
-    bool ExecuteMoveAndAdvance(int depthIdx, int moveIdx);
+    bool ExecuteRootMoveAndAdvance(int plyDepth, int moveIndex);
 
-    // Undoes the last move executed at the given depth and
+    // Executes the i-th move from the INTERNAL buffer
+    // at the given depth
+    //  saves undo state
+    //  advances the turn
+    // Returns true if the round continues.
+    bool ExecuteMoveAndAdvance(int plyDepth, int moveIndex);
+
+    // Undoes the last move
+    // at the given depth 
     // restores turn/player state.
-    void UndoAndRestore(int depthIdx);
+    void UndoAndRestore(int plyDepth);
 
-    // Returns true if the current state is terminal (game over,
-    // round ended, no moves possible, etc.).
+    // Returns true if the current state is terminal.
     bool IsTerminal();
 
-    // Returns an estimate of remaining plies in the current round
-    // (used to clamp the search depth so it doesn't exceed the round).
-    int EstimateRemainingPly();
+    // Returns an estimate of remaining moves in the current round
+    int EstimateRemainingMoves();
 
     // Evaluates the current game state from the perspective of the
     // given player.  Higher = better for that player.
-    // Delegates to whatever IMinMaxEvaluator is configured.
     float Evaluate(int maximizingPlayer);
 }
