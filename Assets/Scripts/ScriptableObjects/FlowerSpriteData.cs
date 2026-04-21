@@ -1,10 +1,11 @@
 using UnityEngine;
-//=^..^=   =^..^=   VERSION 1.0.5 (April 2026)    =^..^=    =^..^=
-//                    Last Update 15/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 
-/// ScriptableObject that maps FlowerColor values to sprites.
+/// Maps FlowerColor values to sprites saved in the settings and retrieved from the repo
+/// .
 //
 [CreateAssetMenu(fileName = "FlowerSpriteData", menuName = "Ikebana/Flower Sprite Data")]
 public class FlowerSpriteData : ScriptableObject

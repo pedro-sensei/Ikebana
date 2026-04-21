@@ -1,12 +1,12 @@
 using UnityEngine;
 
-//=^..^=   =^..^=   VERSION 1.0.5 (April 2026)    =^..^=    =^..^=
-//                    Last Update 15/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 /// ScriptableObject repository of every available AI opponent.
 
-[CreateAssetMenu(fileName = "AIOpponentRepository", menuName = "Ikebana/AI Opponent Repository")]
+[CreateAssetMenu(fileName = "AIOpponentRepository", menuName = "Ikebana/AI Opponent Repo")]
 public class AIOpponentRepository : ScriptableObject
 {
     [Tooltip("All available AI opponents. Order determines their position in menus.")]

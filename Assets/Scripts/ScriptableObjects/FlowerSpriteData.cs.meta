@@ -1,2 +1,27 @@
 fileFormatVersion: 2
 guid: 6c2bac34fad739448acc735e5e792137
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - blueSprite: {fileID: -7761288770153894131, guid: 9de67177adf4443458811397d124187e, type: 3}
+  - yellowSprite: {fileID: 4103279496249127722, guid: 9de67177adf4443458811397d124187e, type: 3}
+  - redSprite: {fileID: 5363827415217232859, guid: 9de67177adf4443458811397d124187e, type: 3}
+  - pinkSprite: {fileID: -6096385717169832324, guid: 9de67177adf4443458811397d124187e, type: 3}
+  - greenSprite: {fileID: -2221490753472791107, guid: 9de67177adf4443458811397d124187e, type: 3}
+  - blackSprite: {instanceID: 0}
+  - whiteSprite: {instanceID: 0}
+  - orangeSprite: {instanceID: 0}
+  - purpleSprite: {instanceID: 0}
+  - turquoiseSprite: {instanceID: 0}
+  - lightBlueSprite: {instanceID: 0}
+  - firstPlayerTokenSprite: {fileID: 2817207839356164725, guid: 6eb519fbc50600b45959c0d86b5ca41e, type: 3}
+  - special1Sprite: {instanceID: 0}
+  - special2Sprite: {instanceID: 0}
+  - special3Sprite: {instanceID: 0}
+  - emptySprite: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

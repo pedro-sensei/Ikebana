@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-//=^..^=   =^..^=   VERSION 1.0.5 (April 2026)    =^..^=    =^..^=
-//                    Last Update 15/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 
-// ScriptableObject containing all game configuration values.
+// SO containing all game configuration values.
+//Used to define variants and player counts.
+//Loaded by GameManager.
 
 [CreateAssetMenu(fileName = "GameConfigData", menuName = "Ikebana/Game Config")]
 public class GameConfigData : ScriptableObject
