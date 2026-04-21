@@ -2,8 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-//=^..^=   =^..^=   VERSION 1.0.2 (April 2026)    =^..^=    =^..^=
-//                    Last Update 01/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 // Controls the Credits panel.
@@ -16,14 +16,14 @@ public class CreditsMenuController : MonoBehaviour
     [SerializeField] private Button backButton;
 
     [Header("Content")]
-    [Tooltip("TextMeshPro element that holds the credits text.")]
+    [Tooltip("Credits text.")]
     [SerializeField] private TextMeshProUGUI creditsText;
 
-    [Tooltip("Optional: ScrollRect that allows the player to scroll through credits.")]
+    [Tooltip("Scroll through credits.")]
     [SerializeField] private ScrollRect scrollRect;
 
     [Header("Auto Scroll")]
-    [Tooltip("Speed at which credits scroll automatically (0 = no auto scroll).")]
+    [Tooltip("Speed for credits scroll automatically (0 = no auto scroll).")]
     [SerializeField] private float autoScrollSpeed = 20f;
 
     private void Awake()

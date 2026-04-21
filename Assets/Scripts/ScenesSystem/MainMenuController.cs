@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
-//=^..^=   =^..^=   VERSION 1.0.2 (April 2026)    =^..^=    =^..^=
-//                    Last Update 01/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 
@@ -35,7 +36,8 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private Button settingsButton;
     [SerializeField] private Button saveGameButton;
     [SerializeField] private Button creditsButton;
-    [SerializeField] private Button returnButton;
+    [SerializeField] private Button resumeButton;
+    [SerializeField] private Button returnToMainMenuButton;
     [SerializeField] private Button quitButton;
 
     [Header("Toggle Home Screen")]
@@ -47,7 +49,8 @@ public class MainMenuController : MonoBehaviour
         if (loadGameButton != null) loadGameButton.onClick.AddListener(OnLoadGameClicked);
         if (settingsButton != null) settingsButton.onClick.AddListener(OnSettingsClicked);
         if (creditsButton != null)  creditsButton.onClick.AddListener(OnCreditsClicked);
-        if (returnButton != null) returnButton.onClick.AddListener(OnReturnClicked);
+        if (resumeButton != null) resumeButton.onClick.AddListener(OnReturnClicked);
+        if (returnToMainMenuButton != null) returnToMainMenuButton.onClick.AddListener(OnReturnToMainMenuClicked);
         if (saveGameButton != null) saveGameButton.onClick.AddListener(OnSaveGameClicked);
         if (quitButton != null)     quitButton.onClick.AddListener(OnQuitClicked);
     }
@@ -56,6 +59,8 @@ public class MainMenuController : MonoBehaviour
     {
         if (isHomeScreen)
         ShowMainMenu();
+
+        SyncPauseStateWithMenus();
     }
 
     // Shows only the main menu panel, hides all sub-menus.
@@ -68,6 +73,7 @@ public class MainMenuController : MonoBehaviour
         SetPanel(settingsPanel, false);
         SetPanel(creditsPanel, false);
         SetPanel(saveGamePanel, false);
+        SyncPauseStateWithMenus();
     }
 
     //
@@ -79,6 +85,7 @@ public class MainMenuController : MonoBehaviour
         SetPanel(settingsPanel, false);
         SetPanel(creditsPanel, false);
         SetPanel(saveGamePanel, false);
+        SyncPauseStateWithMenus();
     }
     public void OnReturnClicked()
     {
@@ -88,6 +95,7 @@ public class MainMenuController : MonoBehaviour
         SetPanel(settingsPanel, false);
         SetPanel(creditsPanel, false);
         SetPanel(saveGamePanel, false);
+        SyncPauseStateWithMenus();
     }
     public void OnNewGameClicked()
     {
@@ -98,6 +106,7 @@ public class MainMenuController : MonoBehaviour
         SetPanel(settingsPanel, false);
         SetPanel(creditsPanel, false);
         SetPanel(saveGamePanel, false);
+        SyncPauseStateWithMenus();
     }
     public void OnSaveGameClicked()
     {
@@ -108,6 +117,7 @@ public class MainMenuController : MonoBehaviour
         SetPanel(loadGamePanel, false);
         SetPanel(settingsPanel, false);
         SetPanel(creditsPanel, false);
+        SyncPauseStateWithMenus();
 
     }
 
@@ -121,6 +131,7 @@ public class MainMenuController : MonoBehaviour
         SetPanel(settingsPanel, false);
         SetPanel(creditsPanel, false);
         SetPanel(saveGamePanel, false);
+        SyncPauseStateWithMenus();
     }
 
     public void OnSettingsClicked()
@@ -132,6 +143,7 @@ public class MainMenuController : MonoBehaviour
         SetPanel(loadGamePanel, false);
         SetPanel(creditsPanel, false);
         SetPanel(saveGamePanel, false);
+        SyncPauseStateWithMenus();
 
     }
 
@@ -144,6 +156,7 @@ public class MainMenuController : MonoBehaviour
         SetPanel(loadGamePanel, false);
         SetPanel(settingsPanel, false);
         SetPanel(saveGamePanel, false);
+        SyncPauseStateWithMenus();
     }
 
     public void OnQuitClicked()
@@ -153,6 +166,11 @@ public class MainMenuController : MonoBehaviour
 #else
         Application.Quit();
 #endif
+    }
+
+    public void OnReturnToMainMenuClicked()
+    {
+        SceneManager.LoadScene("START");
     }
 
 
@@ -168,5 +186,29 @@ public class MainMenuController : MonoBehaviour
     private static void SetPanel(GameObject panel, bool active)
     {
         if (panel != null) panel.SetActive(active);
+    }
+
+    //Pause fix, some menus interacted poorly with the game.
+    private void SyncPauseStateWithMenus()
+    {
+        GameController gc = null;
+        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
+            gc = GameResources.Instance.GameController;
+        else
+            gc = GameController.Instance;
+
+        if (gc == null) return;
+
+        bool anyMenuActive = (mainMenuPanel != null && mainMenuPanel.activeSelf)
+                          || (newGamePanel != null && newGamePanel.activeSelf)
+                          || (loadGamePanel != null && loadGamePanel.activeSelf)
+                          || (saveGamePanel != null && saveGamePanel.activeSelf)
+                          || (settingsPanel != null && settingsPanel.activeSelf)
+                          || (creditsPanel != null && creditsPanel.activeSelf);
+
+        if (anyMenuActive)
+            gc.PauseGame();
+        else
+            gc.ResumeGame();
     }
 }

@@ -1,10 +1,11 @@
 using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System;
 
-//=^..^=   =^..^=   VERSION 1.0.2 (April 2026)    =^..^=    =^..^=
-//                    Last Update 01/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 
@@ -12,6 +13,19 @@ using System;
 
 public class SettingsMenuController : MonoBehaviour
 {
+    private const string BoardRotationPrefKey = "EnableBoardRotation";
+    private const string ScoringHelperPrefKey = "EnableScoringHelper";
+
+    [Serializable]
+    private class FlowerSelectorRow
+    {
+        public FlowerColor Color;
+        public Button PrevButton;
+        public Button NextButton;
+        public Image PreviewImage;
+        public TMP_Text VariantLabel;
+    }
+
     [Header("Navigation")]
     [SerializeField] private MainMenuController mainMenuController;
     [SerializeField] private Button backButton;
@@ -30,9 +44,15 @@ public class SettingsMenuController : MonoBehaviour
     [Tooltip("Maximum thinking time for MinMax AI, in seconds (1–10).")]
     [SerializeField] private Slider aiThinkingTimeSlider;
 
-    //[Header("Display")]
-    //[SerializeField] private Toggle fullscreenToggle;
-    //[SerializeField] private TMP_Dropdown resolutionDropdown;
+    [Header("Gameplay - Board")]
+    [SerializeField] private Toggle boardRotationToggle;
+    [SerializeField] private Toggle scoringHelperToggle;
+
+    [Header("Flower Sprite Selectors")]
+    [SerializeField] private FlowerSpriteLibrary flowerSpriteLibrary;
+    [SerializeField] private FlowerSpriteData flowerSpriteData;
+    [SerializeField] private FlowerSelectorRow[] flowerSelectorRows;
+
 
     private void Awake()
     {
@@ -65,8 +85,17 @@ public class SettingsMenuController : MonoBehaviour
             aiThinkingTimeSlider.onValueChanged.AddListener(OnAIThinkingTimeChanged);
         }
 
-        //if (fullscreenToggle != null)
-        //    fullscreenToggle.onValueChanged.AddListener(OnFullscreenToggled);
+        if (boardRotationToggle != null)
+            boardRotationToggle.onValueChanged.AddListener(OnBoardRotationToggled);
+        if (scoringHelperToggle != null)
+            scoringHelperToggle.onValueChanged.AddListener(OnScoringHelperToggled);
+
+        if ((flowerSpriteLibrary == null || flowerSpriteData == null) && GameResources.Instance != null)
+        {
+            if (flowerSpriteLibrary == null) flowerSpriteLibrary = GameResources.Instance.SpriteLibrary;
+            if (flowerSpriteData == null) flowerSpriteData = GameResources.Instance.SpriteData;
+        }
+
     }
 
     private void OnEnable()
@@ -82,8 +111,11 @@ public class SettingsMenuController : MonoBehaviour
             animationDurationSlider.value = PlayerPrefs.GetFloat(GameController.AnimationDurationPrefKey, GameController.AnimationDurationDefault);
         if (aiThinkingTimeSlider != null)
             aiThinkingTimeSlider.value = PlayerPrefs.GetFloat(GameController.AIThinkingTimePrefKey, GameController.AIThinkingTimeDefault);
-        //if (fullscreenToggle != null)
-        //    fullscreenToggle.isOn = Screen.fullScreen;
+        if (boardRotationToggle != null)
+            boardRotationToggle.isOn = PlayerPrefs.GetInt(BoardRotationPrefKey, 1) == 1;
+        if (scoringHelperToggle != null)
+            scoringHelperToggle.isOn = PlayerPrefs.GetInt(ScoringHelperPrefKey, 1) == 1;
+        RefreshFlowerSelectorUI();
 
     }
 
@@ -121,6 +153,88 @@ public class SettingsMenuController : MonoBehaviour
             ai.SetAIThinkingTimeMs(seconds * 1000f);
     }
 
+    private void OnBoardRotationToggled(bool enabled)
+    {
+        PlayerPrefs.SetInt(BoardRotationPrefKey, enabled ? 1 : 0);
+
+        PlayerBoardView[] views = FindObjectsOfType<PlayerBoardView>(true);
+        for (int i = 0; i < views.Length; i++)
+            views[i].RefreshBoardRotationMode();
+    }
+
+    private void OnScoringHelperToggled(bool enabled)
+    {
+        PlayerPrefs.SetInt(ScoringHelperPrefKey, enabled ? 1 : 0);
+
+        PlayerGridView[] grids = FindObjectsOfType<PlayerGridView>(true);
+        for (int i = 0; i < grids.Length; i++)
+            grids[i].RefreshScoringHelperOverlay();
+    }
+
+    private void WireFlowerSelectorButtons()
+    {
+        if (flowerSelectorRows == null) return;
+
+        for (int i = 0; i < flowerSelectorRows.Length; i++)
+        {
+            FlowerSelectorRow row = flowerSelectorRows[i];
+            if (row == null) continue;
+
+            FlowerColor c = row.Color;
+
+            if (row.PrevButton != null)
+            {
+                row.PrevButton.onClick.RemoveAllListeners();
+                row.PrevButton.onClick.AddListener(() => ChangeFlowerSpriteVariant(c, -1));
+            }
+
+            if (row.NextButton != null)
+            {
+                row.NextButton.onClick.RemoveAllListeners();
+                row.NextButton.onClick.AddListener(() => ChangeFlowerSpriteVariant(c, +1));
+            }
+        }
+    }
+
+    private void ChangeFlowerSpriteVariant(FlowerColor color, int delta)
+    {
+        if (flowerSpriteLibrary == null || flowerSpriteData == null) return;
+
+        int count = flowerSpriteLibrary.VariantCount(color);
+        if (count <= 0) return;
+
+        int current = FlowerSpriteSettings.LoadIndex(color);
+        int next = (current + delta) % count;
+        if (next < 0) next += count;
+
+        FlowerSpriteSettings.ApplyAndSave(color, next, flowerSpriteLibrary, flowerSpriteData);
+        RefreshFlowerSelectorUI();
+    }
+
+    private void RefreshFlowerSelectorUI()
+    {
+        if (flowerSelectorRows == null || flowerSpriteLibrary == null || flowerSpriteData == null) return;
+
+        for (int i = 0; i < flowerSelectorRows.Length; i++)
+        {
+            FlowerSelectorRow row = flowerSelectorRows[i];
+            if (row == null) continue;
+
+            int count = flowerSpriteLibrary.VariantCount(row.Color);
+            int index = count > 0 ? Mathf.Clamp(FlowerSpriteSettings.LoadIndex(row.Color), 0, count - 1) : 0;
+
+            if (row.PreviewImage != null)
+                row.PreviewImage.sprite = flowerSpriteData.GetSprite(row.Color);
+
+            if (row.VariantLabel != null)
+                row.VariantLabel.text = count > 0 ? (index + 1) + "/" + count : "-";
+
+            bool hasVariants = count > 1;
+            if (row.PrevButton != null) row.PrevButton.interactable = hasVariants;
+            if (row.NextButton != null) row.NextButton.interactable = hasVariants;
+        }
+    }
+
     private void OnFullscreenToggled(bool isFullscreen)
     {
         Screen.fullScreen = isFullscreen;
@@ -132,5 +246,16 @@ public class SettingsMenuController : MonoBehaviour
         if (mainMenuController != null)
             mainMenuController.OnBackToMainMenu();
     }
+
+    public void PrevBlueFlowerSprite()   { ChangeFlowerSpriteVariant(FlowerColor.Blue, -1); }
+    public void NextBlueFlowerSprite()   { ChangeFlowerSpriteVariant(FlowerColor.Blue, +1); }
+    public void PrevYellowFlowerSprite() { ChangeFlowerSpriteVariant(FlowerColor.Yellow, -1); }
+    public void NextYellowFlowerSprite() { ChangeFlowerSpriteVariant(FlowerColor.Yellow, +1); }
+    public void PrevRedFlowerSprite()    { ChangeFlowerSpriteVariant(FlowerColor.Red, -1); }
+    public void NextRedFlowerSprite()    { ChangeFlowerSpriteVariant(FlowerColor.Red, +1); }
+    public void PrevPinkFlowerSprite()   { ChangeFlowerSpriteVariant(FlowerColor.Pink, -1); }
+    public void NextPinkFlowerSprite()   { ChangeFlowerSpriteVariant(FlowerColor.Pink, +1); }
+    public void PrevGreenFlowerSprite()  { ChangeFlowerSpriteVariant(FlowerColor.Green, -1); }
+    public void NextGreenFlowerSprite()  { ChangeFlowerSpriteVariant(FlowerColor.Green, +1); }
 }
 

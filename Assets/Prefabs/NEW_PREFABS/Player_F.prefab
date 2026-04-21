@@ -1636,6 +1636,7 @@ MonoBehaviour:
   scoreOverlayContainer: {fileID: 5657075639269274425}
   scoreDuration: 1.2
   fadeDuration: 0.4
+  helperFontSize: 24
   rowColor: {r: 0.2, g: 1, b: 0.2, a: 1}
   colColor: {r: 0.2, g: 0.6, b: 1, a: 1}
   bonusColor: {r: 1, g: 0.8, b: 0.1, a: 1}
@@ -5631,11 +5632,13 @@ MonoBehaviour:
   scoreText: {fileID: 5169525185448354935}
   playerNameText: {fileID: 5175635050153210812}
   portraitImage: {fileID: 5995390011656204827}
-  selectedImage: {fileID: 452513675105136237}
-  portraitTiltTransform: {fileID: 4345571909599979775}
-  transitionDuration: 0.16
-  thinkingTiltAngle: 2.5
-  thinkingTiltDuration: 0.8
+  aiThinkingWobbleTarget: {fileID: 4345571909599979775}
+  boardBorderImage: {fileID: 2925946743636777077}
+  activeColor: {r: 0.8627451, g: 1, b: 0.45597476, a: 1}
+  inactiveColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  boardRotateAnimDuration: 0.5
+  portraitThinkingWobbleAngle: 8
+  portraitThinkingDuration: 0.22
 --- !u!1 &3981799395655630717
 GameObject:
   m_ObjectHideFlags: 0

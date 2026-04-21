@@ -4,8 +4,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-//=^..^=   =^..^=   VERSION 1.0.2 (April 2026)    =^..^=    =^..^=
-//                    Last Update 01/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 
@@ -20,14 +20,14 @@ public class LoadGameMenuController : MonoBehaviour
     [SerializeField] private MainMenuController mainMenuController;
 
     [Header("Save List")]
-    [Tooltip("Parent transform (Content of a ScrollRect) where save-slot buttons are spawned.")]
+    [Tooltip("Parent transform where buttons are spawned.")]
     [SerializeField] private Transform saveListContent;
 
-    [Tooltip("Prefab for a single save-slot entry. Must contain a Button and a TextMeshProUGUI child.")]
+    [Tooltip("Prefab for a single save")]
     [SerializeField] private GameObject saveSlotPrefab;
 
     [Header("Info")]
-    [Tooltip("Optional label that shows the selected save name.")]
+    [Tooltip("Shows the selected save name.")]
     [SerializeField] private TextMeshProUGUI selectedSaveLabel;
 
     [Header("Buttons")]

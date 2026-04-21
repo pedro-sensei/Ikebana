@@ -1,0 +1,91 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7322776462087398485
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7430800815884261056}
+  - component: {fileID: 5449938673450777204}
+  m_Layer: 0
+  m_Name: GameController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7430800815884261056
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7322776462087398485}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5449938673450777204
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7322776462087398485}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fb4cdfb108939a4ebd607d63e60420d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameController
+  playerSlots:
+  - PlayerName: Pedro
+    Portrait: {fileID: -7714939313675312594, guid: 8e3fb76f4eae8ca4b89d126256638aae, type: 3}
+    PlayerColor: {r: 1, g: 1, b: 1, a: 1}
+    PlayerType: 0
+    AIBrain: 8
+    OptimizerWeights: {fileID: 0}
+    EmilyEarlyWeights: {fileID: 0}
+    EmilyMidWeights: {fileID: 0}
+    EmilyLateWeights: {fileID: 0}
+    MinMaxDepth: 3
+    MinMaxTimeLimitMs: 5000
+    MinMaxEvaluator: 0
+    RelativeImmediateSimulationWeight: 1
+    RelativeTerminalDeltaWeight: 10000
+    RelativeExpectedMoveWeight: 0.35
+    RelativeUsePhaseAwareImmediateWeight: 1
+    MLAgentModel: {fileID: 0}
+  - PlayerName: Rookie1
+    Portrait: {fileID: 285965175, guid: 3243807e4857e3e47af88acdeed36814, type: 3}
+    PlayerColor: {r: 1, g: 1, b: 1, a: 1}
+    PlayerType: 0
+    AIBrain: 8
+    OptimizerWeights: {fileID: 0}
+    EmilyEarlyWeights: {fileID: 0}
+    EmilyMidWeights: {fileID: 0}
+    EmilyLateWeights: {fileID: 0}
+    MinMaxDepth: 6
+    MinMaxTimeLimitMs: 5000
+    MinMaxEvaluator: 0
+    RelativeImmediateSimulationWeight: 1
+    RelativeTerminalDeltaWeight: 10000
+    RelativeExpectedMoveWeight: 0.35
+    RelativeUsePhaseAwareImmediateWeight: 1
+    MLAgentModel: {fileID: 0}
+  gameConfigData: {fileID: 11400000, guid: f320e0bbf3ddea54daf7525830429983, type: 2}
+  setupData: {fileID: 11400000, guid: be7ec7fe5d506a44e825a8eb5c292b32, type: 2}
+  aiPlayerController: {fileID: 0}
+  postPlacementDelay: 0.5
+  turnAnnouncementDuration: 2
+  roundAnnouncementDuration: 2
+  gameOverAnnouncementDuration: 5
+  scoringBoardRotationDelay: 1
+  scoringflowerDelay: 0.4
+  scoringBetweenPlayersDelay: 2
