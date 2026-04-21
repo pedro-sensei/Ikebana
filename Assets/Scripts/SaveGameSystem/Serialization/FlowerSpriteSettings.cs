@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
 
-//=^..^=   =^..^=   VERSION 1.0.5 (April 2026)    =^..^=    =^..^=
-//                    Last Update 15/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 
-/// Persists the player's per-color sprite-variant choice to PlayerPrefs
+/// Persists the player's color preferences for flower sprites.
 public static class FlowerSpriteSettings
 {
     // Only the five in-game colors are user-selectable.
@@ -32,7 +32,7 @@ public static class FlowerSpriteSettings
 
     //  Apply saved choices to FlowerSpriteData
  
-    public static void ApplyAll(FlowerSpriteLibrary library, FlowerSpriteData spriteData)
+    public static void ApplyAll(FlowerSpriteRepository library, FlowerSpriteData spriteData)
     {
         if (library == null || spriteData == null) return;
 
@@ -46,7 +46,7 @@ public static class FlowerSpriteSettings
     }
 
     public static void ApplyAndSave(FlowerColor color, int index,
-                                    FlowerSpriteLibrary library, FlowerSpriteData spriteData)
+                                    FlowerSpriteRepository library, FlowerSpriteData spriteData)
     {
         SaveIndex(color, index);
 

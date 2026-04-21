@@ -45,4 +45,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaveGameManager
   setupData: {fileID: 11400000, guid: be7ec7fe5d506a44e825a8eb5c292b32, type: 2}
-  portraitDatabase: {fileID: 11400000, guid: 3b8988320bcd89146a8268b9579ec2dd, type: 2}
+  portraitDatabase: {fileID: 11400000, guid: 65a83980f01a07445b55cc2346544a94, type: 2}

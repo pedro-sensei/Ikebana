@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
+using UnityEngine.Serialization;
 //=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
 //                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
@@ -16,7 +17,7 @@ public class NewGameMenuController : MonoBehaviour
 
     [Header("Data")]
     [SerializeField] private GameSetupData setupData;
-    [SerializeField] private PortraitDatabase portraitDatabase;
+    [SerializeField] private PortraitRepository portraitDatabase;
     [SerializeField] private AIOpponentRepository opponentRepository;
 
     [Header("Player Count")]
@@ -48,15 +49,7 @@ public class NewGameMenuController : MonoBehaviour
         new Color(0.95f, 0.78f, 0.24f)
     };
 
-    private static readonly string[] PlayerColorNames =
-    {
-        "Blue",
-        "Red",
-        "Green",
-        "Yellow"
-    };
 
-   
     private void Awake()
     {
         _isAISlot = new bool[4];
@@ -82,10 +75,10 @@ public class NewGameMenuController : MonoBehaviour
                 slot.HumanAIToggle.onValueChanged.AddListener(isAI => OnHumanAIToggled(idx, isAI));
             if (slot.OpponentDropdown != null)
                 slot.OpponentDropdown.onValueChanged.AddListener(_ => OnOpponentChanged(idx));
-            if (slot.ColorDropdown != null)
-                slot.ColorDropdown.onValueChanged.AddListener(colorIdx => OnColorChanged(idx, colorIdx));
-            if (slot.PortraitButton != null)
-                slot.PortraitButton.onClick.AddListener(() => OnPortraitCycled(idx, +1));
+            if (slot.ColorSelectorImage != null)
+                slot.ColorSelectorImage.onClick.AddListener(() => OnColorSelectorClicked(idx));
+            if (slot.PortraitNextButton != null)
+                slot.PortraitNextButton.onClick.AddListener(() => OnPortraitCycled(idx, +1));
             if (slot.PortraitPrevButton != null)
                 slot.PortraitPrevButton.onClick.AddListener(() => OnPortraitCycled(idx, -1));
         }
@@ -117,8 +110,6 @@ public class NewGameMenuController : MonoBehaviour
         PlayerSlotUI slot = playerSlotUIs[slotIndex];
         if (slot.OpponentDropdown != null)
             slot.OpponentDropdown.gameObject.SetActive(isAI);
-        if (slot.AIBrainDropdown != null)
-            slot.AIBrainDropdown.gameObject.SetActive(isAI && (opponentRepository == null || opponentRepository.Count == 0));
 
         if (isAI) ApplyOpponentPresetToSlot(slotIndex);
     }
@@ -128,14 +119,19 @@ public class NewGameMenuController : MonoBehaviour
         ApplyOpponentPresetToSlot(slotIndex);
     }
 
-    private void OnColorChanged(int slotIndex, int colorIdx)
+    private void OnColorSelectorClicked(int slotIndex)
     {
         if (slotIndex < 0 || slotIndex >= _selectedColorIndices.Length) return;
 
-        _selectedColorIndices[slotIndex] = Mathf.Clamp(colorIdx, 0, PlayerColors.Length - 1);
-        PlayerSlotUI slot = playerSlotUIs[slotIndex];
-        if (slot.ColorPreview != null)
-            slot.ColorPreview.color = PlayerColors[_selectedColorIndices[slotIndex]];
+        int current = _selectedColorIndices[slotIndex];
+        int next = current;
+        if (PlayerColors.Length > 1)
+        {
+            while (next == current)
+                next = UnityEngine.Random.Range(0, PlayerColors.Length);
+        }
+        _selectedColorIndices[slotIndex] = next;
+        ApplyColorToSlotVisual(slotIndex);
     }
 
     private void OnPortraitCycled(int slotIndex, int direction)
@@ -194,8 +190,6 @@ public class NewGameMenuController : MonoBehaviour
                 slot.OpponentDropdown.gameObject.SetActive(_isAISlot[i]);
             }
 
-            if (slot.AIBrainDropdown != null)
-                slot.AIBrainDropdown.gameObject.SetActive(_isAISlot[i] && !hasRepo);
         }
     }
 
@@ -217,30 +211,11 @@ public class NewGameMenuController : MonoBehaviour
 
                 if (slot.OpponentDropdown != null)
                     slot.OpponentDropdown.gameObject.SetActive(false);
-                if (slot.AIBrainDropdown != null)
-                    slot.AIBrainDropdown.gameObject.SetActive(false && !hasRepo);
             }
 
-            // Populate AI brain dropdown from the enum
-            if (slot.AIBrainDropdown != null)
-            {
-                slot.AIBrainDropdown.ClearOptions();
-                string[] brainNames = Enum.GetNames(typeof(AIBrainType));
-                slot.AIBrainDropdown.AddOptions(new System.Collections.Generic.List<string>(brainNames));
-                slot.AIBrainDropdown.value = 0;
-            }
-
-            if (slot.ColorDropdown != null)
-            {
-                int defaultColorIndex = Mathf.Clamp(i, 0, PlayerColors.Length - 1);
-                _selectedColorIndices[i] = defaultColorIndex;
-                slot.ColorDropdown.ClearOptions();
-                slot.ColorDropdown.AddOptions(new List<string>(PlayerColorNames));
-                slot.ColorDropdown.SetValueWithoutNotify(defaultColorIndex);
-            }
-
-            if (slot.ColorPreview != null)
-                slot.ColorPreview.color = PlayerColors[_selectedColorIndices[i]];
+            int defaultColorIndex = Mathf.Clamp(i, 0, PlayerColors.Length - 1);
+            _selectedColorIndices[i] = defaultColorIndex;
+            ApplyColorToSlotVisual(i);
 
             // Default portrait
             _portraitIndices[i] = i % Mathf.Max(1, portraitDatabase != null ? portraitDatabase.Count : 1);
@@ -328,14 +303,6 @@ public class NewGameMenuController : MonoBehaviour
                             cfg.Portrait = opponent.Portrait;
                     }
                 }
-                else if (slot.AIBrainDropdown != null)
-                {
-                    string selected = slot.AIBrainDropdown.options[slot.AIBrainDropdown.value].text;
-                    if (Enum.TryParse(selected, out AIBrainType brainType))
-                        cfg.AIBrain = brainType;
-                    else
-                        cfg.AIBrain = AIBrainType.Random;
-                }
                 else
                     cfg.AIBrain = AIBrainType.Random;
             }
@@ -349,6 +316,23 @@ public class NewGameMenuController : MonoBehaviour
         }
 
         setupData.SaveRuntimeSnapshot();
+    }
+
+    private void ApplyColorToSlotVisual(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= playerSlotUIs.Length) return;
+        PlayerSlotUI slot = playerSlotUIs[slotIndex];
+        Color c = PlayerColors[Mathf.Clamp(_selectedColorIndices[slotIndex], 0, PlayerColors.Length - 1)];
+
+        if (slot.ColorPreview != null)
+            slot.ColorPreview.color = c;
+
+        if (slot.ColorSelectorImage != null)
+        {
+            Image selectorImage = slot.ColorSelectorImage.GetComponent<Image>();
+            if (selectorImage != null)
+                selectorImage.color = c;
+        }
     }
 }
 
@@ -368,17 +352,16 @@ public struct PlayerSlotUI
     [Tooltip("Dropdown to select a pre-configured opponent from the repository.")]
     public TMP_Dropdown OpponentDropdown;
 
-    [Tooltip("Dropdown to choose AI brain type. Only visible when AI is selected.")]
-    public TMP_Dropdown AIBrainDropdown;
-
-    [Tooltip("Dropdown to choose player color.")]
-    public TMP_Dropdown ColorDropdown;
+    [FormerlySerializedAs("ColorDropdown")]
+    [Tooltip("Button/Image used as random color selector (click to randomize player highlight color).")]
+    public Button ColorSelectorImage;
 
     [Tooltip("Visual preview for selected player color.")]
     public Image ColorPreview;
 
+    [FormerlySerializedAs("PortraitButton")]
     [Tooltip("Button to cycle portraits forward.")]
-    public Button PortraitButton;
+    public Button PortraitNextButton;
 
     [Tooltip("Button to cycle portraits backward.")]
     public Button PortraitPrevButton;

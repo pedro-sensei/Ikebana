@@ -2,26 +2,24 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-//=^..^=   =^..^=   VERSION 1.0.1 (March 2026)    =^..^=    =^..^=
-//                    Last Update 22/03/2026
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 
-/// Manages saving and loading the game state to/from JSON files on disk.
-///
-/// Save files are stored in Application.persistentDataPath/Saves/.
-
+// Manages saving and loading the game state to JSON files.
+// Save files are stored in Application.persistentDataPath/Saves/.
 
 public class SaveGameManager : MonoBehaviour
 {
     public static SaveGameManager Instance { get; private set; }
 
     [Header("References")]
-    [Tooltip("GameSetupData SO used to carry data into the game scene.")]
+    [Tooltip("GameSetupData SO carry data into the game scene.")]
     [SerializeField] private GameSetupData setupData;
 
-    [Tooltip("Portrait database for mapping portrait indices on save/load.")]
-    [SerializeField] private PortraitDatabase portraitDatabase;
+    [Tooltip("Portrait repository")]
+    [SerializeField] private PortraitRepository portraitDatabase;
 
     private const string SAVE_FOLDER = "Saves";
     private const string FILE_EXT = ".json";
@@ -68,7 +66,7 @@ public class SaveGameManager : MonoBehaviour
     }
 
 
-    // Returns the list of available save file names (without extension).
+    // Returns the list of available save file names.
 
     public string[] GetSaveFileList()
     {
@@ -81,9 +79,8 @@ public class SaveGameManager : MonoBehaviour
         return names;
     }
 
-    // Loads a save file by name and writes the data into a GAmeSetupData SO
+    // Loads a save file by name and writes the data into GAmeSetupData SO
     // so the game scene can reconstruct state on Awake.
-    // Returns true on success.
 
     public bool LoadGame(string slotName)
     {
@@ -117,6 +114,11 @@ public class SaveGameManager : MonoBehaviour
             cfg.PlayerName = sp.Name;
             cfg.PlayerType = sp.IsAI ? PlayerType.AI : PlayerType.Human;
             cfg.AIBrain = (AIBrainType)sp.AIBrainTypeIndex;
+            bool hasSavedColor = sp.PlayerColorA > 0f ||
+                                 sp.PlayerColorR != 0f || sp.PlayerColorG != 0f || sp.PlayerColorB != 0f;
+            if (hasSavedColor)
+                cfg.PlayerColor = new Color(sp.PlayerColorR, sp.PlayerColorG, sp.PlayerColorB,
+                                            sp.PlayerColorA <= 0f ? 1f : sp.PlayerColorA);
 
             if (portraitDatabase != null)
                 cfg.Portrait = portraitDatabase.GetPortrait(sp.PortraitIndex);
@@ -130,9 +132,8 @@ public class SaveGameManager : MonoBehaviour
     }
 
     
-    /// Deletes a save file by name. 
-    /// Returns true if the file existed and was deleted.
-   
+    // Deletes a save file by name. 
+    // Returns true if the file existed and was deleted.
     public bool DeleteSave(string slotName)
     {
         string path = Path.Combine(SaveDirectory, slotName + FILE_EXT);
@@ -144,7 +145,6 @@ public class SaveGameManager : MonoBehaviour
 
    
     // Converts a GameModel into SerializedGameState
-
     private SerializedGameState SerializeModel(GameModel model, PlayerSlotConfig[] slots)
     {
         SerializedGameState state = new SerializedGameState();
@@ -189,6 +189,10 @@ public class SaveGameManager : MonoBehaviour
                 sp.IsAI = slots[p].PlayerType == PlayerType.AI;
                 sp.AIBrainTypeIndex = (int)slots[p].AIBrain;
                 sp.PortraitIndex = FindPortraitIndex(slots[p].Portrait);
+                sp.PlayerColorR = slots[p].PlayerColor.r;
+                sp.PlayerColorG = slots[p].PlayerColor.g;
+                sp.PlayerColorB = slots[p].PlayerColor.b;
+                sp.PlayerColorA = slots[p].PlayerColor.a;
             }
 
             // Grid (flat array, -1 for empty)

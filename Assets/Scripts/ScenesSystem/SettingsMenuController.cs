@@ -49,7 +49,7 @@ public class SettingsMenuController : MonoBehaviour
     [SerializeField] private Toggle scoringHelperToggle;
 
     [Header("Flower Sprite Selectors")]
-    [SerializeField] private FlowerSpriteLibrary flowerSpriteLibrary;
+    [SerializeField] private FlowerSpriteRepository flowerSpriteLibrary;
     [SerializeField] private FlowerSpriteData flowerSpriteData;
     [SerializeField] private FlowerSelectorRow[] flowerSelectorRows;
 

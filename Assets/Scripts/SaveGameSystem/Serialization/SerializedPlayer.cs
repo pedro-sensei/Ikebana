@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
-//=^..^=   =^..^=   VERSION 1.0.2 (April 2026)    =^..^=    =^..^=
-//                    Last Update 01/04/2026 
+
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 [System.Serializable]
 
@@ -12,21 +13,29 @@ public class SerializedPlayer :ScriptableObject
     public int PlayerIndex;
     public bool HasFirstPlayerToken;
 
-    // Portrait index (into PortraitDatabase) so it can be restored on load
+    // Portrait index 
     public int PortraitIndex;
 
-    // AI configuration
+    // Player highlight color
+    public float PlayerColorR;
+    public float PlayerColorG;
+    public float PlayerColorB;
+    public float PlayerColorA = 1f;
+
+    // AI setup
     public bool IsAI;
     public int AIBrainTypeIndex;
 
-    // Grid is serialized as a flat array of integers,
-    // where each integer represents the color of the flower (or -1 for empty)
+    // Grid as array of integers,
+    // each represents the color of the flower
+    // (or -1 for empty)
     public int[] Grid;
 
-    // Placement lines are serialized as a 2D array of integers,
-    // where each sub-array represents a placement line and contains the colors of the flowers in that line
+    // Placement lines as a 2D array of integers,
+    // each represents a placement line
+    // contains the colors of the flowers in that line
     public int[][] PlacementLines;
 
-    // Penalty line is serialized as an array of integers
+    // Penalty as an array of integers
     public int[] PenaltyLine;
 }

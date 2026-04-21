@@ -1,9 +1,11 @@
 ﻿using System;
 using UnityEngine;
-//=^..^=   =^..^=   VERSION 1.0.2 (April 2026)    =^..^=    =^..^=
-//                    Last Update 01/04/2026 
+
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
+//A serializable version of the game state, Only basic data.
 [CreateAssetMenu(fileName = "Gamestate_SO", menuName = "Scriptable Objects/Gamestate_SO")]
 [Serializable]
 public class SerializedGameState : ScriptableObject
