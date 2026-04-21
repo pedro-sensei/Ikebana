@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7941677e5f4c4a94b85e54a68f190cd3, type: 3}
+  m_Name: Zero
+  m_EditorClassIdentifier: Assembly-CSharp::GAGenome
+  placingWeight: 1
+  oneMoveFillingBonus: 1
+  lineCompletionBonus: 1
+  endGameBonusWeight: 1
+  topRowsWeight: 1
+  earlyRoundsThreshold: 3
+  centralPlacementWeight: 1
+  penaltyPerTile: 1
+  denyOpponentWeight: 1
+  pushingPenaltiesWeight: 1
+  denyColorBaseBonus: 1
+  disruptExistingLineBonus: 1
+  denyCompletionBonus: 1
+  poisonColorBonus: 1
+  avoidPartialLinesWeight: 1
+  firstPlayerTokenBaseBonus: 1

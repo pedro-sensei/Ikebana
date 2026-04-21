@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7941677e5f4c4a94b85e54a68f190cd3, type: 3}
+  m_Name: EMILY
+  m_EditorClassIdentifier: Assembly-CSharp::GAGenome
+  placingWeight: 24.080639
+  oneMoveFillingBonus: 6.6634145
+  lineCompletionBonus: 10
+  endGameBonusWeight: 13.894618
+  topRowsWeight: 3.0363836
+  earlyRoundsThreshold: 2
+  centralPlacementWeight: 30.848114
+  penaltyPerTile: 0
+  denyOpponentWeight: 0.87134314
+  pushingPenaltiesWeight: 5.5723653
+  denyColorBaseBonus: 0
+  disruptExistingLineBonus: 9.5944805
+  denyCompletionBonus: 2.7103565
+  poisonColorBonus: 8.380663
+  avoidPartialLinesWeight: 17.750858
+  firstPlayerTokenBaseBonus: 0

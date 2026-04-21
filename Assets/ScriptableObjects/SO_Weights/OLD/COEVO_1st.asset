@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7941677e5f4c4a94b85e54a68f190cd3, type: 3}
+  m_Name: COEVO_1st
+  m_EditorClassIdentifier: Assembly-CSharp::GAGenome
+  placingWeight: 14.161013
+  oneMoveFillingBonus: 9.342929
+  lineCompletionBonus: 10
+  endGameBonusWeight: 16.610455
+  topRowsWeight: 3.568758
+  earlyRoundsThreshold: 2
+  centralPlacementWeight: 9.394162
+  penaltyPerTile: 0.06960849
+  denyOpponentWeight: 12.46403
+  pushingPenaltiesWeight: 6.3055754
+  denyColorBaseBonus: 5.609908
+  disruptExistingLineBonus: 11.308533
+  denyCompletionBonus: 11.510668
+  poisonColorBonus: 4.5313215
+  avoidPartialLinesWeight: 1.4755627
+  firstPlayerTokenBaseBonus: 9.827883

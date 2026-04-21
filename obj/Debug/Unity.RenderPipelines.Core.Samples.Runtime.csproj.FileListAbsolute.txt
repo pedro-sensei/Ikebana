@@ -1,0 +1,6 @@
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\obj\Debug\Unity.RenderPipelines.Core.Samples.Runtime.csproj.AssemblyReference.cache
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\obj\Debug\Unity.RenderPipelines.Core.Samples.Runtime.csproj.CoreCompileInputs.cache
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\Temp\bin\Debug\Unity.RenderPipelines.Core.Samples.Runtime.dll
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\Temp\bin\Debug\Unity.RenderPipelines.Core.Samples.Runtime.pdb
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\obj\Debug\Unity.RenderPipelines.Core.Samples.Runtime.dll
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\obj\Debug\Unity.RenderPipelines.Core.Samples.Runtime.pdb

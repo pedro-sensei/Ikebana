@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96d7af7c49082cd41b531f30989b8f98, type: 3}
+  m_Name: Emily_Beta
+  m_EditorClassIdentifier: Assembly-CSharp::AIOpponentData
+  OpponentName: Emily
+  Portrait: {fileID: -723515647, guid: 09598600f657be9478a6e7f324f37596, type: 3}
+  BrainType: 12
+  OptimizerWeights: {fileID: 0}
+  EmilyEarlyWeights: {fileID: 11400000, guid: 01760569598e2b648b589dd9b4b04b7e, type: 2}
+  EmilyMidWeights: {fileID: 11400000, guid: 50734bc62356780468dd329faea896c0, type: 2}
+  EmilyLateWeights: {fileID: 11400000, guid: df8132c46ab60034c81e0ca85c85b625, type: 2}
+  MinMaxDepth: 1
+  MinMaxTimeLimitMs: 100
+  MinMaxEvaluator: 0
+  NeuralNetwork: {fileID: 0}

@@ -1,0 +1,96 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!181963792 &2655988077585873504
+Preset:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: GAGenome
+  m_TargetType:
+    m_NativeTypeID: 114
+    m_ManagedTypePPtr: {fileID: 0}
+    m_ManagedTypeFallback: Assembly-CSharp::GAGenome
+  m_Properties:
+  - target: {fileID: 0}
+    propertyPath: m_Enabled
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorHideFlags
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorClassIdentifier
+    value: Assembly-CSharp::GAGenome
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: placingWeight
+    value: 21.136478
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: oneMoveFillingBonus
+    value: 20.4032
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: lineCompletionBonus
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: endGameBonusWeight
+    value: 9.291056
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: topRowsWeight
+    value: 1.8658714
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: earlyRoundsThreshold
+    value: 2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: centralPlacementWeight
+    value: 17.694607
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: penaltyPerTile
+    value: 12.139136
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: denyOpponentWeight
+    value: 0.9378073
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: pushingPenaltiesWeight
+    value: 8.829533
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: denyColorBaseBonus
+    value: 4.721821
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: disruptExistingLineBonus
+    value: 6.306695
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: denyCompletionBonus
+    value: 27.674776
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: poisonColorBonus
+    value: 12.629284
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: avoidPartialLinesWeight
+    value: 22.224117
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: firstPlayerTokenBaseBonus
+    value: 11.159588
+    objectReference: {fileID: 0}
+  m_ExcludedProperties: []
+  m_CoupledType:
+    m_NativeTypeID: 0
+    m_ManagedTypePPtr: {fileID: 0}
+    m_ManagedTypeFallback: 
+  m_CoupledProperties: []

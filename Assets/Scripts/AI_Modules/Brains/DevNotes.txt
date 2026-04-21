@@ -1,0 +1,9 @@
+Brains complete and working.
+
+- GoodRandomAIBrain: Plays random non penalty moves.
+- RookieAIBrain: Tries to optimize each move with greedy heuristics.
+- FriendlyAIBrain: Use simple weighted greedy heuristics.
+- OptimizerAIBrain: Use more complex heuristics.
+- EmilyAIBrain: Use 3 optimizers for different stages of the game.
+- 
+Missing one for MLAgents.

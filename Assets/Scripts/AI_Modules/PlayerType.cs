@@ -1,0 +1,42 @@
+//=^..^=   =^..^=   VERSION 1.0.2 (April 2026)    =^..^=    =^..^=
+//                    Last Update 01/04/2026 
+//=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
+
+/// <summary>
+/// Defines whether a player slot is controlled by a human or an AI.
+/// </summary>
+[System.Serializable]
+public enum PlayerType
+{
+    Human,
+    AI
+}
+
+/// <summary>
+/// Available AI brain types that can be assigned to AI player slots.
+/// </summary>
+[System.Serializable]
+public enum AIBrainType
+{
+    Random,
+    MinMax,
+    Rookie,
+    Friendly,
+    Optimizer,
+    GoodRandom,
+    MLAgent,
+    BasicAgent,
+    BasicAgentV2,
+    Evaluator,
+    IkebanaAgentV2,
+    MinMaxOptimizer,
+    Emily
+}
+
+[System.Serializable]
+public enum MinMaxEvaluatorType
+{
+    ProjectedScore,
+    RelativeDelta,
+    Optimizer
+}

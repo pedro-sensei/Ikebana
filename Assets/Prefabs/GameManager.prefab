@@ -1,0 +1,243 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1575311541013388461
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8548306668751220753}
+  - component: {fileID: 2784521927980004349}
+  m_Layer: 0
+  m_Name: GameController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8548306668751220753
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1575311541013388461}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 447183678258658781}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2784521927980004349
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1575311541013388461}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fb4cdfb108939a4ebd607d63e60420d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameController
+  playerSlots:
+  - PlayerName: Jugador Humano
+    Portrait: {fileID: -199135487, guid: 170a74e15b9083e46afac79d13c53b86, type: 3}
+    PlayerType: 0
+    AIBrain: 0
+    GreedyWeights: {fileID: 0}
+    MinMaxDepth: 3
+    MinMaxTimeLimitMs: 5000
+  - PlayerName: AI BOT 1
+    Portrait: {fileID: -2095846233, guid: 170a74e15b9083e46afac79d13c53b86, type: 3}
+    PlayerType: 1
+    AIBrain: 2
+    GreedyWeights: {fileID: 11400000, guid: 7a2f52a1c0f74f041b123b220cd25035, type: 2}
+    MinMaxDepth: 3
+    MinMaxTimeLimitMs: 5000
+  - PlayerName: AI BOT 2
+    Portrait: {fileID: -4409135297647124551, guid: 170a74e15b9083e46afac79d13c53b86, type: 3}
+    PlayerType: 1
+    AIBrain: 1
+    GreedyWeights: {fileID: 0}
+    MinMaxDepth: 3
+    MinMaxTimeLimitMs: 5000
+  - PlayerName: AI BOT 3
+    Portrait: {fileID: 375561471, guid: 170a74e15b9083e46afac79d13c53b86, type: 3}
+    PlayerType: 1
+    AIBrain: 1
+    GreedyWeights: {fileID: 0}
+    MinMaxDepth: 3
+    MinMaxTimeLimitMs: 5000
+  gameConfigData: {fileID: 11400000, guid: aa59c7ea735d9f441bcf83726f9c837b, type: 2}
+  postPlacementDelay: 0.5
+  turnAnnouncementDuration: 2
+  roundAnnouncementDuration: 2
+  gameOverAnnouncementDuration: 5
+  scoringBoardRotationDelay: 1
+  scoringTileDelay: 0.4
+  scoringBetweenPlayersDelay: 2
+--- !u!1 &4821382948051744795
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4480024512373624688}
+  - component: {fileID: 5192239063613493201}
+  - component: {fileID: 8075337737569383582}
+  m_Layer: 0
+  m_Name: AIController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4480024512373624688
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4821382948051744795}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 447183678258658781}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5192239063613493201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4821382948051744795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 019045fb224b7f34c9a50c539e321126, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIPlayerController
+  aiMoveDelay: 1
+--- !u!114 &8075337737569383582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4821382948051744795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b6fa8991ee36864182d43b38ee5d507, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AITileAnimator
+  flyDuration: 0.5
+  delayBetweenTiles: 0.06
+--- !u!1 &4936859217724602709
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6934796878904480634}
+  - component: {fileID: 3581171984909171520}
+  m_Layer: 0
+  m_Name: GameResources
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6934796878904480634
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4936859217724602709}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 447183678258658781}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3581171984909171520
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4936859217724602709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69de9f96467ca98419f8a95ce3fd5f6f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameResources
+  tilePrefab: {fileID: 856686951036816025, guid: b58af6d5523f0294989d0588d31cfc88, type: 3}
+  spriteData: {fileID: 11400000, guid: ef63f71d8dcdf404ba00823e51aa7620, type: 2}
+  dragCanvas: {fileID: 0}
+  gameController: {fileID: 2784521927980004349}
+  aiPlayerController: {fileID: 5192239063613493201}
+  aiTileAnimDuration: 1
+--- !u!1 &8993360999446370084
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 447183678258658781}
+  - component: {fileID: 2990513484290945352}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &447183678258658781
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8993360999446370084}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 6934796878904480634}
+  - {fileID: 4480024512373624688}
+  - {fileID: 8548306668751220753}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2990513484290945352
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8993360999446370084}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05e42a477d4908c47b2529fd6c40ec85, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RaycastDebugger
+  toggleKey: 100
+  onlyOnClick: 1
+  isActive: 1

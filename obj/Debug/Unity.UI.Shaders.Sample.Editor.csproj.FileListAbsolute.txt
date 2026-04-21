@@ -1,0 +1,8 @@
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\Temp\bin\Debug\Unity.UI.Shaders.Sample.Editor.dll
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\Temp\bin\Debug\Unity.UI.Shaders.Sample.Editor.pdb
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\Temp\bin\Debug\Unity.UI.Shaders.Sample.pdb
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\obj\Debug\Unity.UI.Shaders.Sample.Editor.csproj.AssemblyReference.cache
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\obj\Debug\Unity.UI.Shaders.Sample.Editor.csproj.CoreCompileInputs.cache
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\obj\Debug\Unity.UI.0FF707D9.Up2Date
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\obj\Debug\Unity.UI.Shaders.Sample.Editor.dll
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\obj\Debug\Unity.UI.Shaders.Sample.Editor.pdb

@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0771816ddf5541f418a6b2c1cae9405b, type: 3}
+  m_Name: FlowerSpriteLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::FlowerSpriteLibrary
+  Entries:
+  - Color: 0
+    Variants:
+    - {fileID: -7761288770153894131, guid: 9de67177adf4443458811397d124187e, type: 3}
+    - {fileID: 3950694133951889288, guid: 9de67177adf4443458811397d124187e, type: 3}
+    - {fileID: -2331182939552165625, guid: 9de67177adf4443458811397d124187e, type: 3}
+    - {fileID: 3050949090406206336, guid: 9de67177adf4443458811397d124187e, type: 3}
+  - Color: 2
+    Variants:
+    - {fileID: -6545029107712306536, guid: 9de67177adf4443458811397d124187e, type: 3}
+    - {fileID: 5363827415217232859, guid: 9de67177adf4443458811397d124187e, type: 3}
+    - {fileID: 1161576103813987654, guid: 9de67177adf4443458811397d124187e, type: 3}
+    - {fileID: -1385399010655609625, guid: 9de67177adf4443458811397d124187e, type: 3}
+  - Color: 1
+    Variants:
+    - {fileID: 4103279496249127722, guid: 9de67177adf4443458811397d124187e, type: 3}
+    - {fileID: 9182390601530641763, guid: 9de67177adf4443458811397d124187e, type: 3}
+    - {fileID: -3739720196846638144, guid: 9de67177adf4443458811397d124187e, type: 3}
+    - {fileID: -3680801402804780110, guid: 9de67177adf4443458811397d124187e, type: 3}
+  - Color: 3
+    Variants:
+    - {fileID: -6096385717169832324, guid: 9de67177adf4443458811397d124187e, type: 3}
+    - {fileID: 3282379187276846061, guid: 9de67177adf4443458811397d124187e, type: 3}
+    - {fileID: 3449085280111998283, guid: 9de67177adf4443458811397d124187e, type: 3}
+    - {fileID: -6537462242365946850, guid: 9de67177adf4443458811397d124187e, type: 3}
+  - Color: 4
+    Variants:
+    - {fileID: -2221490753472791107, guid: 9de67177adf4443458811397d124187e, type: 3}
+    - {fileID: -4230881068992779738, guid: 9de67177adf4443458811397d124187e, type: 3}
+    - {fileID: 6995251725500898978, guid: 9de67177adf4443458811397d124187e, type: 3}
+    - {fileID: 7306678605943208860, guid: 9de67177adf4443458811397d124187e, type: 3}

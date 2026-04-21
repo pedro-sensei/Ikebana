@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d45e6cf43b5f9924d98f4f44b13f9b3b, type: 3}
+  m_Name: TileSpriteData
+  m_EditorClassIdentifier: Assembly-CSharp::TileSpriteData
+  blueSprite: {fileID: -7761288770153894131, guid: 9de67177adf4443458811397d124187e, type: 3}
+  yellowSprite: {fileID: 4103279496249127722, guid: 9de67177adf4443458811397d124187e, type: 3}
+  redSprite: {fileID: -6545029107712306536, guid: 9de67177adf4443458811397d124187e, type: 3}
+  pinkSprite: {fileID: -6096385717169832324, guid: 9de67177adf4443458811397d124187e, type: 3}
+  greenSprite: {fileID: -2221490753472791107, guid: 9de67177adf4443458811397d124187e, type: 3}
+  blackSprite: {fileID: 0}
+  whiteSprite: {fileID: 0}
+  orangeSprite: {fileID: 0}
+  purpleSprite: {fileID: 0}
+  turquoiseSprite: {fileID: 0}
+  lightBlueSprite: {fileID: 0}
+  firstPlayerTokenSprite: {fileID: 2817207839356164725, guid: 6eb519fbc50600b45959c0d86b5ca41e, type: 3}
+  special1Sprite: {fileID: 0}
+  special2Sprite: {fileID: 0}
+  special3Sprite: {fileID: 0}
+  emptySprite: {fileID: 0}

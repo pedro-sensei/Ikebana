@@ -1,0 +1,2 @@
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\obj\Debug\Unity.ShaderGraph.Editor.csproj.AssemblyReference.cache
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\obj\Debug\Unity.ShaderGraph.Editor.csproj.CoreCompileInputs.cache

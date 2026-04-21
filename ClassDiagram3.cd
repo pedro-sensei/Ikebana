@@ -1,0 +1,871 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="AIBrainFactory" Collapsed="true">
+    <Position X="6.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\Brains\AIBrainFactory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GoodRandomAIBrain" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="6.25" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAE=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\Brains\GoodRandomAIBrain.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="MinGoodRandomBrain" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="1" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAABAAAAAAAE=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\Brains\GoodRandomAIBrain.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="RandomAIBrain" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="1" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAE=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\Brains\RandomAIBrain.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="MinimalRandomBrain" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="6.25" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAAAAAAAAAAAAgAAAAAAAAAABAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\Brains\RandomAIBrain.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="BasicGAGenome" Collapsed="true">
+    <Position X="28" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAQAAABAACAQAAAgQAAAQAABCwAAQAAAAACIABA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\GeneticLab\BasicGAGenome.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EvolvableGARunner" Collapsed="true">
+    <Position X="28" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAACEACEAAFgASIAAQBBRBAAgQQABCQAAAOAAECA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\GeneticLab\EvolvableGARunner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GAOpponentConfig" Collapsed="true">
+    <Position X="0.5" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAEgAAAAA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\GeneticLab\EvolvableGARunner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EvolvableGeneticAlgo" Collapsed="true">
+    <Position X="28" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CRkAJIAgBDAAARCAAAFJACAACYEAQEACZASAACgFRCo=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\GeneticLab\GeneticAlgo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FriendlyAIBrain" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4.5" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgBAYAgCBAIAAAAIIgAgAAWgAAAIAIAAAEAQBAAAABA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\GreedyBrains\FriendlyAIBrain.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="MinFriendlyBrain" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="8" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAgAAAAAAQAkAAAAAgAgAAAAAIAACABAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\GreedyBrains\FriendlyAIBrain.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="MinOptimizerBrain" Collapsed="true">
+    <Position X="0.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAElSAIAAAAAIBABAkAAACAgAGKAACAQCABAAAFgABE=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\GreedyBrains\MinOptimizerBrain.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="OptimalHeuristicBase" Collapsed="true">
+    <Position X="2.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AiEHKB4ChABAIBCZIUQgQCeBQOKAC6AQQAAEBADoAAE=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\GreedyBrains\OptimizerAIBrain.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OptimizerAIBrainFull" Collapsed="true">
+    <Position X="4.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAFFSAIAAAIAIBABAkAAACEgCGKBQCAQBAAAABBgCBE=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\GreedyBrains\OptimizerAIBrainFull.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="RookieAIBrain" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="2.75" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgBAYAACBAIAAAAIIgAgAAWgAAAAAIAAAAAABAAAABA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\GreedyBrains\RookieAIBrain.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="MinRookieBrain" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="3" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAgAgAAAAAAAAAABAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\GreedyBrains\RookieAIBrain.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="GameModelToMinimal" Collapsed="true">
+    <Position X="33" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAACAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\MinimalModel\GameModelToMinimal.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MinimalGameSimulator" Collapsed="true">
+    <Position X="40.25" Y="6.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIAAAABAAAAAgAAAAAAAAAAAAAAAAgGAQAAAAAAAI=</HashCode>
+      <FileName>Assets\Scripts\GameSimulator\MinimalGameSimulator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MinimalSimulationBatchResult" Collapsed="true">
+    <Position X="40.25" Y="5.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIAIAAQgAIQAAQQACACCgAAQAAAAAgIAAAAEACAAg=</HashCode>
+      <FileName>Assets\Scripts\GameSimulator\MinimalGameSimulator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MinimalGameSimulatorRunner" Collapsed="true">
+    <Position X="37.5" Y="6.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\GameSimulator\MinimalGameSimulatorRunner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MinimalSimulationPlayerConfig" Collapsed="true">
+    <Position X="37.5" Y="5.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\GameSimulator\MinimalGameSimulatorRunner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MinimalBrainFactory" Collapsed="true">
+    <Position X="4.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\GameSimulator\MinimalGameSimulatorRunner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MinimalGM" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="34.75" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gQVJSE1CoyGgSEiACCKNNWqWXFtiUYFWJAgEggHwDQI=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\MinimalModel\MinimalGM.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Orientation="Left" Position="0.362" Collapsed="true" />
+  </Class>
+  <Class Name="MinimalPlayer" Collapsed="true">
+    <Position X="34.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAACgAVhCAAkBggBAAIgAAgADAEgAIokBAIRoAAgABI=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\MinimalModel\MinimalGM.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MinMax" Collapsed="true">
+    <Position X="1" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAACAAIAACBAAAAAAAAAAAAACEAAAAAAAAAABBA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\MinMax\MinMax.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MinMaxBrain" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="8" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BABAAARAAAAAIAAACAAAAAAgIAAAAEAAEEAAQgBABBY=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\MinMax\MinMaxBrain.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="MinMaxDebugLogger" Collapsed="true">
+    <Position X="0.5" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>RgIKAKAEAEQAAAQBAAAIBAggABEAAIQgCEBEEAAQRCA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\MinMax\MinMaxDebugLogger.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MinMaxGameAdapter" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="0.5" Y="9.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABIBAAACGgIEQAABAgAAggAEEQBUAEACQEgAgoUABQM=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\MinMax\MinMaxGameAdapter.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="OptimizerEvaluator" Collapsed="true">
+    <Position X="2.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEFSAIAAAAAIBgBAkAEAiAAAGKAACAQAAAAAABgABE=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\MinMax\OptimizerEvaluator.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ProjectedScoreEvaluator" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="0.5" Y="11" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgQAAAACAAgAAAAAQAAAAgCAIBAIAAAAAAAQAAAAgBA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\MinMax\ProjectedScoreEvaluator.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="FeatureExtractor" Collapsed="true">
+    <Position X="2" Y="13" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AaBAAZqWgIkAQMlJAVCgpAEmnWABEgAIoIRALSKwJ0g=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\MLAgents\FeatureExtractor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="IkebanaAgentV2" Collapsed="true">
+    <Position X="0.5" Y="13" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEBIAQACLIBAKQgOCyQJIEihiAgEgMEBAAsAWA0FEEI=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\MLAgents\IkebanaAgentV2.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="IkebanaAgentV2Brain" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="3.25" Y="14" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AUBAAAACCCBgQAAIA6QMIIAgoAgEAIEAAAgCSEgFgEA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\MLAgents\IkebanaAgentV2Brain.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="IkebanaSmart" Collapsed="true">
+    <Position X="3.5" Y="13" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEBIAQACLIBAKQgOCyQJIEihiAgEgMEBAAsAWA0FEEI=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\MLAgents\IkebanaSmart.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MoveGenerator" Collapsed="true">
+    <Position X="6.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAAAAQAAAAAAAAAAAAAgAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\MoveGenerator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PlayerSlotConfig" Collapsed="true">
+    <Position X="22.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAgAAAAAAAAAAAAAEAAAAAABAAAAAAAEgBIAAA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\PlayerSlotConfig.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AIPlayerController" Collapsed="true">
+    <Position X="17.25" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAACAACBAAAAAAAAAAAEgAAAABAAAAAAgECEA=</HashCode>
+      <FileName>Assets\Scripts\Core\Controller\AIPlayerController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GameController" Collapsed="true">
+    <Position X="15.5" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>MAABQRqAAGAABCQADENBEofIAEAGAJUDaQigOGPEgEQ=</HashCode>
+      <FileName>Assets\Scripts\Core\Controller\GameController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GameEvents" Collapsed="true">
+    <Position X="13.5" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>GhaGqgB4AEiiwpoREMBESUzsJRTYAAoFeIlKMKBGggQ=</HashCode>
+      <FileName>Assets\Scripts\Core\Controller\GameEvents.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FlowerPiece" Collapsed="true">
+    <Position X="17.5" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAgAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\GameElements\FlowerPiece.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GameConfig" Collapsed="true">
+    <Position X="22.75" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CiAABAACACAACQBCXwCAwAgIAAAAAJAGQAgdMAAgEQI=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\GameElements\GameConfig.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GameConfigSnapshot" Collapsed="true">
+    <Position X="11.25" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQQIgCAAAAABAQAAAAgAAAAAAoAAAADEAAIQAAE=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\GameElements\GameConfig.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GameModel" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="15.75" Y="0.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAQAAsUAAkxKARJBCBCJOeoiBFMgMQFUA4gcAgP0EAI=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\GameElements\GameModel.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.1" />
+  </Class>
+  <Class Name="BagModel" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="20.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EgDAIAAAAAAAAwAAAAQAAExCIAAAAAAYAAAAEABAEAE=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\MainBoard\BagModel.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="DiscardModel" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="17" Y="2" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>EAJAIIAAAAAAAQAAAAQAAEwCAgAAAAAIAAAAAABEAAA=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\MainBoard\DiscardModel.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="DisplayModel" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="18.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AsDCIAAAAAAAgAwAAAQgAE1SIAAgAAALAAAAAQBAAAA=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\MainBoard\DisplayModel.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="BonusScoringModel" Collapsed="true">
+    <Position X="19.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\Player\BonusScoringModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PenaltyLineModel" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="13.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IABAAABBAAAAAAgAAAQgAE0CAAAAAAAIAAAAIABACDA=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\Player\PenaltyLineModel.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PlacementLineModel" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="15.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IABAAAkAAAAAAQEQAASAAEwGQAAAEMAIAABAIgBAATA=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\Player\PlacementLineModel.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PlayerGridModel" Collapsed="true">
+    <Position X="11.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AUACAABAACAAACLAAACgAgAAAwCAUAAAAAAAAABAABA=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\Player\PlayerGridModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PlayerModel" Collapsed="true">
+    <Position X="13.5" Y="1" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AEEAAgRQBQAQAhhEAIAggAAgAAAiAQAADIIAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\Player\PlayerModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GameResources" Collapsed="true">
+    <Position X="22.75" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAABABAAABAAAAAQIAAAJAAAAAAAAAAASAAALAAAAGg=</HashCode>
+      <FileName>Assets\Scripts\Core\Statics\GameResources.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ViewRegistry" Collapsed="true">
+    <Position X="21.75" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACJCBAAEIAAAABEAAAAAABAAQAAAIAQAAABIgCA=</HashCode>
+      <FileName>Assets\Scripts\Core\Statics\ViewRegistry.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AIFlowerAnimator" Collapsed="true">
+    <Position X="21.75" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQABAAgAAAQAAAACAAAEgCAAAAAhAAAAAAAAAIAAAEA=</HashCode>
+      <FileName>Assets\Scripts\Core\Views\GameElements\AIFlowerAnimator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FlowerDragHandler" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="20" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAIAEAAAAAAAJgkgAAQAACEDCAgBAAAgACAGA=</HashCode>
+      <FileName>Assets\Scripts\Core\Views\GameElements\FlowerDragHandler.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="FlowerPieceView" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="20" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgIQAIAAgAAQQAAAAAIAAAABAgICAEIAJAABAAICEA=</HashCode>
+      <FileName>Assets\Scripts\Core\Views\GameElements\FlowerPieceView.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.1" />
+  </Class>
+  <Class Name="GameInfoView" Collapsed="true">
+    <Position X="20" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAEIAAAAAAAAAABAAAgAAAAEAAAAAgAAEgAMAEA=</HashCode>
+      <FileName>Assets\Scripts\Core\Views\GameElements\GameInfoView.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BagView" Collapsed="true">
+    <Position X="16.5" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAIAAAAAgAAAAAAAAAAAAAAAAAAAACAAAAAAEA=</HashCode>
+      <FileName>Assets\Scripts\Core\Views\MainBoard\BagView.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DiscardView" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="14.75" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQBAAAIBAAAAACAAAAAIAEAAAAiAAAAIAAEAwAAEEA=</HashCode>
+      <FileName>Assets\Scripts\Core\Views\MainBoard\DiscardView.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="DisplayView" Collapsed="true">
+    <Position X="18.25" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QEBJAAAAAAIAgABAAAAQIAAAAAUgAAERAAAQCAgASEA=</HashCode>
+      <FileName>Assets\Scripts\Core\Views\MainBoard\DisplayView.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PenaltyLineView" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="11.25" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAADAAAQggBgAAAgAQgABABAgAAACAEAAAAwgAAAAEA=</HashCode>
+      <FileName>Assets\Scripts\Core\Views\Player\PenaltyLineView.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PlacementLineView" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="13" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAADAAARkgBAAQBgAQggBABAgAAACAEAAAAwgAAAAEA=</HashCode>
+      <FileName>Assets\Scripts\Core\Views\Player\PlacementLineView.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PlayerBoardView" Collapsed="true">
+    <Position X="11.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>hoUBAACIIGAAASDAAgAACAAAAkABAABAAAwGwCJEQEA=</HashCode>
+      <FileName>Assets\Scripts\Core\Views\Player\PlayerBoardView.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PlayerGridView" Collapsed="true">
+    <Position X="13.5" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEABBQAAACAAAQQhAAAABkhAACIAEAggAAAAAAABAGA=</HashCode>
+      <FileName>Assets\Scripts\Core\Views\Player\PlayerGridView.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GameSimulator" Collapsed="true">
+    <Position X="30.75" Y="5.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAAAAAABAgAAgAAAAAAAAAAAAEgEAQAAAAIAAA=</HashCode>
+      <FileName>Assets\Scripts\GameSimulator\GameSimulator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SimulationBatchResult" Collapsed="true">
+    <Position X="33.75" Y="5.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>BAAIAIAAQgAIQAAQCACQAKgAAAAAAAAgIAAAAAACAAg=</HashCode>
+      <FileName>Assets\Scripts\GameSimulator\GameSimulator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GameSimulatorRunner" Collapsed="true">
+    <Position X="30.75" Y="6.25" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgCAACAAABAMAYAAQAhAQgAAAEAJAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\GameSimulator\GameSimulatorRunner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SimulationPlayerConfig" Collapsed="true">
+    <Position X="30.75" Y="7.25" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAgAAAAAAAAAAAAAAAAAAAABAAAAAAAEABIAAA=</HashCode>
+      <FileName>Assets\Scripts\GameSimulator\GameSimulatorRunner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InGameSaveController" Collapsed="true">
+    <Position X="9.5" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAAAAACAAAAAAAACAAAAkAIACAAAQAAAAAAAEA=</HashCode>
+      <FileName>Assets\Scripts\SaveGameSystem\InGameSaveController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SaveGameManager" Collapsed="true">
+    <Position X="9.5" Y="9.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAABAAAAAAQAAEAAAABAACAAAEAAAGAAQEAAgAAAIEE=</HashCode>
+      <FileName>Assets\Scripts\SaveGameSystem\SaveGameManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SerializedGameState" Collapsed="true">
+    <Position X="13.25" Y="8.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAoAAAAhAAAJAAAAAAIAAQEAgEAAAAAAAAACAAAA=</HashCode>
+      <FileName>Assets\Scripts\SaveGameSystem\Serialization\SerializedGameState.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SerializedGenomeWeights" Collapsed="true">
+    <Position X="13.25" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAQAAABAAAAQAAAgQAAAQAABCwAAQAAAAACIAAA=</HashCode>
+      <FileName>Assets\Scripts\SaveGameSystem\Serialization\SerializedPlayer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SerializedPlayer" Collapsed="true">
+    <Position X="13.25" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAgAAAAAQAAhAACAkAAQAAAAAAAAEAAAAAABsAAA=</HashCode>
+      <FileName>Assets\Scripts\SaveGameSystem\Serialization\SerializedPlayer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CreditsMenuController" Collapsed="true">
+    <Position X="7.5" Y="9.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAQAAAAAAAACAAAAAQAAAACAAAAAAAAADEA=</HashCode>
+      <FileName>Assets\Scripts\ScenesSystem\CreditsMenuController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FlowerSpriteSettings" Collapsed="true">
+    <Position X="7.5" Y="11.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAJAAAgAACAAAAIAAwAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\ScenesSystem\FlowerSpriteSettings.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LoadGameMenuController" Collapsed="true">
+    <Position X="9.5" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAAAQAEAACQAAAQAAABCAAAAAQAEAEAAAAAAIAAgCEE=</HashCode>
+      <FileName>Assets\Scripts\ScenesSystem\LoadGameMenuController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MainMenuController" Collapsed="true">
+    <Position X="7.5" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>UAABgAAIACEABAAIwAAAIQAAKYBQAAAgAHBQQAAIAEE=</HashCode>
+      <FileName>Assets\Scripts\ScenesSystem\MainMenuController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NewGameMenuController" Collapsed="true">
+    <Position X="7.5" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIAAAAEARCABAQQABCBAAggRIABCAAAAIAAAAACEA=</HashCode>
+      <FileName>Assets\Scripts\ScenesSystem\NewGameMenuController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SettingsMenuController" Collapsed="true">
+    <Position X="7.5" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IDACAAgAAkUAASAAAAQCAAAAAQAAAAAAAAABVAQACEA=</HashCode>
+      <FileName>Assets\Scripts\ScenesSystem\SettingsMenuController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AIOpponentData">
+    <Position X="5.75" Y="21" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAQAAAAAAAAAAAAAAQAAIAABAAAAAAAEABIAAA=</HashCode>
+      <FileName>Assets\Scripts\ScriptableObjects\AIOpponentData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AIOpponentRepository">
+    <Position X="5.75" Y="18.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAABAAABAAAQAAAAAAAAACAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\ScriptableObjects\AIOpponentRepository.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FlowerSpriteData">
+    <Position X="4" Y="18.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIIAAQBEAhgEgCAIAAAgAAAAAAAAAIAAAJQAgA=</HashCode>
+      <FileName>Assets\Scripts\ScriptableObjects\FlowerSpriteData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FlowerSpriteLibrary">
+    <Position X="4" Y="23.5" Width="1.5" />
+    <NestedTypes>
+      <Class Name="FlowerSpriteLibrary.ColorEntry" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\Scripts\ScriptableObjects\FlowerSpriteLibrary.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAASAAAAIAIAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\ScriptableObjects\FlowerSpriteLibrary.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GameConfigData">
+    <Position X="0.5" Y="18.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAICRAogAAAQIAAEEAIkEAAAAAAAgAQABAFgAIRgAA=</HashCode>
+      <FileName>Assets\Scripts\ScriptableObjects\GameConfigData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GameSetupData">
+    <Position X="2.25" Y="18.5" Width="1.5" />
+    <NestedTypes>
+      <Class Name="GameSetupData.Snapshot" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\Scripts\ScriptableObjects\GameSetupData.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>ABAAAAAAAAACAAQAAhBAARAAAAAAAAAAABAAAAAEAQA=</HashCode>
+      <FileName>Assets\Scripts\ScriptableObjects\GameSetupData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PortraitDatabase">
+    <Position X="2.25" Y="22.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAEAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\ScriptableObjects\PortraitDatabase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="OptimizerGenomeWeights" Collapsed="true">
+    <Position X="0.5" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAQAAABAAAAQAAAgQAAAQAABCwAAQAAAAACIAAA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\GeneticLab\OptimizerGenomeWeights.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="MinimalSimulationGameResult" Collapsed="true">
+    <Position X="18.75" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAAAAIQAgIAAgAAAAAAgAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\GameSimulator\MinimalGameSimulator.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="MinimalMoveRecord" Collapsed="true">
+    <Position X="38.25" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAYAACMAgAIAABAAAAQEAAAGUgACECAAAQCAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\MinimalModel\MinimalGM.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="SearchResult" Collapsed="true">
+    <Position X="0.5" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ECAAAgAAAAAAAAAAAAAAAIAAAAAAAAAAAiAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\MinMax\MinMax.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="GameMove" Collapsed="true">
+    <Position X="24.5" Y="2.75" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAQIAAAAAgAAACBEAJQABCIAAAAIAJgAEAAAgIAQAAA=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\GameElements\GameMove.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="PickResult" Collapsed="true">
+    <Position X="24.5" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAgAAABAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\GameElements\GameMove.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="PlaceResult" Collapsed="true">
+    <Position X="24.5" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAgAAAAAAAQAAAAACAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\GameElements\GameMove.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="GameState" Collapsed="true">
+    <Position X="24.5" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAgAAAgAAAACgAAAAIAACEBAEEABAAAAwACABAg=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\GameElements\GameState.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="PlayerState" Collapsed="true">
+    <Position X="36.5" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQCAAAhgAAAAAAggAAAgAAQAAAAAAEAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\GameElements\GameState.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="GridPlacementResult" Collapsed="true">
+    <Position X="24.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAABEAAAAAAAAAgAAAAAAgAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\Player\GridPlacementResult.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="SimulationGameResult" Collapsed="true">
+    <Position X="33.75" Y="6.25" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAAAAIQAgIAAgAAAAAAgAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\GameSimulator\GameSimulator.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="PlayerSlotUI" Collapsed="true">
+    <Position X="25.5" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAEAAAAACAAAAgAAAAAAAAEAQCAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\ScenesSystem\NewGameMenuController.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FlowerSpriteRow" Collapsed="true">
+    <Position X="38.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAAAAAAAAAAAAAAAAAgAAAAAAAABAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\ScenesSystem\SettingsMenuController.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="DisplayConfig">
+    <Position X="36.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\ScriptableObjects\GameConfigData.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Interface Name="IEvolvableBrain">
+    <Position X="20" Y="13" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAACAABQAAABAAAAAAACAA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\Brains\IEvolvableBrain.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="IPlayerAIBrain" Collapsed="true">
+    <Position X="4.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\Brains\IPlayerAIBrain.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="IMinimalAIBrain">
+    <Position X="16.25" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAABAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\Brains\IPlayerAIBrain.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="IMinMaxEvaluator">
+    <Position X="16.25" Y="11.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\MinMax\IMinMaxEvaluator.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="IMinMaxGameAdapter">
+    <Position X="18" Y="11.25" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAACAgAEQAAAAAAAAgAAEAAAAAAAAAAAAIQAAAA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\MinMax\IMinMaxGameAdapter.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="IGameModel">
+    <Position X="9.25" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEEAAAAAAAAACAABMUIAAFEAAAEQAAgEAgAwAAI=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\GameElements\IGameModel.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="IFlowerSource">
+    <Position X="7.5" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgDAAAAAAAAAAAAAAAAAAExCIAAAAAAIAAAAAABAAAA=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\MainBoard\IFlowerSource.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="IFlowerTarget">
+    <Position X="7.5" Y="15.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAAAAAAAAAAAAAAEwCAAAAAAAIAAAAAABAAAA=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\MainBoard\IFlowerTarget.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Enum Name="PlayerType">
+    <Position X="11" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAA=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\PlayerType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="AIBrainType">
+    <Position X="12.75" Y="16.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAEIAAAAgCAQAQAQAAAAAAABAIAAAAAACAAQAI=</HashCode>
+      <FileName>Assets\Scripts\AI_Modules\PlayerType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="BonusType">
+    <Position X="11" Y="14.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAABAIAAABAAAAAAAAAAgAAAAAAgAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Core\GameData\Enums\BonusType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="FlowerColor">
+    <Position X="12.75" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAGABAAAAAAChAAAAIABAAABABAAASAAAAAADAAAQA=</HashCode>
+      <FileName>Assets\Scripts\Core\GameData\Enums\FlowerColor.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="RoundPhaseEnum">
+    <Position X="11" Y="18" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAACAAAEAAAAAAAEAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Core\GameData\Enums\RoundPhaseEnum.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="MoveSource">
+    <Position X="11" Y="13.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAIAAAAAAAAAAAAAABAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\GameElements\GameMove.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="MoveTarget">
+    <Position X="11" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAQAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Core\Model\GameElements\GameMove.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

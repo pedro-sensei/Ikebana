@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b09b2723dea4f24e96e2e01dca97a25, type: 3}
+  m_Name: AIOpponentRepository
+  m_EditorClassIdentifier: Assembly-CSharp::AIOpponentRepository
+  Opponents:
+  - {fileID: 11400000, guid: 2ea6f5e1109e796428d18522b04a8532, type: 2}
+  - {fileID: 11400000, guid: 12740c6b99b0ffa42bd72125be01b0a6, type: 2}
+  - {fileID: 11400000, guid: a8d3eddc3fedc894185bf0dbe9308479, type: 2}
+  - {fileID: 11400000, guid: d56a2599024359d40a54dc303f22390c, type: 2}
+  - {fileID: 11400000, guid: 638776e4ba3ef1f49a0a7aabae56d8d9, type: 2}
+  - {fileID: 11400000, guid: 29df63d85a0129545a400190b21df8d2, type: 2}
+  - {fileID: 11400000, guid: c9a666d520b53cc4dbeda11c7564c78d, type: 2}
+  - {fileID: 11400000, guid: fdc733fa559293341b7bf1677eea0ed7, type: 2}
+  - {fileID: 11400000, guid: c2e3a6781821a2646b65cc563e2c3c33, type: 2}
+  - {fileID: 11400000, guid: e4697f427396c7c4ea1c542f7237a4be, type: 2}
+  - {fileID: 11400000, guid: b6af4933839fcdd48b00b0b30a72f064, type: 2}

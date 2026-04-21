@@ -1,0 +1,663 @@
+fileFormatVersion: 2
+guid: d87ca1f726e994a459399ef9f4561f33
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 7118216480415057001
+    second: Petal_Texture_0
+  - first:
+      213: 8733710889209117269
+    second: Petal_Texture_1
+  - first:
+      213: -3272700830080937228
+    second: Petal_Texture_2
+  - first:
+      213: -3610542848092898325
+    second: Petal_Texture_3
+  - first:
+      213: -1143844017293185931
+    second: Petal_Texture_4
+  - first:
+      213: 8239770644839363096
+    second: Petal_Texture_5
+  - first:
+      213: -7620187371194347711
+    second: Petal_Texture_6
+  - first:
+      213: 559907785667604218
+    second: Petal_Texture_7
+  - first:
+      213: 5971691598413220904
+    second: Petal_Texture_8
+  - first:
+      213: -8324584645648913649
+    second: Petal_Texture_9
+  - first:
+      213: -8005810582914317262
+    second: Petal_Texture_10
+  - first:
+      213: -4480088173247937788
+    second: Petal_Texture_11
+  - first:
+      213: 9197225956170181731
+    second: Petal_Texture_12
+  - first:
+      213: -9060528657547961228
+    second: Petal_Texture_13
+  - first:
+      213: 8611737375251935486
+    second: Petal_Texture_14
+  - first:
+      213: 4519721254608862953
+    second: Petal_Texture_15
+  - first:
+      213: -5901904560937300568
+    second: Petal_Texture_16
+  - first:
+      213: 5699237937041110815
+    second: Petal_Texture_17
+  - first:
+      213: -3903581707341741946
+    second: Petal_Texture_18
+  - first:
+      213: 1673279478483975339
+    second: Petal_Texture_19
+  - first:
+      213: -3214584235802380488
+    second: Petal_Texture_20
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Petal_Texture_0
+      rect:
+        serializedVersion: 2
+        x: 923
+        y: 1139
+        width: 145
+        height: 157
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 964887dcc2cf8c260800000000000000
+      internalID: 7118216480415057001
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_1
+      rect:
+        serializedVersion: 2
+        x: 1170
+        y: 1136
+        width: 145
+        height: 159
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 55a3542d7cf543970800000000000000
+      internalID: 8733710889209117269
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_2
+      rect:
+        serializedVersion: 2
+        x: 1425
+        y: 1141
+        width: 160
+        height: 155
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f256ee3fe70592d0800000000000000
+      internalID: -3272700830080937228
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_3
+      rect:
+        serializedVersion: 2
+        x: 1675
+        y: 1135
+        width: 161
+        height: 161
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: beb781db866c4edc0800000000000000
+      internalID: -3610542848092898325
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_4
+      rect:
+        serializedVersion: 2
+        x: 1914
+        y: 1144
+        width: 163
+        height: 155
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 57ca8c63def3020f0800000000000000
+      internalID: -1143844017293185931
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_5
+      rect:
+        serializedVersion: 2
+        x: 909
+        y: 908
+        width: 163
+        height: 156
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 812775ccebb895270800000000000000
+      internalID: 8239770644839363096
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_6
+      rect:
+        serializedVersion: 2
+        x: 1162
+        y: 903
+        width: 152
+        height: 173
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14f0b0a95f7af3690800000000000000
+      internalID: -7620187371194347711
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_7
+      rect:
+        serializedVersion: 2
+        x: 1416
+        y: 937
+        width: 94
+        height: 124
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: afe61bf1a2135c700800000000000000
+      internalID: 559907785667604218
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_8
+      rect:
+        serializedVersion: 2
+        x: 1496
+        y: 908
+        width: 91
+        height: 74
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82cca9f8ed5bfd250800000000000000
+      internalID: 5971691598413220904
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_9
+      rect:
+        serializedVersion: 2
+        x: 1677
+        y: 910
+        width: 161
+        height: 163
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f0bec6dce52297c80800000000000000
+      internalID: -8324584645648913649
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_10
+      rect:
+        serializedVersion: 2
+        x: 1949
+        y: 912
+        width: 129
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 234445201b5a5e090800000000000000
+      internalID: -8005810582914317262
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_11
+      rect:
+        serializedVersion: 2
+        x: 932
+        y: 697
+        width: 106
+        height: 150
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 403c02ffa8783d1c0800000000000000
+      internalID: -4480088173247937788
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_12
+      rect:
+        serializedVersion: 2
+        x: 1165
+        y: 720
+        width: 147
+        height: 98
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 36ca684374c13af70800000000000000
+      internalID: 9197225956170181731
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_13
+      rect:
+        serializedVersion: 2
+        x: 1438
+        y: 729
+        width: 160
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 47c5b91d039824280800000000000000
+      internalID: -9060528657547961228
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_14
+      rect:
+        serializedVersion: 2
+        x: 1702
+        y: 729
+        width: 156
+        height: 94
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef0b8de0489038770800000000000000
+      internalID: 8611737375251935486
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_15
+      rect:
+        serializedVersion: 2
+        x: 1956
+        y: 705
+        width: 124
+        height: 126
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9ee7eb8d88649be30800000000000000
+      internalID: 4519721254608862953
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_16
+      rect:
+        serializedVersion: 2
+        x: 926
+        y: 520
+        width: 150
+        height: 104
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ad031b4219381ea0800000000000000
+      internalID: -5901904560937300568
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_17
+      rect:
+        serializedVersion: 2
+        x: 1174
+        y: 501
+        width: 112
+        height: 125
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f17f3c735b2c71f40800000000000000
+      internalID: 5699237937041110815
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_18
+      rect:
+        serializedVersion: 2
+        x: 1409
+        y: 510
+        width: 112
+        height: 127
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 680ce268e11b3d9c0800000000000000
+      internalID: -3903581707341741946
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_19
+      rect:
+        serializedVersion: 2
+        x: 1642
+        y: 509
+        width: 121
+        height: 140
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bacfcfcf1dea83710800000000000000
+      internalID: 1673279478483975339
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Petal_Texture_20
+      rect:
+        serializedVersion: 2
+        x: 1888
+        y: 511
+        width: 125
+        height: 133
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 837bd6c4ba08363d0800000000000000
+      internalID: -3214584235802380488
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Petal_Texture_0: 7118216480415057001
+      Petal_Texture_1: 8733710889209117269
+      Petal_Texture_10: -8005810582914317262
+      Petal_Texture_11: -4480088173247937788
+      Petal_Texture_12: 9197225956170181731
+      Petal_Texture_13: -9060528657547961228
+      Petal_Texture_14: 8611737375251935486
+      Petal_Texture_15: 4519721254608862953
+      Petal_Texture_16: -5901904560937300568
+      Petal_Texture_17: 5699237937041110815
+      Petal_Texture_18: -3903581707341741946
+      Petal_Texture_19: 1673279478483975339
+      Petal_Texture_2: -3272700830080937228
+      Petal_Texture_20: -3214584235802380488
+      Petal_Texture_3: -3610542848092898325
+      Petal_Texture_4: -1143844017293185931
+      Petal_Texture_5: 8239770644839363096
+      Petal_Texture_6: -7620187371194347711
+      Petal_Texture_7: 559907785667604218
+      Petal_Texture_8: 5971691598413220904
+      Petal_Texture_9: -8324584645648913649
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

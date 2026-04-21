@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7941677e5f4c4a94b85e54a68f190cd3, type: 3}
+  m_Name: ALPHA_COEVOLUTION
+  m_EditorClassIdentifier: Assembly-CSharp::GAGenome
+  placingWeight: 18.053741
+  oneMoveFillingBonus: 14.154451
+  lineCompletionBonus: 10
+  endGameBonusWeight: 3.728075
+  topRowsWeight: 3.916736
+  earlyRoundsThreshold: 2
+  centralPlacementWeight: 20.163582
+  penaltyPerTile: 8.280051
+  denyOpponentWeight: 1.5058565
+  pushingPenaltiesWeight: 1.2899048
+  denyColorBaseBonus: 8.388154
+  disruptExistingLineBonus: 2.1156123
+  denyCompletionBonus: 8.962451
+  poisonColorBonus: 5.4788537
+  avoidPartialLinesWeight: 10.031561
+  firstPlayerTokenBaseBonus: 7.0854034

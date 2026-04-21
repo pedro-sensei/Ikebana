@@ -1,0 +1,21 @@
+
+//=^..^=   =^..^=   VERSION 1.0.3 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
+//=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
+
+// Interface for AI brains whose weights can be evolved by genetic algorithm.
+// Improved to be independent of the concrete genome implementation.
+// 
+public interface IEvolvableBrain
+{
+    // Total number of evolvable genes (float weights).
+    int GeneCount { get; }
+
+    void GetGenes(float[] destination);
+
+    void SetGenes(float[] source);
+
+    void RandomInitialise(float[] genes, System.Random rng);
+
+    string GetGeneName(int index);
+}

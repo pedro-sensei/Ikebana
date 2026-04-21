@@ -1,0 +1,21 @@
+//=^..^=   =^..^=   VERSION 1.0.1 (March 2026)    =^..^=    =^..^=
+//                    Last Update 22/03/2026 
+//=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
+
+public interface IFlowerTarget
+{   
+    bool IsFull { get; }
+    bool IsEmpty { get; }
+    int Capacity { get; }
+    int Count { get; }
+    
+    // Returns true if the flower was added successfully, false if the container is full or the flower is invalid.
+    bool AddFlower(FlowerPiece flower);
+    
+    // Returns an array of all flowers currently in the container.
+    FlowerPiece[] GetAllFlowers();
+
+    //Clears all flowers from the container.
+    void Clear();
+
+}

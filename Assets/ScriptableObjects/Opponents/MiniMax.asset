@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96d7af7c49082cd41b531f30989b8f98, type: 3}
+  m_Name: MiniMax
+  m_EditorClassIdentifier: Assembly-CSharp::AIOpponentData
+  OpponentName: Mini-Max
+  Portrait: {fileID: 1719056679, guid: 99941df9b16e4134d89b0b244f1041a6, type: 3}
+  BrainType: 1
+  OptimizerWeights: {fileID: 0}
+  EmilyEarlyWeights: {fileID: 0}
+  EmilyMidWeights: {fileID: 0}
+  EmilyLateWeights: {fileID: 0}
+  MinMaxDepth: 2
+  MinMaxTimeLimitMs: 10000
+  MinMaxEvaluator: 0
+  RelativeImmediateSimulationWeight: 1
+  RelativeTerminalDeltaWeight: 10000
+  RelativeExpectedMoveWeight: 0.35
+  RelativeUsePhaseAwareImmediateWeight: 1
+  NeuralNetwork: {fileID: 0}

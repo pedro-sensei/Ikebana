@@ -1,0 +1,6 @@
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\obj\Debug\Unity.UI.Shaders.Sample.csproj.AssemblyReference.cache
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\obj\Debug\Unity.UI.Shaders.Sample.csproj.CoreCompileInputs.cache
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\Temp\bin\Debug\Unity.UI.Shaders.Sample.dll
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\Temp\bin\Debug\Unity.UI.Shaders.Sample.pdb
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\obj\Debug\Unity.UI.Shaders.Sample.dll
+C:\UNITY_PROJECTS\AlphaBlue\AlphaBlue\obj\Debug\Unity.UI.Shaders.Sample.pdb
