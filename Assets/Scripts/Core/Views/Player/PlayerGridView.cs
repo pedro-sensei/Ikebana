@@ -4,14 +4,14 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-//=^..^=   =^..^=   VERSION 1.0.2 (April 2026)    =^..^=    =^..^=
-//                    Last Update 01/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
-
-//  Player grid view. Shows the wall flowers and score popups when flowers are placed.
 public class PlayerGridView : MonoBehaviour
 {
+    private const string ScoringHelperPrefKey = "EnableScoringHelper";
+
     [Header("Config")]
     [SerializeField] private int playerIndex = 0;
     [SerializeField] private Transform gridContainer;
@@ -20,6 +20,7 @@ public class PlayerGridView : MonoBehaviour
     [Header("Popups")]
     [SerializeField] private float scoreDuration = 1.2f;
     [SerializeField] private float fadeDuration  = 0.4f;
+    [SerializeField] private int helperFontSize = 24;
 
     [Header("Bonus Colors")]
     [SerializeField] private Color rowColor = new Color(0.2f, 1f, 0.2f, 1f);
@@ -29,6 +30,7 @@ public class PlayerGridView : MonoBehaviour
     private Image[,] _cells;
     private TMP_Text[,] _scores;
     private bool _initialized;
+    private bool _usingPrebuiltScoreOverlay;
 
     public void SetPlayerIndex(int index)
     {
@@ -76,7 +78,7 @@ public class PlayerGridView : MonoBehaviour
 
         label.DOFade(0f, fadeDuration).SetEase(Ease.InQuad);
         yield return new WaitForSeconds(fadeDuration);
-        label.text = "";
+        RefreshScoringHelperOverlay();
     }
 
     #region INITIALIZATION
@@ -89,10 +91,16 @@ public class PlayerGridView : MonoBehaviour
     {
         ClearContainer(gridContainer);
         if (scoreOverlayContainer != null)
-            ClearContainer(scoreOverlayContainer);
+        {
+            if (_usingPrebuiltScoreOverlay)
+                ClearScoringHelperLabels();
+            else
+                ClearContainer(scoreOverlayContainer);
+        }
 
         _cells = null;
         _scores = null;
+        _usingPrebuiltScoreOverlay = false;
         _initialized = false;
         CreateGrid();
     }
@@ -116,8 +124,7 @@ public class PlayerGridView : MonoBehaviour
         int size = GameConfig.GRID_SIZE;
 
         _cells = new Image[size, size];
-        if (scoreOverlayContainer != null)
-            _scores = new TMP_Text[size, size];
+        InitializeScoreOverlay(size);
 
         PlayerGridModel gridModel = gc.Model.Players[playerIndex].Grid;
         bool[] occupation = gridModel.GetOccupationPattern();
@@ -126,7 +133,7 @@ public class PlayerGridView : MonoBehaviour
         {
             for (int c = 0; c < size; c++)
             {
-                //-- Visual cell
+                //Visual cell
                 GameObject cellObj = new GameObject("Cell_" + r + "_" + c, typeof(RectTransform), typeof(Image));
                 cellObj.transform.SetParent(gridContainer, false);
 
@@ -141,28 +148,69 @@ public class PlayerGridView : MonoBehaviour
                 img.color = isFull ? Color.white : new Color(1, 1, 1, 0.2f);
                 _cells[r, c] = img;
 
-                //-- Score label overlay
-                if (scoreOverlayContainer != null)
-                {
-                    GameObject scoreObj = new GameObject("Score_" + r + "_" + c, typeof(RectTransform));
-                    scoreObj.transform.SetParent(scoreOverlayContainer, false);
-                    scoreObj.GetComponent<RectTransform>().sizeDelta = new Vector2(60, 60);
-
-                    GameObject labelObj = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
-                    labelObj.transform.SetParent(scoreObj.transform, false);
-
-                    TextMeshProUGUI tmp = labelObj.GetComponent<TextMeshProUGUI>();
-                    tmp.alignment = TextAlignmentOptions.Center;
-                    tmp.fontSize = 20;
-                    tmp.fontStyle = FontStyles.Bold;
-                    tmp.color = new Color(1, 0.92f, 0.01f, 0);
-                    tmp.raycastTarget = false;
-
-                    _scores[r, c] = tmp;
-                }
             }
         }
         _initialized = true;
+        RefreshScoringHelperOverlay();
+    }
+
+    private void InitializeScoreOverlay(int size)
+    {
+        if (scoreOverlayContainer == null) return;
+
+        _scores = new TMP_Text[size, size];
+        _usingPrebuiltScoreOverlay = TryBindPrebuiltScoreOverlay(size);
+        if (_usingPrebuiltScoreOverlay) return;
+
+        ClearContainer(scoreOverlayContainer);
+        CreateRuntimeScoreOverlay(size);
+    }
+
+    private bool TryBindPrebuiltScoreOverlay(int size)
+    {
+        for (int r = 0; r < size; r++)
+        {
+            for (int c = 0; c < size; c++)
+            {
+                string slotName = "Slot_" + (r + 1) + "_" + (c + 1);
+                Transform slot = scoreOverlayContainer.Find(slotName);
+                if (slot == null) return false;
+
+                TMP_Text label = slot.GetComponentInChildren<TMP_Text>(true);
+                if (label == null) return false;
+
+                label.raycastTarget = false;
+                label.text = "";
+                label.color = new Color(1f, 1f, 1f, 0f);
+                _scores[r, c] = label;
+            }
+        }
+        return true;
+    }
+
+    private void CreateRuntimeScoreOverlay(int size)
+    {
+        for (int r = 0; r < size; r++)
+        {
+            for (int c = 0; c < size; c++)
+            {
+                GameObject scoreObj = new GameObject("Score_" + r + "_" + c, typeof(RectTransform));
+                scoreObj.transform.SetParent(scoreOverlayContainer, false);
+                scoreObj.GetComponent<RectTransform>().sizeDelta = new Vector2(60, 60);
+
+                GameObject labelObj = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
+                labelObj.transform.SetParent(scoreObj.transform, false);
+
+                TextMeshProUGUI tmp = labelObj.GetComponent<TextMeshProUGUI>();
+                tmp.alignment = TextAlignmentOptions.Center;
+                tmp.fontSize = 20;
+                tmp.fontStyle = FontStyles.Bold;
+                tmp.color = new Color(1, 0.92f, 0.01f, 0);
+                tmp.raycastTarget = false;
+
+                _scores[r, c] = tmp;
+            }
+        }
     }
     #endregion
 
@@ -171,6 +219,8 @@ public class PlayerGridView : MonoBehaviour
     {
         if (_cells != null)
             _cells[row, col].color = Color.white;
+
+        RefreshScoringHelperOverlay();
     }
 
     public void PlaceflowerWithScore(int row, int col, FlowerColor color, int points)
@@ -191,7 +241,7 @@ public class PlayerGridView : MonoBehaviour
         yield return new WaitForSeconds(scoreDuration);
         label.DOFade(0f, fadeDuration).SetEase(Ease.InQuad);
         yield return new WaitForSeconds(fadeDuration);
-        label.text = "";
+        RefreshScoringHelperOverlay();
     }
 
     public void LoadFromOccupationPattern(bool[] pattern)
@@ -205,6 +255,68 @@ public class PlayerGridView : MonoBehaviour
             if (r < size)
                 _cells[r, c].color = pattern[i] ? Color.white : new Color(1, 1, 1, 0.2f);
         }
+
+        RefreshScoringHelperOverlay();
     }
+
+    public void RefreshScoringHelperOverlay()
+    {
+        if (_scores == null) return;
+
+        bool enabled = PlayerPrefs.GetInt(ScoringHelperPrefKey, 1) == 1;
+        if (!enabled)
+        {
+            ClearScoringHelperLabels();
+            return;
+        }
+
+        GameController gc = GameController.Instance;
+        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
+            gc = GameResources.Instance.GameController;
+        if (gc == null || gc.Model == null || playerIndex < 0 || playerIndex >= gc.Model.Players.Length)
+            return;
+
+        GameModel model = gc.Model;
+        PlayerModel player = model.Players[playerIndex];
+        PlayerGridModel grid = player.Grid;
+        int size = GameConfig.GRID_SIZE;
+
+        for (int r = 0; r < size; r++)
+        {
+            for (int c = 0; c < size; c++)
+            {
+                TMP_Text label = _scores[r, c];
+                if (label == null) continue;
+
+                if (grid.IsOccupied(r, c))
+                {
+                    label.text = "";
+                    label.color = new Color(1f, 1f, 1f, 0f);
+                    continue;
+                }
+
+                int points = player.GetPotentialGridPlacementScore(r, c, includeProjectedFullLines: true);
+                label.text = points.ToString();
+                label.fontSize = helperFontSize;
+                label.color = new Color(1f, 0.92f, 0.01f, 0.65f);
+            }
+        }
+    }
+
+    private void ClearScoringHelperLabels()
+    {
+        int size = GameConfig.GRID_SIZE;
+        for (int r = 0; r < size; r++)
+        {
+            for (int c = 0; c < size; c++)
+            {
+                TMP_Text label = _scores[r, c];
+                if (label == null) continue;
+                label.text = "";
+                label.color = new Color(1f, 1f, 1f, 0f);
+            }
+        }
+    }
+
     #endregion
 }

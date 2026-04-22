@@ -60,10 +60,13 @@ public class CreditsMenuController : MonoBehaviour
 #if UNITY_EDITOR
     private void OnValidate()
     {
+        GameResources resources = GameResources.Instance;
+        bool hasSharedMainMenuController = resources != null && resources.MainMenuControllerRef != null;
+
         if (backButton == null)
             Debug.LogWarning("[CreditsMenuController] Back button is not assigned.", this);
 
-        if (mainMenuController == null)
+        if (mainMenuController == null && !hasSharedMainMenuController)
             Debug.LogWarning("[CreditsMenuController] MainMenuController reference is not assigned.", this);
 
         if (scrollRect == null)

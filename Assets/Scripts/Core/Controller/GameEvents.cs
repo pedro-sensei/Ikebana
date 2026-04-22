@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-//=^..^=   =^..^=   VERSION 1.0.2 (April 2026)    =^..^=    =^..^=
-//                    Last Update 01/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 /// 
 // Global static events. Any script can subscribe to these.
@@ -80,6 +80,8 @@ public static class GameEvents
 
     public static event Action<int> OnAIAnimationStart;
     public static event Action OnAIAnimationEnd;
+    public static event Action<int> OnAIThinkingStart;
+    public static event Action<int> OnAIThinkingEnd;
 
     // ANNOUNCEMENTS
     public static event Action<int, int, int, int, BonusType> OnEndGameBonusCellScored;
@@ -184,6 +186,8 @@ public static class GameEvents
 
     public static void AIAnimationStart(int idx) { OnAIAnimationStart?.Invoke(idx); }
     public static void AIAnimationEnd()          { OnAIAnimationEnd?.Invoke(); }
+    public static void AIThinkingStart(int idx)  { OnAIThinkingStart?.Invoke(idx); }
+    public static void AIThinkingEnd(int idx)    { OnAIThinkingEnd?.Invoke(idx); }
 
     // Announcements / UI
     public static void EndGameBonusCellScored(int p, int r, int c, int bonus, BonusType t)

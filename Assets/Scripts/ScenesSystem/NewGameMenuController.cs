@@ -64,6 +64,8 @@ public class NewGameMenuController : MonoBehaviour
 
     private void Awake()
     {
+        ResolveResourcesFromGameResources();
+
         _isAISlot = new bool[4];
         _selectedColorIndices = new int[4];
         _portraitIndices = new int[4];
@@ -96,8 +98,21 @@ public class NewGameMenuController : MonoBehaviour
         }
     }
 
+    private void ResolveResourcesFromGameResources()
+    {
+        GameResources resources = GameResources.Instance;
+        if (resources == null) return;
+
+        if (setupData == null) setupData = resources.GameSetupData;
+        if (portraitDatabase == null) portraitDatabase = resources.PortraitRepository;
+        if (opponentRepository == null) opponentRepository = resources.AIOpponentRepository;
+        if (mainMenuController == null) mainMenuController = resources.MainMenuControllerRef;
+    }
+
     private void OnEnable()
     {
+        ResolveResourcesFromGameResources();
+
         // Reset to defaults when the panel opens
         _selectedPlayerCount = 2;
         if (playerCountDropdown != null) playerCountDropdown.value = 0;
@@ -246,19 +261,10 @@ public class NewGameMenuController : MonoBehaviour
         if (opp == null) return;
 
         if (slot.NameInput != null)
-        {
-            string currentName = slot.NameInput.text;
-            bool useDefaultName = string.IsNullOrEmpty(currentName) || currentName.StartsWith("Player ");
-            if (useDefaultName && !string.IsNullOrEmpty(opp.OpponentName))
-                slot.NameInput.text = opp.OpponentName;
-        }
+            slot.NameInput.text = opp.OpponentName;
 
-        if (slot.PortraitImage != null && opp.Portrait != null)
-        {
-            // Only apply opponent portrait as default when slot has no portrait yet.
-            if (slot.PortraitImage.sprite == null)
-                slot.PortraitImage.sprite = opp.Portrait;
-        }
+        if (slot.PortraitImage != null)
+            slot.PortraitImage.sprite = opp.Portrait;
 
         if (slot.PortraitImage != null)
         {
@@ -359,7 +365,10 @@ public class NewGameMenuController : MonoBehaviour
 #if UNITY_EDITOR
     private void OnValidate()
     {
-        if (setupData == null)
+        GameResources resources = GameResources.Instance;
+        bool hasSharedSetupData = resources != null && resources.GameSetupData != null;
+
+        if (setupData == null && !hasSharedSetupData)
             Debug.LogWarning("[NewGameMenuController] GameSetupData reference is missing.", this);
 
         if (playerCountDropdown == null)

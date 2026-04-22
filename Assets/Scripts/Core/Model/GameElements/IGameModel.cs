@@ -2,15 +2,13 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 
-//=^..^=   =^..^=   VERSION 1.0.2 (April 2026)    =^..^=    =^..^=
-//                    Last Update 01/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 
 // A game model interface.
-// Necesary to use different versions of the game model.
-// Agnostic to internal implementation.
-
+//TODO: Integrate the interface in the whole system.
 public interface IGameModel
 {
     //Sets up the game to start a new game.

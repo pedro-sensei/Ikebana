@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System;
@@ -60,6 +59,9 @@ public class SettingsMenuController : MonoBehaviour
 
     private void Awake()
     {
+        if (mainMenuController == null && GameResources.Instance != null)
+            mainMenuController = GameResources.Instance.MainMenuControllerRef;
+
         if (backButton != null)
             backButton.onClick.AddListener(OnBackClicked);
 
@@ -268,15 +270,19 @@ public class SettingsMenuController : MonoBehaviour
 #if UNITY_EDITOR
     private void OnValidate()
     {
+        GameResources resources = GameResources.Instance;
+        bool hasSharedSpriteLibrary = resources != null && resources.SpriteLibrary != null;
+        bool hasSharedSpriteData = resources != null && resources.SpriteData != null;
+
         if (backButton == null)
             Debug.LogWarning("[SettingsMenuController] Back button is not assigned.", this);
 
         if (flowerSelectorRows != null && flowerSelectorRows.Length > 0)
         {
-            if (flowerSpriteLibrary == null)
+            if (flowerSpriteLibrary == null && !hasSharedSpriteLibrary)
                 Debug.LogWarning("[SettingsMenuController] Flower sprite library is missing while selector rows are configured.", this);
 
-            if (flowerSpriteData == null)
+            if (flowerSpriteData == null && !hasSharedSpriteData)
                 Debug.LogWarning("[SettingsMenuController] Flower sprite data is missing while selector rows are configured.", this);
         }
     }

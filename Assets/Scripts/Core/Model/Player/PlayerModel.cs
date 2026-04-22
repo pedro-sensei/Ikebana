@@ -264,6 +264,18 @@ public class PlayerModel
         _penaltyLine = penaltyLine;
     }
 
+    public int GetPotentialGridPlacementScore(int row, int col, bool includeProjectedFullLines = true)
+    {
+        return GridScoringCalculator.CalculatePlacementPoints(this, row, col, includeProjectedFullLines);
+    }
+
+    public int GetPotentialGridPlacementScore(int row, FlowerColor color, bool includeProjectedFullLines = true)
+    {
+        int col = _grid.GetColumnForColor(row, color);
+        if (col < 0) return 0;
+        return GetPotentialGridPlacementScore(row, col, includeProjectedFullLines);
+    }
+
     internal PlayerState SaveSnapshot()
     {
         var snap = PlayerState.Create(GameConfig.GRID_SIZE, GameConfig.PENALTY_LINE_CAPACITY);

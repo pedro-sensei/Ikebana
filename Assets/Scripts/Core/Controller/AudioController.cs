@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
-
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
+//=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 public class AudioController : MonoBehaviour
 {
 
@@ -59,4 +61,21 @@ public class AudioController : MonoBehaviour
     {
         
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (audioSource == null)
+            audioSource = GetComponent<AudioSource>();
+
+        if (audioSource == null)
+            Debug.LogWarning("[AudioController] Missing AudioSource reference.", this);
+
+        if (!isMusicSource && !isSFXSource)
+            Debug.LogWarning("[AudioController] Neither Music nor SFX source flag is enabled.", this);
+
+        if (isMusicSource && isSFXSource)
+            Debug.LogWarning("[AudioController] Both Music and SFX flags are enabled; this source will react to both volume channels.", this);
+    }
+#endif
 }

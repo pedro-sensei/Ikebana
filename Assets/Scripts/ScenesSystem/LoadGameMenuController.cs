@@ -44,13 +44,26 @@ public class LoadGameMenuController : MonoBehaviour
 
     private void Awake()
     {
+        ResolveResourcesFromGameResources();
+
         if (loadButton != null)   loadButton.onClick.AddListener(OnLoadClicked);
         if (deleteButton != null) deleteButton.onClick.AddListener(OnDeleteClicked);
         if (backButton != null)   backButton.onClick.AddListener(OnBackClicked);
     }
 
+    private void ResolveResourcesFromGameResources()
+    {
+        GameResources resources = GameResources.Instance;
+        if (resources == null) return;
+
+        if (setupData == null) setupData = resources.GameSetupData;
+        if (mainMenuController == null) mainMenuController = resources.MainMenuControllerRef;
+    }
+
     private void OnEnable()
     {
+        ResolveResourcesFromGameResources();
+
         _selectedSave = null;
         RefreshSaveList();
         UpdateSelectionUI();
@@ -170,7 +183,10 @@ public class LoadGameMenuController : MonoBehaviour
 #if UNITY_EDITOR
     private void OnValidate()
     {
-        if (setupData == null)
+        GameResources resources = GameResources.Instance;
+        bool hasSharedSetupData = resources != null && resources.GameSetupData != null;
+
+        if (setupData == null && !hasSharedSetupData)
             Debug.LogWarning("[LoadGameMenuController] GameSetupData reference is missing.", this);
 
         if (saveListContent == null)

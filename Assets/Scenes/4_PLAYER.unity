@@ -297,6 +297,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1716894796}
     - target: {fileID: 2208601762792507172, guid: bb445ca6f9855684480bd3572b1ee087, type: 3}
+      propertyPath: gameSetupData
+      value: 
+      objectReference: {fileID: 11400000, guid: b0e552bf1141a204690215da046c0188, type: 2}
+    - target: {fileID: 2208601762792507172, guid: bb445ca6f9855684480bd3572b1ee087, type: 3}
+      propertyPath: gameConfigData
+      value: 
+      objectReference: {fileID: 11400000, guid: 413d972d6f5a0114ca620f26e31f8bb7, type: 2}
+    - target: {fileID: 2208601762792507172, guid: bb445ca6f9855684480bd3572b1ee087, type: 3}
       propertyPath: gameController
       value: 
       objectReference: {fileID: 7959889308475303586}
@@ -308,6 +316,14 @@ PrefabInstance:
       propertyPath: mainMenuController
       value: 
       objectReference: {fileID: 662047478}
+    - target: {fileID: 2208601762792507172, guid: bb445ca6f9855684480bd3572b1ee087, type: 3}
+      propertyPath: portraitRepository
+      value: 
+      objectReference: {fileID: 11400000, guid: 65a83980f01a07445b55cc2346544a94, type: 2}
+    - target: {fileID: 2208601762792507172, guid: bb445ca6f9855684480bd3572b1ee087, type: 3}
+      propertyPath: aiOpponentRepository
+      value: 
+      objectReference: {fileID: 11400000, guid: b9c23f0e2198429469e6f56557752f9e, type: 2}
     - target: {fileID: 7893648532098500300, guid: bb445ca6f9855684480bd3572b1ee087, type: 3}
       propertyPath: m_Name
       value: GameResources
@@ -1892,7 +1908,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8325423057883214906, guid: a28d34665d8302a4eb212891c702ee5f, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8343377717425387403, guid: a28d34665d8302a4eb212891c702ee5f, type: 3}
       propertyPath: m_AnchorMax.y
@@ -6833,7 +6849,7 @@ SceneRoots:
   - {fileID: 500604996}
   - {fileID: 428764922}
   - {fileID: 3357949926133554355}
-  - {fileID: 7456764676345074688}
-  - {fileID: 6932091255728354928}
   - {fileID: 8846341605577512414}
+  - {fileID: 6932091255728354928}
+  - {fileID: 7456764676345074688}
   - {fileID: 7684248629862588088}

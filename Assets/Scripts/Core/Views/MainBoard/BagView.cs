@@ -1,8 +1,8 @@
 using TMPro;
 using UnityEngine;
 
-//=^..^=   =^..^=   VERSION 1.0.1 (March 2026)    =^..^=    =^..^=
-//                    Last Update 22/03/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 // View for the bag. Shows how many flowers are left.

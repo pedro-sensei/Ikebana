@@ -1,10 +1,11 @@
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-//=^..^=   =^..^=   VERSION 1.0.2 (April 2026)    =^..^=    =^..^=
-//                    Last Update 01/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 // View for a single flower. Handles visuals, supports both drag (via FlowerDragHandler)
@@ -20,13 +21,14 @@ public class FlowerPieceView : MonoBehaviour, IPointerClickHandler
     [SerializeField] private bool isFirstPlayerToken;
 
     [Header("Selection colours")]
-    [SerializeField] private Color selectedTint = new Color(0.4f, 1f, 0.4f, 1f);
     [SerializeField] private Color defaultTint  = Color.white;
 
     private Image flowerImage;
     private FlowerSpriteData spriteData;
     private DisplayView sourceDisplay;
     private bool _selected;
+    private Vector3 _baseScale = Vector3.one;
+    private Tween _selectionTween;
 
     public FlowerColor FlowerColor
     {
@@ -55,6 +57,7 @@ public class FlowerPieceView : MonoBehaviour, IPointerClickHandler
     private void Awake()
     {
         flowerImage = GetComponent<Image>();
+        _baseScale = transform.localScale;
     }
 
     private void OnEnable()
@@ -65,6 +68,8 @@ public class FlowerPieceView : MonoBehaviour, IPointerClickHandler
     private void OnDisable()
     {
         GameEvents.OnSelectionCleared -= HandleSelectionCleared;
+        UnsubscribeFromSpriteData();
+        StopSelectionTween(true);
     }
 
     public void Initialize(FlowerColor color, DisplayView display)
@@ -74,6 +79,7 @@ public class FlowerPieceView : MonoBehaviour, IPointerClickHandler
         flowerColor          = color;
         isFirstPlayerToken = color == FlowerColor.FirstPlayer;
         _selected          = false;
+        _baseScale = transform.localScale;
         UpdateVisual();
     }
 
@@ -84,6 +90,7 @@ public class FlowerPieceView : MonoBehaviour, IPointerClickHandler
         isFirstPlayerToken = false;
         sourceDisplay      = null;
         _selected          = false;
+        _baseScale = transform.localScale;
         UpdateVisual();
     }
 
@@ -154,7 +161,12 @@ public class FlowerPieceView : MonoBehaviour, IPointerClickHandler
 
     public void SetSpriteData(FlowerSpriteData data)
     {
+        if (spriteData == data) return;
+
+        UnsubscribeFromSpriteData();
         spriteData = data;
+        SubscribeToSpriteData();
+        UpdateVisual();
     }
 
     // Highlight or un-highlight this flower
@@ -162,7 +174,32 @@ public class FlowerPieceView : MonoBehaviour, IPointerClickHandler
     {
         _selected = selected;
         if (flowerImage != null)
-            flowerImage.color = selected ? selectedTint : defaultTint;
+            flowerImage.color = defaultTint;
+
+        if (selected)
+        {
+            StopSelectionTween(false);
+            transform.localScale = _baseScale;
+            _selectionTween = transform.DOScale(_baseScale * 1.15f, 0.35f)
+                .SetLoops(-1, LoopType.Yoyo)
+                .SetEase(Ease.InOutSine);
+        }
+        else
+        {
+            StopSelectionTween(true);
+        }
+    }
+
+    private void StopSelectionTween(bool restoreScale)
+    {
+        if (_selectionTween != null)
+        {
+            _selectionTween.Kill();
+            _selectionTween = null;
+        }
+
+        if (restoreScale)
+            transform.localScale = _baseScale;
     }
 
     private void UpdateVisual()
@@ -172,8 +209,25 @@ public class FlowerPieceView : MonoBehaviour, IPointerClickHandler
         if (sprite != null)
         {
             flowerImage.sprite = sprite;
-            flowerImage.color  = _selected ? selectedTint : defaultTint;
+            flowerImage.color  = defaultTint;
         }
+    }
+
+    private void HandleSpriteDataChanged()
+    {
+        UpdateVisual();
+    }
+
+    private void SubscribeToSpriteData()
+    {
+        if (spriteData != null)
+            spriteData.OnSpritesChanged += HandleSpriteDataChanged;
+    }
+
+    private void UnsubscribeFromSpriteData()
+    {
+        if (spriteData != null)
+            spriteData.OnSpritesChanged -= HandleSpriteDataChanged;
     }
     #endregion
 }

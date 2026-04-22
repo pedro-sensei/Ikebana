@@ -10,6 +10,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "FlowerSpriteData", menuName = "Ikebana/Flower Sprite Data")]
 public class FlowerSpriteData : ScriptableObject
 {
+    public event System.Action OnSpritesChanged;
+
     [Header("Standard Colors")]
     [SerializeField] private Sprite blueSprite;
     [SerializeField] private Sprite yellowSprite;
@@ -87,5 +89,7 @@ public class FlowerSpriteData : ScriptableObject
             case FlowerColor.Pink:   pinkSprite   = sprite; break;
             case FlowerColor.Green:  greenSprite  = sprite; break;
         }
+
+        OnSpritesChanged?.Invoke();
     }
 }

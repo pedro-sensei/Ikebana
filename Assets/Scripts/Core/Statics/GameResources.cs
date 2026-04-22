@@ -1,6 +1,8 @@
 using UnityEngine;
-//=^..^=   =^..^=   VERSION 1.0.2 (April 2026)    =^..^=    =^..^=
-//                    Last Update 01/04/2026 
+using UnityEngine;
+
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 // Singleton that holds view assets and scene references.
@@ -29,6 +31,12 @@ public class GameResources : MonoBehaviour
     [SerializeField] private AIPlayerController aiPlayerController;
     [SerializeField] private MainMenuController mainMenuController;
 
+    [Header("Game Setup Data")]
+    [SerializeField] private GameSetupData gameSetupData;
+    [SerializeField] private GameConfigData gameConfigData;
+    [SerializeField] private PortraitRepository portraitRepository;
+    [SerializeField] private AIOpponentRepository aiOpponentRepository;
+
     [Header("AI Animation")]
     [Tooltip("How long the AI flower fly animation lasts in seconds.")]
     [SerializeField] private float aiflowerAnimDuration = 0.35f;
@@ -40,7 +48,12 @@ public class GameResources : MonoBehaviour
 
     public GameObject MainMenuController
     {
-        get { return mainMenuController.gameObject; }
+        get { return mainMenuController != null ? mainMenuController.gameObject : null; }
+    }
+
+    public MainMenuController MainMenuControllerRef
+    {
+        get { return mainMenuController; }
     }
  
     public FlowerSpriteData SpriteData
@@ -63,6 +76,27 @@ public class GameResources : MonoBehaviour
     {
         get { return aiPlayerController; }
     }
+
+    public GameSetupData GameSetupData
+    {
+        get { return gameSetupData; }
+    }
+
+    public GameConfigData GameConfigData
+    {
+        get { return gameConfigData; }
+    }
+
+    public PortraitRepository PortraitRepository
+    {
+        get { return portraitRepository; }
+    }
+
+    public AIOpponentRepository AIOpponentRepository
+    {
+        get { return aiOpponentRepository; }
+    }
+
     public float AIflowerAnimDuration
     {
         get { return aiflowerAnimDuration; }
@@ -79,17 +113,25 @@ public class GameResources : MonoBehaviour
         // Apply the player's saved sprite choices before any view reads from spriteData
         FlowerSpriteSettings.ApplyAll(spriteLibrary, spriteData);
 
-        // Try to find controllers if not set in Inspector
-        if (gameController == null)
-            gameController = FindFirstObjectByType<GameController>();
-        if (aiPlayerController == null)
-            aiPlayerController = FindFirstObjectByType<AIPlayerController>();
+        ResolveSceneControllers();
     }
 
     private void OnDestroy()
     {
         if (Instance == this)
             Instance = null;
+    }
+
+    private void ResolveSceneControllers()
+    {
+        if (gameController == null)
+            gameController = FindFirstObjectByType<GameController>();
+
+        if (aiPlayerController == null)
+            aiPlayerController = FindFirstObjectByType<AIPlayerController>();
+
+        if (mainMenuController == null)
+            mainMenuController = FindFirstObjectByType<MainMenuController>();
     }
     #endregion
 }

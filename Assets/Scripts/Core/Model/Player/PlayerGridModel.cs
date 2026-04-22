@@ -150,44 +150,11 @@ public class PlayerGridModel
     /// </summary>
     private int CalculatePoints(int row, int col)
     {
-        int horizontalCount = 1;
-        int verticalCount = 1;
-
-        // Count horizontal adjacent flowers to the left
-        for (int c = col - 1; c >= 0; c--)
-        {
-            if (_occupied[row, c]) horizontalCount++;
-            else break;
-        }
-        // Count horizontal adjacent flowers to the right
-        for (int c = col + 1; c < GameConfig.GRID_SIZE; c++)
-        {
-            if (_occupied[row, c]) horizontalCount++;
-            else break;
-        }
-
-        //  Count vertical adjacent flowers upwards
-        for (int r = row - 1; r >= 0; r--)
-        {
-            if (_occupied[r, col]) verticalCount++;
-            else break;
-        }
-        // Count vertical adjacent flowers downwards
-        for (int r = row + 1; r < GameConfig.GRID_SIZE; r++)
-        {
-            if (_occupied[r, col]) verticalCount++;
-            else break;
-        }
-
-        // If only counts 1 in both directions, it's worth 1 point
-        if (horizontalCount == 1 && verticalCount == 1)
-            return 1;
-
-        int points = 0;
-        if (horizontalCount > 1) points += horizontalCount;
-        if (verticalCount > 1) points += verticalCount;
-
-        return points;
+        return GridScoringCalculator.CalculatePlacementPoints(
+            GameConfig.GRID_SIZE,
+            delegate (int r, int c) { return _occupied[r, c]; },
+            row,
+            col);
     }
 
    

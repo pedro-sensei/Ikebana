@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-//=^..^=   =^..^=   VERSION 1.0.2 (April 2026)    =^..^=    =^..^=
-//                    Last Update 01/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 
@@ -82,6 +82,7 @@ public class GameController : MonoBehaviour
     private bool _endTurnPending = false;
     private bool _roundJustStarted = false;
     private bool _isPaused = false;
+    private Coroutine _gameOverMenuCoroutine;
 
     public GameModel Model => gameModel;
     public bool IsGameOver => gameModel != null && gameModel.IsGameOver;
@@ -99,6 +100,8 @@ public class GameController : MonoBehaviour
         //Singleton. TODO: Create SingletonMonobehaviour base class.
         if (Instance != null) { Destroy(gameObject); return; }
         Instance = this;
+
+        ResolveResourcesFromGameResources();
 
         // Apply saved multipliers from settings menu.
         SetAnnouncementMultiplier(PlayerPrefs.GetFloat(AnnouncementDurationPrefKey, AnnouncementDurationDefault));
@@ -122,9 +125,21 @@ public class GameController : MonoBehaviour
         SubscribeToModelEvents();
 
         //4. Build the AI brains for AI players.
-        aiPlayerController.InitializeBrains();
+        if (aiPlayerController != null)
+            aiPlayerController.InitializeBrains();
         Debug.Log($"[GameController] Awake complete – {numPlayers} players, " +
                   $"{GameConfig.NUM_DISPLAYS} factories.");
+    }
+
+    private void ResolveResourcesFromGameResources()
+    {
+        GameResources resources = GameResources.Instance;
+        if (resources == null) return;
+
+        if (gameConfigData == null) gameConfigData = resources.GameConfigData;
+        if (setupData == null) setupData = resources.GameSetupData;
+        if (aiPlayerController == null) aiPlayerController = resources.AIPlayerController;
+        if (aiPlayerController == null) aiPlayerController = FindFirstObjectByType<AIPlayerController>();
     }
 
     private void Start()
@@ -138,6 +153,8 @@ public class GameController : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (_gameOverMenuCoroutine != null)
+            StopCoroutine(_gameOverMenuCoroutine);
         UnsubscribeFromModelEvents();
     }
 
@@ -304,11 +321,11 @@ public class GameController : MonoBehaviour
 
     private void HandleTurnEnd(int p, int t) => GameEvents.TurnEnd(p, t);
 
-    // -- Scoring ---------------------------------------------------------
+    // Scoring ---------------------------------------------------------
 
     private void HandleScoringPhaseReady() => StartCoroutine(RunScoringSequence());
 
-    // -- Game over -------------------------------------------------------
+    // Game over -------------------------------------------------------
 
     private void HandleGameOver()
     {
@@ -333,6 +350,22 @@ public class GameController : MonoBehaviour
         GameEvents.ShowAnnouncement(
             $"Game Over! Winner: {winnerName} with {maxScore} points",
             _gameOverAnnouncementDuration);
+
+        if (_gameOverMenuCoroutine != null)
+            StopCoroutine(_gameOverMenuCoroutine);
+        _gameOverMenuCoroutine = StartCoroutine(ShowMenuAfterGameOverDelay());
+    }
+
+    private IEnumerator ShowMenuAfterGameOverDelay()
+    {
+        yield return new WaitForSeconds(_gameOverAnnouncementDuration);
+
+
+        MainMenuController menu = GameResources.Instance.MainMenuControllerRef;
+        if (menu != null)
+            menu.OnInGameMenuClicked();
+
+        _gameOverMenuCoroutine = null;
     }
 
     #endregion
@@ -470,10 +503,10 @@ public class GameController : MonoBehaviour
 
     #region HELPERS
 
-    /// <summary>
-    /// Places picked flowers on the player board. Overflow ? penalty ? discard.
-    /// Fires the appropriate GameEvents for view updates.
-    /// </summary>
+
+    // Places picked flowers on the player board. 
+    // Fires the appropriate GameEvents for view updates.
+   
     private void PlaceFlowersOnBoard(PlayerModel player, int lineIndex, PickResult pickResult)
     {
         int pIdx = player.PlayerIndex;
@@ -514,7 +547,13 @@ public class GameController : MonoBehaviour
 
     private IEnumerator EndTurnCoroutine()
     {
-        yield return new WaitForSeconds(postPlacementDelay);
+        float remainingDelay = postPlacementDelay;
+        while (remainingDelay > 0f)
+        {
+            if (!_isPaused)
+                remainingDelay -= Time.unscaledDeltaTime;
+            yield return null;
+        }
 
         int endingPlayer = gameModel.CurrentPlayerIndex;
         int endingTurn   = gameModel.TurnNumber;
@@ -524,10 +563,7 @@ public class GameController : MonoBehaviour
         gameModel.EndTurn();
     }
 
-    /// <summary>
-    /// Pushes the full current model state to views via GameEvents.
-    /// Useful after loading a saved game mid-round.
-    /// </summary>
+    // Pushes the full current model state to views via GameEvents.
     private void NotifyViewsOfCurrentState()
     {
         for (int i = 0; i < gameModel.FactoryDisplays.Length; i++)
@@ -642,10 +678,31 @@ public class GameController : MonoBehaviour
 #if UNITY_EDITOR
     private void OnValidate()
     {
-        if (gameConfigData == null)
-        {
-            Debug.LogWarning("GameConfigData is missing.");
-        }
+        GameResources resources = GameResources.Instance;
+
+        bool hasSharedGameConfigData = resources != null && resources.GameConfigData != null;
+        bool hasSharedSetupData = resources != null && resources.GameSetupData != null;
+        bool hasSharedAIController = resources != null && resources.AIPlayerController != null;
+
+        if (gameConfigData == null && !hasSharedGameConfigData)
+            Debug.LogWarning("[GameController] GameConfigData is missing.", this);
+
+        if (setupData == null && !hasSharedSetupData)
+            Debug.LogWarning("[GameController] GameSetupData is missing.", this);
+
+        if (aiPlayerController == null && !hasSharedAIController)
+            Debug.LogWarning("[GameController] AIPlayerController reference is missing.", this);
+
+        if (playerSlots == null || playerSlots.Length < 2)
+            Debug.LogWarning("[GameController] PlayerSlots should contain at least 2 entries.", this);
+
+        if (postPlacementDelay < 0f) postPlacementDelay = 0f;
+        if (turnAnnouncementDuration < 0f) turnAnnouncementDuration = 0f;
+        if (roundAnnouncementDuration < 0f) roundAnnouncementDuration = 0f;
+        if (gameOverAnnouncementDuration < 0f) gameOverAnnouncementDuration = 0f;
+        if (scoringBoardRotationDelay < 0f) scoringBoardRotationDelay = 0f;
+        if (scoringflowerDelay < 0f) scoringflowerDelay = 0f;
+        if (scoringBetweenPlayersDelay < 0f) scoringBetweenPlayersDelay = 0f;
     }
 #endif
     #endregion

@@ -4,8 +4,8 @@ using System.Threading;
 using Unity.VisualScripting;
 using UnityEngine;
 
-//=^..^=   =^..^=   VERSION 1.0.2 (April 2026)    =^..^=    =^..^=
-//                    Last Update 01/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 // Controls AI turns: waits for turn start,
@@ -78,6 +78,7 @@ public class AIPlayerController : MonoBehaviour
     private IEnumerator ExecuteAITurn(int playerIndex)
     {
         _isThinking = true;
+        GameEvents.AIThinkingStart(playerIndex);
         yield return new WaitForSeconds(aiMoveDelay);
 
         GameController gc = GameResources.Instance.GameController;
@@ -86,6 +87,7 @@ public class AIPlayerController : MonoBehaviour
 
         if (gc.IsGameOver || model.CurrentPlayerIndex != playerIndex)
         {
+            GameEvents.AIThinkingEnd(playerIndex);
             _isThinking = false;
             yield break;
         }
@@ -94,6 +96,7 @@ public class AIPlayerController : MonoBehaviour
         if (validMoves.Count == 0)
         {
             Debug.LogError("AI " + playerIndex + " has no moves!");
+            GameEvents.AIThinkingEnd(playerIndex);
             _isThinking = false;
             yield break;
         }
@@ -144,6 +147,7 @@ public class AIPlayerController : MonoBehaviour
         if (!success)
             Debug.LogError("AI failed to execute move: " + chosenMove);
 
+        GameEvents.AIThinkingEnd(playerIndex);
         _isThinking = false;
     }
     #endregion
@@ -183,6 +187,16 @@ public class AIPlayerController : MonoBehaviour
         RectTransform penaltyRt;
         ViewRegistry.GetPenaltyLinePosition(playerIndex, out penaltyRt);
 
+        if (targetRt == null)
+        {
+            // Fallback: if target slot transform is not registered, skip animation safely.
+            yield break;
+        }
+
+        Vector3 targetPos = targetRt.position;
+        Vector3 centralPos = centralRt != null ? centralRt.position : sourcePos;
+        Vector3 penaltyPos = penaltyRt != null ? penaltyRt.position : targetPos;
+
         // Sort flowers into picked vs remaining for animation
         List<FlowerPiece> picked = new List<FlowerPiece>();
         List<FlowerPiece> remaining = new List<FlowerPiece>();
@@ -219,7 +233,7 @@ public class AIPlayerController : MonoBehaviour
 
         bool animDone = false;
         GameEvents.AIflowerAnimationRequested(
-            sourcePos, targetRt.position, centralRt.position, penaltyRt.position,
+            sourcePos, targetPos, centralPos, penaltyPos,
             picked, remaining, hasToken, delegate { animDone = true; });
 
         // Wait for animation or timeout after 3s
@@ -239,4 +253,12 @@ public class AIPlayerController : MonoBehaviour
                 minMax.SetTimeLimitMs(ms);
         }
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (aiMoveDelay < 0f)
+            aiMoveDelay = 0f;
+    }
+#endif
 }

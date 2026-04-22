@@ -35,6 +35,9 @@ public class InGameSaveController : MonoBehaviour
 
     private void Awake()
     {
+        if (mainMenuController == null && GameResources.Instance != null)
+            mainMenuController = GameResources.Instance.MainMenuControllerRef;
+
         if (saveButton != null)
             saveButton.onClick.AddListener(OnSaveClicked);
         if (returnButton != null)
@@ -104,13 +107,16 @@ public class InGameSaveController : MonoBehaviour
 #if UNITY_EDITOR
     private void OnValidate()
     {
+        GameResources resources = GameResources.Instance;
+        bool hasSharedMainMenuController = resources != null && resources.MainMenuControllerRef != null;
+
         if (saveButton == null)
             Debug.LogWarning("[InGameSaveController] Save button is not assigned.", this);
 
         if (returnButton == null)
             Debug.LogWarning("[InGameSaveController] Return button is not assigned.", this);
 
-        if (mainMenuController == null)
+        if (mainMenuController == null && !hasSharedMainMenuController)
             Debug.LogWarning("[InGameSaveController] MainMenuController reference is not assigned.", this);
 
         if (feedbackDuration < 0f)
