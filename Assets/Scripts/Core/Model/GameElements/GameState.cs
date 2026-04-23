@@ -19,9 +19,11 @@ public struct GameState
     public int CurrentRound;
     public int CurrentPlayer;
     public int TurnNumber;
+    public int TotalTurnsPlayed;
     public int StartingPlayer;
     public bool IsGameOver;
     public RoundPhaseEnum Phase;
+    public int[] FactoryFillColorCounts;
     public PlayerState[] PlayerSnapshots;
 
     public static GameState Create(int numPlayers, int numFactories, int flowersPerFactory)
@@ -34,6 +36,7 @@ public struct GameState
             Factories = new byte[numFactories][],
             FactoryCount = new int[numFactories],
             Central = new byte[totalflowers],
+            FactoryFillColorCounts = new int[GameConfig.NUM_COLORS],
             PlayerSnapshots = new PlayerState[numPlayers]
         };
         for (int f = 0; f < numFactories; f++)
@@ -52,15 +55,25 @@ public struct PlayerState
     public int Score;
     public bool HasFirstPlayerToken;
     public bool HasCompleteRow;
+    public int TotalPlacementPoints;
+    public int LastRoundPlacementPoints;
+    public int LastRoundPenaltyPoints;
+    public int TotalPenaltyPoints;
+    public int EndGameBonusRows;
+    public int EndGameBonusColumns;
+    public int EndGameBonusColors;
+    public int PenaltyRoundsCount;
+    public int[] PenaltyPointsByRound;
     public byte[] LineColor;
     public int[] LineCount;
     public int[] Forbidden;
     public byte[] Penalty;
 
-    public static PlayerState Create(int gridSize = 5, int penaltyCapacity = 7)
+    public static PlayerState Create(int gridSize = 5, int penaltyCapacity = 7, int maxRounds = 50)
     {
         return new PlayerState
         {
+            PenaltyPointsByRound = new int[maxRounds],
             LineColor = new byte[gridSize],
             LineCount = new int[gridSize],
             Forbidden = new int[gridSize],

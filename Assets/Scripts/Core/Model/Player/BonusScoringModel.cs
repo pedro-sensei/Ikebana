@@ -6,6 +6,16 @@
 
 // Calculates bonus points at end of game.
 // Checks completed rows, columns and colors.
+
+public struct EndGameBonusBreakdown
+{
+    public int RowPoints;
+    public int ColumnPoints;
+    public int ColorPoints;
+
+    public int TotalBonus => RowPoints + ColumnPoints + ColorPoints;
+}
+
 public static class BonusScoringModel
 {
 
@@ -20,7 +30,12 @@ public static class BonusScoringModel
 
     public static int CalculateEndGameBonus(PlayerGridModel grid)
     {
-        int bonus = 0;
+        return CalculateEndGameBonusBreakdown(grid).TotalBonus;
+    }
+
+    public static EndGameBonusBreakdown CalculateEndGameBonusBreakdown(PlayerGridModel grid)
+    {
+        EndGameBonusBreakdown breakdown = new EndGameBonusBreakdown();
         int size = GameConfig.GRID_SIZE;
 
         // Complete rows
@@ -31,7 +46,7 @@ public static class BonusScoringModel
             {
                 if (!grid.IsOccupied(r, c)) { complete = false; break; }
             }
-            if (complete) bonus += GameConfig.COMPLETE_LINE_SCORING_BONUS;
+            if (complete) breakdown.RowPoints += GameConfig.COMPLETE_LINE_SCORING_BONUS;
             Debug.Log("Row " + r + " complete: " + complete);
         }
 
@@ -43,7 +58,7 @@ public static class BonusScoringModel
             {
                 if (!grid.IsOccupied(r, c)) { complete = false; break; }
             }
-            if (complete) bonus += GameConfig.COMPLETE_COLUMN_SCORING_BONUS;
+            if (complete) breakdown.ColumnPoints += GameConfig.COMPLETE_COLUMN_SCORING_BONUS;
             Debug.Log("Column " + c + " complete: " + complete);
         }
 
@@ -56,12 +71,12 @@ public static class BonusScoringModel
             {
                 if (!grid.IsColorPlacedInRow(r, flowerColor)) { allPlaced = false; break; }
             }
-            if (allPlaced) bonus += GameConfig.COMPLETE_COLOR_SCORING_BONUS;
+            if (allPlaced) breakdown.ColorPoints += GameConfig.COMPLETE_COLOR_SCORING_BONUS;
             Debug.Log("Color " + flowerColor + " complete: " + allPlaced);
         }
 
         //TODO: CONTINUE WITH OTHER BONUS CALCULATIONS (SETS, PATTERNS, ETC) WHEN THEY ARE DEFINED
 
-        return bonus;
+        return breakdown;
     }
 }

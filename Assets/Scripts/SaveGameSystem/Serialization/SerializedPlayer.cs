@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
+using UnityEngine;
 
 //=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
 //                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 [System.Serializable]
 
-[CreateAssetMenu(fileName = "Gamestate_SO", menuName = "Scriptable Objects/SerializedPlayer")]
-public class SerializedPlayer :ScriptableObject
+public class SerializedPlayer
 {
     public string Name;
     public int Score;
@@ -38,4 +38,12 @@ public class SerializedPlayer :ScriptableObject
 
     // Penalty as an array of integers
     public int[] PenaltyLine;
+
+    // Statistics
+    public int TotalPlacementPoints;
+    public int TotalPenaltyPoints;
+    public int[] PenaltyPointsByRound;
+    public int EndGameBonusRows;
+    public int EndGameBonusColumns;
+    public int EndGameBonusColors;
 }

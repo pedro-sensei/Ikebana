@@ -86,6 +86,7 @@ public static class GameEvents
     // ANNOUNCEMENTS
     public static event Action<int, int, int, int, BonusType> OnEndGameBonusCellScored;
     public static event Action<string, float> OnShowAnnouncement;
+    public static event Action OnHideAnnouncement;
     public static event Action<string, int> OnShowWinner;
 
 
@@ -196,6 +197,7 @@ public static class GameEvents
     }
 
     public static void ShowAnnouncement(string msg, float dur) { OnShowAnnouncement?.Invoke(msg, dur); }
+    public static void HideAnnouncement() { OnHideAnnouncement?.Invoke(); }
     public static void ShowWinner(string name, int score) { OnShowWinner?.Invoke(name, score); }
 
     // Settings / Audio

@@ -209,9 +209,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InGameSaveController
   saveButton: {fileID: 4409948153020159830}
+  returnButton: {fileID: 1740507557007112743}
   saveNameInput: {fileID: 685947984323028293}
   feedbackLabel: {fileID: 6897417335957327551}
   feedbackDuration: 2
+  mainMenuController: {fileID: 0}
 --- !u!1 &5465811688856025909
 GameObject:
   m_ObjectHideFlags: 0
@@ -1091,7 +1093,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1528949015324852177, guid: 814db2e18a2dafe4fba6075c007e88b4, type: 3}
       propertyPath: m_Name
-      value: BasicButton 1
+      value: SaveButton
       objectReference: {fileID: 0}
     - target: {fileID: 2335885527605327432, guid: 814db2e18a2dafe4fba6075c007e88b4, type: 3}
       propertyPath: m_Pivot.x
@@ -1173,6 +1175,12 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4447449090632962024, guid: 814db2e18a2dafe4fba6075c007e88b4, type: 3}
+      propertyPath: m_text
+      value: 'Save Game
+
+'
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1204,7 +1212,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1528949015324852177, guid: 814db2e18a2dafe4fba6075c007e88b4, type: 3}
       propertyPath: m_Name
-      value: BasicButton 1 (1)
+      value: ReturnButton
       objectReference: {fileID: 0}
     - target: {fileID: 2335885527605327432, guid: 814db2e18a2dafe4fba6075c007e88b4, type: 3}
       propertyPath: m_Pivot.x
@@ -1321,6 +1329,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 814db2e18a2dafe4fba6075c007e88b4, type: 3}
+--- !u!114 &1740507557007112743 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8206699847086133733, guid: 814db2e18a2dafe4fba6075c007e88b4, type: 3}
+  m_PrefabInstance: {fileID: 7621084946305182658}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!224 &5307830688156540298 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2335885527605327432, guid: 814db2e18a2dafe4fba6075c007e88b4, type: 3}

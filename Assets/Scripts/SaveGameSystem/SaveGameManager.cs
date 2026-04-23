@@ -155,6 +155,7 @@ public class SaveGameManager : MonoBehaviour
         state.CurrentPlayerIndex = model.CurrentPlayerIndex;
         state.CurrentRound = model.CurrentRound;
         state.TurnNumber = model.TurnNumber;
+        state.TotalTurnsPlayed = model.TotalTurnsPlayed;
         state.CurrentPhase = (int)model.CurrentPhase;
 
         // Bag
@@ -171,6 +172,9 @@ public class SaveGameManager : MonoBehaviour
         state.FactoryDisplays = new int[model.FactoryDisplays.Length][];
         for (int f = 0; f < model.FactoryDisplays.Length; f++)
             state.FactoryDisplays[f] = SerializeFlowerList(model.FactoryDisplays[f].flowers);
+        state.FactoryFillColorCounts = model.FactoryFillColorCounts != null
+            ? (int[])model.FactoryFillColorCounts.Clone()
+            : new int[0];
 
         // Players
         state.Players = new SerializedPlayer[model.NumberOfPlayers];
@@ -231,6 +235,13 @@ public class SaveGameManager : MonoBehaviour
                 sp.PenaltyLine[t] = (int)flower.Color;
             }
 
+            sp.TotalPlacementPoints = pm.TotalPlacementPoints;
+            sp.TotalPenaltyPoints = pm.TotalPenaltyPoints;
+            sp.PenaltyPointsByRound = ToIntArray(pm.PenaltyPointsByRound);
+            sp.EndGameBonusRows = pm.EndGameBonusBreakdown.RowPoints;
+            sp.EndGameBonusColumns = pm.EndGameBonusBreakdown.ColumnPoints;
+            sp.EndGameBonusColors = pm.EndGameBonusBreakdown.ColorPoints;
+
             state.Players[p] = sp;
         }
 
@@ -255,5 +266,16 @@ public class SaveGameManager : MonoBehaviour
                 return i;
         }
         return 0;
+    }
+
+    private int[] ToIntArray(IReadOnlyList<int> values)
+    {
+        if (values == null) return new int[0];
+
+        int[] result = new int[values.Count];
+        for (int i = 0; i < values.Count; i++)
+            result[i] = values[i];
+
+        return result;
     }
 }

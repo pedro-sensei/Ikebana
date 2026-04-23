@@ -1,4 +1,8 @@
 using UnityEngine;
+using System.Collections.Generic;
+using System.Text;
+using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
@@ -30,6 +34,9 @@ public class MainMenuController : MonoBehaviour
     [Tooltip("The Credits panel.")]
     [SerializeField] private GameObject creditsPanel;
 
+    [Tooltip("The End Game statistics panel.")]
+    [SerializeField] private GameObject endGamePanel;
+
     [Header("Buttons")]
     [SerializeField] private Button newGameButton;
     [SerializeField] private Button loadGameButton;
@@ -55,10 +62,14 @@ public class MainMenuController : MonoBehaviour
         if (quitButton != null)     quitButton.onClick.AddListener(OnQuitClicked);
     }
 
+
+
     private void Start()
     {
         if (isHomeScreen)
-        ShowMainMenu();
+            ShowMainMenu();
+        else
+            HideAllMenus();
 
         SyncPauseStateWithMenus();
     }
@@ -73,6 +84,7 @@ public class MainMenuController : MonoBehaviour
         SetPanel(settingsPanel, false);
         SetPanel(creditsPanel, false);
         SetPanel(saveGamePanel, false);
+        SetPanel(endGamePanel, false);
         SyncPauseStateWithMenus();
     }
 
@@ -85,6 +97,7 @@ public class MainMenuController : MonoBehaviour
         SetPanel(settingsPanel, false);
         SetPanel(creditsPanel, false);
         SetPanel(saveGamePanel, false);
+        SetPanel(endGamePanel, false);
         SyncPauseStateWithMenus();
     }
     public void OnReturnClicked()
@@ -95,6 +108,7 @@ public class MainMenuController : MonoBehaviour
         SetPanel(settingsPanel, false);
         SetPanel(creditsPanel, false);
         SetPanel(saveGamePanel, false);
+        SetPanel(endGamePanel, false);
         SyncPauseStateWithMenus();
     }
     public void OnNewGameClicked()
@@ -106,6 +120,7 @@ public class MainMenuController : MonoBehaviour
         SetPanel(settingsPanel, false);
         SetPanel(creditsPanel, false);
         SetPanel(saveGamePanel, false);
+        SetPanel(endGamePanel, false);
         SyncPauseStateWithMenus();
     }
     public void OnSaveGameClicked()
@@ -117,6 +132,7 @@ public class MainMenuController : MonoBehaviour
         SetPanel(loadGamePanel, false);
         SetPanel(settingsPanel, false);
         SetPanel(creditsPanel, false);
+        SetPanel(endGamePanel, false);
         SyncPauseStateWithMenus();
 
     }
@@ -131,6 +147,7 @@ public class MainMenuController : MonoBehaviour
         SetPanel(settingsPanel, false);
         SetPanel(creditsPanel, false);
         SetPanel(saveGamePanel, false);
+        SetPanel(endGamePanel, false);
         SyncPauseStateWithMenus();
     }
 
@@ -143,6 +160,7 @@ public class MainMenuController : MonoBehaviour
         SetPanel(loadGamePanel, false);
         SetPanel(creditsPanel, false);
         SetPanel(saveGamePanel, false);
+        SetPanel(endGamePanel, false);
         SyncPauseStateWithMenus();
 
     }
@@ -156,6 +174,19 @@ public class MainMenuController : MonoBehaviour
         SetPanel(loadGamePanel, false);
         SetPanel(settingsPanel, false);
         SetPanel(saveGamePanel, false);
+        SetPanel(endGamePanel, false);
+        SyncPauseStateWithMenus();
+    }
+
+    public void ShowEndGameMenu()
+    {
+        SetPanel(mainMenuPanel, false);
+        SetPanel(newGamePanel, false);
+        SetPanel(loadGamePanel, false);
+        SetPanel(settingsPanel, false);
+        SetPanel(creditsPanel, false);
+        SetPanel(saveGamePanel, false);
+        SetPanel(endGamePanel, true);
         SyncPauseStateWithMenus();
     }
 
@@ -188,6 +219,17 @@ public class MainMenuController : MonoBehaviour
         if (panel != null) panel.SetActive(active);
     }
 
+    private void HideAllMenus()
+    {
+        SetPanel(mainMenuPanel, false);
+        SetPanel(newGamePanel, false);
+        SetPanel(loadGamePanel, false);
+        SetPanel(saveGamePanel, false);
+        SetPanel(settingsPanel, false);
+        SetPanel(creditsPanel, false);
+        SetPanel(endGamePanel, false);
+    }
+
     //Pause fix, some menus interacted poorly with the game.
     private void SyncPauseStateWithMenus()
     {
@@ -204,7 +246,8 @@ public class MainMenuController : MonoBehaviour
                           || (loadGamePanel != null && loadGamePanel.activeSelf)
                           || (saveGamePanel != null && saveGamePanel.activeSelf)
                           || (settingsPanel != null && settingsPanel.activeSelf)
-                          || (creditsPanel != null && creditsPanel.activeSelf);
+                          || (creditsPanel != null && creditsPanel.activeSelf)
+                          || (endGamePanel != null && endGamePanel.activeSelf);
 
         if (anyMenuActive)
             gc.PauseGame();
@@ -229,6 +272,9 @@ public class MainMenuController : MonoBehaviour
 
         if (creditsPanel == null)
             Debug.LogWarning("[MainMenuController] Credits panel is not assigned.", this);
+
+        if (endGamePanel == null)
+            Debug.LogWarning("[MainMenuController] End game panel is not assigned.", this);
     }
 #endif
 }

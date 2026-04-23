@@ -1,4 +1,5 @@
 using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -29,9 +30,11 @@ public class GameModel : IGameModel
     private int _currentRound;
     private int _currentPlayerIndex;
     private int _turnNumber;
+    private int _totalTurnsPlayed;
     private int _startingPlayerIndex;
     private RoundPhaseEnum _currentPhase;
     private bool _isGameOver;
+    private int[] _factoryFillColorCounts;
 
     //PROPERTIES
 
@@ -44,9 +47,12 @@ public class GameModel : IGameModel
     public int CurrentRound => _currentRound;
     public int CurrentPlayerIndex => _currentPlayerIndex;
     public int TurnNumber => _turnNumber;
+    public int TotalTurnsPlayed => _totalTurnsPlayed;
+    public int TotalRoundsPlayed => _currentRound;
     public int StartingPlayerIndex => _startingPlayerIndex;
     public RoundPhaseEnum CurrentPhase => _currentPhase;
     public bool IsGameOver => _isGameOver;
+    public int[] FactoryFillColorCounts => _factoryFillColorCounts;
 
     //UNDO SYSTEM
     public GameMove LastMove { get; private set; }
@@ -74,8 +80,10 @@ public class GameModel : IGameModel
         this._numberOfPlayers = numberOfPlayers;
         _currentRound = 0;
         _currentPlayerIndex = 0;
+        _totalTurnsPlayed = 0;
         _startingPlayerIndex = UnityEngine.Random.Range(0, numberOfPlayers);
         _isGameOver = false;
+        _factoryFillColorCounts = new int[GameConfig.NUM_COLORS];
 
         //Create main board elements
         _bag = new BagModel();
@@ -114,9 +122,16 @@ public class GameModel : IGameModel
         _currentRound = savedState.CurrentRound;
         _currentPlayerIndex = savedState.CurrentPlayerIndex;
         _turnNumber = savedState.TurnNumber;
+        _totalTurnsPlayed = savedState.TotalTurnsPlayed;
         _startingPlayerIndex = savedState.StartingPlayerIndex;
         _currentPhase = (RoundPhaseEnum)savedState.CurrentPhase;
         _isGameOver = savedState.IsGameOver;
+        _factoryFillColorCounts = new int[GameConfig.NUM_COLORS];
+        if (savedState.FactoryFillColorCounts != null)
+        {
+            int copyLength = Mathf.Min(_factoryFillColorCounts.Length, savedState.FactoryFillColorCounts.Length);
+            Array.Copy(savedState.FactoryFillColorCounts, _factoryFillColorCounts, copyLength);
+        }
 
         //Load main board elements
         _bag = new BagModel();
@@ -150,6 +165,8 @@ public class GameModel : IGameModel
         {
             _centralDisplay.AddFlower(new FlowerPiece((FlowerColor)savedState.CentralDisplay[i]));
         }
+        if (savedState.CentralHasFirstPlayerToken)
+            _centralDisplay.AddStartingPlayerToken();
 
         //Load players
         _numberOfPlayers = savedNumPlayers;
@@ -188,6 +205,14 @@ public class GameModel : IGameModel
         //Standard game setup logic
         //Fill bag with initial flowers
         _bag.Initialize();
+        _discard.Initialize();
+        _discard.Clear();
+
+        _totalTurnsPlayed = 0;
+        if (_factoryFillColorCounts == null || _factoryFillColorCounts.Length != GameConfig.NUM_COLORS)
+            _factoryFillColorCounts = new int[GameConfig.NUM_COLORS];
+        Array.Clear(_factoryFillColorCounts, 0, _factoryFillColorCounts.Length);
+
         //Clear factory displays and central display
         for (int i = 0; i < _factoryDisplays.Length; i++)
         {
@@ -269,6 +294,7 @@ public class GameModel : IGameModel
     {
         //Invoke turn end event
         OnTurnEnd?.Invoke(_currentPlayerIndex, _turnNumber);
+        _totalTurnsPlayed++;
 
         // Check if all displays are empty
         if (AreDisplaysEmpty())
@@ -291,6 +317,7 @@ public class GameModel : IGameModel
     //IMPORTANT: DONT TRIGGER NEW TURN
     public void SimEndTurn()
     {
+        _totalTurnsPlayed++;
         _turnNumber++;
         _currentPlayerIndex = (_currentPlayerIndex + 1) % _numberOfPlayers;
         //if (!AreDisplaysEmpty()) SimStartNewTurn(turnNumber, currentPlayerIndex);
@@ -422,9 +449,13 @@ public class GameModel : IGameModel
         snap.CurrentRound = _currentRound;
         snap.CurrentPlayer = _currentPlayerIndex;
         snap.TurnNumber = _turnNumber;
+        snap.TotalTurnsPlayed = _totalTurnsPlayed;
         snap.StartingPlayer = _startingPlayerIndex;
         snap.IsGameOver = _isGameOver;
         snap.Phase = _currentPhase;
+
+        if (_factoryFillColorCounts != null)
+            Array.Copy(_factoryFillColorCounts, snap.FactoryFillColorCounts, Mathf.Min(_factoryFillColorCounts.Length, snap.FactoryFillColorCounts.Length));
 
         for (int i = 0; i < _players.Length; i++)
             snap.PlayerSnapshots[i] = _players[i].SaveSnapshot();
@@ -468,9 +499,21 @@ public class GameModel : IGameModel
         _currentRound = gameState.CurrentRound;
         _currentPlayerIndex = gameState.CurrentPlayer;
         _turnNumber = gameState.TurnNumber;
+        _totalTurnsPlayed = gameState.TotalTurnsPlayed;
         _startingPlayerIndex = gameState.StartingPlayer;
         _isGameOver = gameState.IsGameOver;
         _currentPhase = gameState.Phase;
+
+        if (_factoryFillColorCounts == null || _factoryFillColorCounts.Length != GameConfig.NUM_COLORS)
+            _factoryFillColorCounts = new int[GameConfig.NUM_COLORS];
+
+        Array.Clear(_factoryFillColorCounts, 0, _factoryFillColorCounts.Length);
+        if (gameState.FactoryFillColorCounts != null)
+        {
+            int copyLength = Mathf.Min(_factoryFillColorCounts.Length, gameState.FactoryFillColorCounts.Length);
+            Array.Copy(gameState.FactoryFillColorCounts, _factoryFillColorCounts, copyLength);
+        }
+
         for (int i = 0; i < gameState.PlayerSnapshots.Length; i++)
             _players[i].RestoreSnapshot(ref gameState.PlayerSnapshots[i]);
         Debug.Log($"[GameModel] Game state set from snapshot. Round: {_currentRound}, Current Player Index: {_currentPlayerIndex}, Turn: {_turnNumber}, Starting Player Index: {_startingPlayerIndex}, Phase: {_currentPhase}, IsGameOver: {_isGameOver}");
@@ -590,6 +633,9 @@ public class GameModel : IGameModel
             }
             FlowerPiece flower = _bag.Draw();
             displayModel.AddFlower(flower);
+            int colorIndex = (int)flower.Color;
+            if (colorIndex >= 0 && colorIndex < _factoryFillColorCounts.Length)
+                _factoryFillColorCounts[colorIndex]++;
         }
     }
 
@@ -680,6 +726,15 @@ public class GameModel : IGameModel
     #endregion
 
     #region HELPER METHODS
+
+    public int GetFactoryFillColorCount(FlowerColor color)
+    {
+        int colorIndex = (int)color;
+        if (_factoryFillColorCounts == null || colorIndex < 0 || colorIndex >= _factoryFillColorCounts.Length)
+            return 0;
+
+        return _factoryFillColorCounts[colorIndex];
+    }
 
     internal PlayerModel GetCurrentPlayer()
     {

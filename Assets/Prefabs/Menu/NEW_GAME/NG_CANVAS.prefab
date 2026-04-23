@@ -748,7 +748,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 485aaa55c9671294497bc31715dba127, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NewGameMenuController
-  setupData: {fileID: 11400000, guid: be7ec7fe5d506a44e825a8eb5c292b32, type: 2}
+  setupData: {fileID: 11400000, guid: b0e552bf1141a204690215da046c0188, type: 2}
   portraitDatabase: {fileID: 11400000, guid: 65a83980f01a07445b55cc2346544a94, type: 2}
   opponentRepository: {fileID: 11400000, guid: b9c23f0e2198429469e6f56557752f9e, type: 2}
   playerCountDropdown: {fileID: 5244392280011760661}

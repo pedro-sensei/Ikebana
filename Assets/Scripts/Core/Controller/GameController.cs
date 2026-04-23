@@ -120,8 +120,21 @@ public class GameController : MonoBehaviour
         GameConfig.Initialize(gameConfigData, numPlayers);
 
         // 3. Build the model.
-        string[] names = BuildPlayerNames(numPlayers);
-        gameModel = new GameModel(numPlayers, names);
+        if (setupData != null && setupData.IsLoadingFromSave && !string.IsNullOrEmpty(setupData.SavedGameJson))
+        {
+            SerializedGameState savedState = JsonUtility.FromJson<SerializedGameState>(setupData.SavedGameJson);
+            if (savedState != null && savedState.Players != null && savedState.Players.Length > 0)
+            {
+                gameModel = new GameModel(savedState);
+            }
+        }
+
+        if (gameModel == null)
+        {
+            string[] names = BuildPlayerNames(numPlayers);
+            gameModel = new GameModel(numPlayers, names);
+        }
+
         SubscribeToModelEvents();
 
         //4. Build the AI brains for AI players.
@@ -360,11 +373,11 @@ public class GameController : MonoBehaviour
     {
         yield return new WaitForSeconds(_gameOverAnnouncementDuration);
 
+        GameEvents.HideAnnouncement();
 
         MainMenuController menu = GameResources.Instance.MainMenuControllerRef;
         if (menu != null)
-            menu.OnInGameMenuClicked();
-
+            menu.ShowEndGameMenu();
         _gameOverMenuCoroutine = null;
     }
 
@@ -398,7 +411,6 @@ public class GameController : MonoBehaviour
 
         for (int i = 0; i < numPlayers; i++)
         {
-            int previousScore = gameModel.Players[i].Score;
             GameEvents.ScoringTurnChanged(i, numPlayers);
             yield return new WaitForSeconds(_scoringBoardRotationDelay);
 
@@ -415,8 +427,10 @@ public class GameController : MonoBehaviour
             if (penalty != 0) GameEvents.PenaltyApplied(i, penalty);
 
             GameEvents.ScoreChanged(i, gameModel.Players[i].Score);
-            int scoreIncrease = gameModel.Players[i].Score - previousScore;
-            GameEvents.ShowAnnouncement("+" + scoreIncrease + " points",
+            int positivePoints = gameModel.Players[i].LastRoundPlacementPoints;
+            int penaltyPoints = Mathf.Abs(gameModel.Players[i].LastRoundPenaltyPoints);
+            GameEvents.ShowAnnouncement(
+                "+ " + positivePoints + " points\n- " + penaltyPoints + " points",
                 _scoringflowerDelay * 1.5f);
             GameEvents.PlayerScoringComplete(i);
 
@@ -571,6 +585,8 @@ public class GameController : MonoBehaviour
         GameEvents.CentralDisplayChanged(gameModel.CentralDisplay.flowers);
         GameEvents.BagCountChanged(gameModel.Bag.Count);
         GameEvents.DiscardCountChanged(gameModel.Discard.Count);
+        for (int i = 0; i < gameModel.NumberOfPlayers; i++)
+            GameEvents.ScoreChanged(i, gameModel.Players[i].Score);
         GameEvents.RoundStart(gameModel.CurrentRound);
         GameEvents.TurnTransition(gameModel.CurrentPlayerIndex, gameModel.NumberOfPlayers);
     }

@@ -33,16 +33,23 @@ public class GameInfoView : MonoBehaviour
         }
 
         GameEvents.OnShowAnnouncement += HandleShowAnnouncement;
+        GameEvents.OnHideAnnouncement += HandleHideAnnouncement;
     }
 
     private void OnDestroy()
     {
         GameEvents.OnShowAnnouncement -= HandleShowAnnouncement;
+        GameEvents.OnHideAnnouncement -= HandleHideAnnouncement;
     }
 
     private void HandleShowAnnouncement(string message, float displayDuration)
     {
         Show(message, displayDuration);
+    }
+
+    private void HandleHideAnnouncement()
+    {
+        HideImmediately();
     }
 
     // Shows the message for the given duration with fade in/out.
@@ -51,6 +58,18 @@ public class GameInfoView : MonoBehaviour
         if (_currentCoroutine != null)
            StopCoroutine(_currentCoroutine);
         _currentCoroutine = StartCoroutine(ShowCoroutine(message, displayDuration));
+    }
+
+    public void HideImmediately()
+    {
+        if (_currentCoroutine != null)
+        {
+            StopCoroutine(_currentCoroutine);
+            _currentCoroutine = null;
+        }
+
+        SetAlpha(0f);
+        SetBlocking(false);
     }
 
     private IEnumerator ShowCoroutine(string message, float displayDuration)

@@ -146,6 +146,7 @@
     <Compile Include="Assets\Scripts\Core\Model\MainBoard\BagModel.cs" />
     <Compile Include="Assets\Scripts\Core\Model\GameElements\GameConfig.cs" />
     <Compile Include="Assets\Scripts\Core\Model\GameElements\GameMove.cs" />
+    <Compile Include="Assets\Scripts\ScenesSystem\EndGameMenuController.cs" />
     <Compile Include="Assets\Scripts\AI_Modules\MinMax\ProjectedScoreEvaluator.cs" />
     <Compile Include="Assets\Scripts\Core\Enums\FlowerColor.cs" />
     <Compile Include="Assets\Scripts\Core\Statics\GridScoringCalculator.cs" />

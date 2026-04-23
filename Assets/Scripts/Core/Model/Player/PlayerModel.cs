@@ -1,4 +1,5 @@
 ﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,6 +17,12 @@ public class PlayerModel
     private PlayerGridModel _grid;
     private int _score;
     private bool _hasFirstPlayerToken;
+    private int _totalPlacementPoints;
+    private int _lastRoundPlacementPoints;
+    private int _lastRoundPenaltyPoints;
+    private int _totalPenaltyPoints;
+    private List<int> _penaltyPointsByRound;
+    private EndGameBonusBreakdown _endGameBonusBreakdown;
 
 
     public PlacementLineModel[] PlacementLines => _placementLines;
@@ -27,6 +34,12 @@ public class PlayerModel
     public bool HasFirstPlayerToken => _hasFirstPlayerToken;
 
     public int CompletedRows => _grid.GetCompletedRows();
+    public int TotalPlacementPoints => _totalPlacementPoints;
+    public int LastRoundPlacementPoints => _lastRoundPlacementPoints;
+    public int LastRoundPenaltyPoints => _lastRoundPenaltyPoints;
+    public int TotalPenaltyPoints => _totalPenaltyPoints;
+    public IReadOnlyList<int> PenaltyPointsByRound => _penaltyPointsByRound;
+    public EndGameBonusBreakdown EndGameBonusBreakdown => _endGameBonusBreakdown;
     #endregion
     #region EVENTS
     public event Action<int, int> OnScoreChanged;
@@ -38,6 +51,12 @@ public class PlayerModel
         PlayerName = playerName;
         _score = 0;
         _hasFirstPlayerToken = false;
+        _totalPlacementPoints = 0;
+        _lastRoundPlacementPoints = 0;
+        _lastRoundPenaltyPoints = 0;
+        _totalPenaltyPoints = 0;
+        _penaltyPointsByRound = new List<int>();
+        _endGameBonusBreakdown = new EndGameBonusBreakdown();
 
         // Create placement lines with their respective capacities
         _placementLines = new PlacementLineModel[GameConfig.NUM_PLACEMENT_LINES];
@@ -62,9 +81,28 @@ public class PlayerModel
         _score = player.Score;
         _grid = new PlayerGridModel(index, player.Grid);
         HasCompleteRow = false; // This can be calculated from the grid if needed
-        _hasFirstPlayerToken = false; // This should be set based on the saved state if needed
+        _hasFirstPlayerToken = player.HasFirstPlayerToken;
+        _totalPlacementPoints = player.TotalPlacementPoints;
+        _lastRoundPlacementPoints = 0;
+        _lastRoundPenaltyPoints = 0;
+        _totalPenaltyPoints = player.TotalPenaltyPoints;
+        _penaltyPointsByRound = player.PenaltyPointsByRound != null
+            ? new List<int>(player.PenaltyPointsByRound)
+            : new List<int>();
+        _endGameBonusBreakdown = new EndGameBonusBreakdown
+        {
+            RowPoints = player.EndGameBonusRows,
+            ColumnPoints = player.EndGameBonusColumns,
+            ColorPoints = player.EndGameBonusColors
+        };
         _placementLines = new PlacementLineModel[GameConfig.NUM_PLACEMENT_LINES];
-       
+        for (int i = 0; i < GameConfig.NUM_PLACEMENT_LINES; i++)
+        {
+            _placementLines[i] = new PlacementLineModel(i, GameConfig.PLACEMENT_LINE_CAPACITIES[i]);
+        }
+
+        _penaltyLine = new PenaltyLineModel();
+
         for (int i = 0; i < GameConfig.NUM_PLACEMENT_LINES; i++)
         {
             List<FlowerPiece> flowerList = new List<FlowerPiece>();
@@ -74,21 +112,44 @@ public class PlayerModel
             }
             PlaceflowersInLine(i, flowerList);
         }
+
+        if (player.PenaltyLine != null)
+        {
+            for (int i = 0; i < player.PenaltyLine.Length; i++)
+            {
+                FlowerColor color = (FlowerColor)player.PenaltyLine[i];
+                if (color == FlowerColor.FirstPlayer)
+                {
+                    if (!_penaltyLine.HasFirstPlayerToken)
+                        _penaltyLine.AddFirstPlayerToken();
+                }
+                else
+                {
+                    _penaltyLine.AddFlower(new FlowerPiece(color));
+                }
+            }
+        }
+
+        if (player.HasFirstPlayerToken && !_penaltyLine.HasFirstPlayerToken)
+            _penaltyLine.AddFirstPlayerToken();
+
+        InitAllowedColorsFromGrid();
     }
 
     #endregion
     #region GAME LOGIC
-    /// <summary>
-    /// Tries to place the given flowers in the specified placement line.
-    /// If the line index is invalid, all flowers are sent to the penalty line.
-    /// Returns PlaceResult with overflow info. Excessflowers contains flowers
-    /// that didn't fit in penalty and should go to discard.
-    /// </summary>
+    //
+    // Tries to place the given flowers in the specified placement line.
+    // If the line index is invalid, all flowers are sent to the penalty line.
+    // Returns PlaceResult with overflow info. Excessflowers contains flowers
+    // that didn't fit in penalty and should go to discard.
+    //
     public PlaceResult PlaceflowersInLine(int lineIndex, List<FlowerPiece> flowers)
     {
 
         if (lineIndex < 0 || lineIndex >= _placementLines.Length)
         {
+            Debug.Log($"[Player:{this.PlayerName}. INVALID LINE. Sending all flowers to penalty line.");
             List<FlowerPiece> excess = _penaltyLine.AddFlowers(flowers);
             PlaceResult invalidResult = new PlaceResult
             {
@@ -149,6 +210,8 @@ public class PlayerModel
     public List<GridPlacementResult> ScoreRound(DiscardModel discard)
     {
         List<GridPlacementResult> results = new List<GridPlacementResult>();
+        _lastRoundPlacementPoints = 0;
+        _lastRoundPenaltyPoints = 0;
 
         for (int i = 0; i < _placementLines.Length; i++)
         {
@@ -160,6 +223,8 @@ public class PlayerModel
                 {
                     GridPlacementResult gridResult = _grid.Placeflower(i, flowerForGrid.Color);
                     _score += gridResult.PointsScored;
+                    _totalPlacementPoints += gridResult.PointsScored;
+                    _lastRoundPlacementPoints += gridResult.PointsScored;
                     OnScoreChanged?.Invoke(PlayerIndex, _score);
                     results.Add(gridResult);
                     discard.AddRange(flowersToDiscard);
@@ -173,6 +238,9 @@ public class PlayerModel
 
         // Apply penalty
         int penalty = _penaltyLine.CalculatePenalty();
+        _lastRoundPenaltyPoints = penalty;
+        _totalPenaltyPoints += penalty;
+        _penaltyPointsByRound.Add(penalty);
         _score += penalty; // penalty is negative
         if (_score < 0) _score = 0;
 
@@ -193,12 +261,10 @@ public class PlayerModel
         return results;
     }
 
-    /// <summary>
-    /// Applies end game bonus
-    /// </summary>
     public int ApplyEndGameBonus()
     {
-        int bonus = BonusScoringModel.CalculateEndGameBonus(_grid);
+        _endGameBonusBreakdown = BonusScoringModel.CalculateEndGameBonusBreakdown(_grid);
+        int bonus = _endGameBonusBreakdown.TotalBonus;
         _score += bonus;
 
         //NOTIFY that the score has changed so the UI can update
@@ -207,9 +273,8 @@ public class PlayerModel
         return bonus;
     }
 
-    /// <summary>
-    /// Raises the OnScoreChanged event with the current player index and score.
-    /// </summary>
+
+    // Raises the OnScoreChanged event with the current player index and score.
     public void UpdateScore()
     {
         OnScoreChanged?.Invoke(PlayerIndex, _score);
@@ -220,6 +285,12 @@ public class PlayerModel
         _score = 0;
         _hasFirstPlayerToken = false;
         HasCompleteRow = false;
+        _totalPlacementPoints = 0;
+        _lastRoundPlacementPoints = 0;
+        _lastRoundPenaltyPoints = 0;
+        _totalPenaltyPoints = 0;
+        _penaltyPointsByRound.Clear();
+        _endGameBonusBreakdown = new EndGameBonusBreakdown();
         for (int i = 0; i < _placementLines.Length; i++)
         {
             _placementLines[i].Clear();
@@ -230,11 +301,11 @@ public class PlayerModel
     #endregion
     #region HELPER METHODS
 
-    /// <summary>
-    /// Scans the grid pattern for each row and sets the allowed colors on the
-    /// corresponding placement line. Colors not present in a grid row cannot be
-    /// placed in that row's placement line, regardless of forbidden-color state.
-    /// </summary>
+
+    // Scans the grid pattern for each row and sets the allowed colors on the
+    // corresponding placement line. Colors not present in a grid row cannot be
+    // placed in that row's placement line, regardless of forbidden-color state.
+
     private void InitAllowedColorsFromGrid()
     {
         int size = GameConfig.GRID_SIZE;
@@ -300,6 +371,21 @@ public class PlayerModel
         snap.Score = Score;
         snap.HasFirstPlayerToken = HasFirstPlayerToken;
         snap.HasCompleteRow = HasCompleteRow;
+        snap.TotalPlacementPoints = _totalPlacementPoints;
+        snap.LastRoundPlacementPoints = _lastRoundPlacementPoints;
+        snap.LastRoundPenaltyPoints = _lastRoundPenaltyPoints;
+        snap.TotalPenaltyPoints = _totalPenaltyPoints;
+        snap.EndGameBonusRows = _endGameBonusBreakdown.RowPoints;
+        snap.EndGameBonusColumns = _endGameBonusBreakdown.ColumnPoints;
+        snap.EndGameBonusColors = _endGameBonusBreakdown.ColorPoints;
+        snap.PenaltyRoundsCount = _penaltyPointsByRound != null ? _penaltyPointsByRound.Count : 0;
+
+        if (_penaltyPointsByRound != null && snap.PenaltyPointsByRound != null)
+        {
+            int penaltyRoundsCount = Mathf.Min(_penaltyPointsByRound.Count, snap.PenaltyPointsByRound.Length);
+            for (int i = 0; i < penaltyRoundsCount; i++)
+                snap.PenaltyPointsByRound[i] = _penaltyPointsByRound[i];
+        }
         
             
             
@@ -344,17 +430,88 @@ public class PlayerModel
 
     internal void RestoreSnapshot(ref PlayerState playerState)
     {
-       
-        //TODO: 
-        
-        //_wallBits = snap.WallBits;
-        ////Score = snap.Score;
-        //HasFirstPlayerToken = snap.HasFirstPlayerToken;
-       // HasCompleteRow = snap.HasCompleteRow;
-       // Array.Copy(snap.LineColor, _lineColor, GRID_SIZE);
-       // Array.Copy(snap.LineCount, _lineCount, GRID_SIZE);
-       // Array.Copy(snap.Forbidden, _forbidden, GRID_SIZE);
-       // Array.Copy(snap.Penalty, _penalty, PENALTY_CAPACITY);
+        _score = playerState.Score;
+        _hasFirstPlayerToken = playerState.HasFirstPlayerToken;
+        HasCompleteRow = playerState.HasCompleteRow;
+        _totalPlacementPoints = playerState.TotalPlacementPoints;
+        _lastRoundPlacementPoints = playerState.LastRoundPlacementPoints;
+        _lastRoundPenaltyPoints = playerState.LastRoundPenaltyPoints;
+        _totalPenaltyPoints = playerState.TotalPenaltyPoints;
+        _endGameBonusBreakdown = new EndGameBonusBreakdown
+        {
+            RowPoints = playerState.EndGameBonusRows,
+            ColumnPoints = playerState.EndGameBonusColumns,
+            ColorPoints = playerState.EndGameBonusColors
+        };
+
+        _penaltyPointsByRound = new List<int>();
+        if (playerState.PenaltyPointsByRound != null)
+        {
+            int roundsCount = Mathf.Min(playerState.PenaltyRoundsCount, playerState.PenaltyPointsByRound.Length);
+            for (int i = 0; i < roundsCount; i++)
+                _penaltyPointsByRound.Add(playerState.PenaltyPointsByRound[i]);
+        }
+
+        int size = GameConfig.GRID_SIZE;
+        PlayerGridModel patternGrid = new PlayerGridModel(PlayerIndex);
+        int[] gridArray = new int[size * size];
+        for (int row = 0; row < size; row++)
+        {
+            for (int col = 0; col < size; col++)
+            {
+                int index = row * size + col;
+                bool occupied = (playerState.WallBits & (1 << index)) != 0;
+                gridArray[index] = occupied ? (int)patternGrid.GetColorAt(row, col) : -1;
+            }
+        }
+        _grid = new PlayerGridModel(PlayerIndex, gridArray);
+
+        _placementLines = new PlacementLineModel[GameConfig.NUM_PLACEMENT_LINES];
+        for (int i = 0; i < GameConfig.NUM_PLACEMENT_LINES; i++)
+            _placementLines[i] = new PlacementLineModel(i, GameConfig.PLACEMENT_LINE_CAPACITIES[i]);
+
+        InitAllowedColorsFromGrid();
+
+        for (int i = 0; i < GameConfig.NUM_PLACEMENT_LINES; i++)
+        {
+            FlowerColor savedColor = (FlowerColor)playerState.LineColor[i];
+            int savedCount = playerState.LineCount[i];
+            if (savedCount > 0)
+            {
+                List<FlowerPiece> flowers = new List<FlowerPiece>(savedCount);
+                for (int f = 0; f < savedCount; f++)
+                    flowers.Add(new FlowerPiece(savedColor));
+
+                _placementLines[i].PlaceFlowers(flowers);
+            }
+
+            for (int colorIndex = 0; colorIndex < GameConfig.NUM_COLORS; colorIndex++)
+            {
+                if ((playerState.Forbidden[i] & (1 << colorIndex)) != 0)
+                    _placementLines[i].AddForbiddenColor((FlowerColor)colorIndex);
+            }
+        }
+
+        _penaltyLine = new PenaltyLineModel();
+        if (playerState.Penalty != null)
+        {
+            for (int i = 0; i < playerState.PenaltyCount && i < playerState.Penalty.Length; i++)
+            {
+                FlowerColor color = (FlowerColor)playerState.Penalty[i];
+                if (color == FlowerColor.FirstPlayer)
+                {
+                    if (!_penaltyLine.HasFirstPlayerToken)
+                        _penaltyLine.AddFirstPlayerToken();
+                }
+                else
+                {
+                    _penaltyLine.AddFlower(new FlowerPiece(color));
+                }
+            }
+        }
+
+        if (_hasFirstPlayerToken && !_penaltyLine.HasFirstPlayerToken)
+            _penaltyLine.AddFirstPlayerToken();
     }
     #endregion
 }
