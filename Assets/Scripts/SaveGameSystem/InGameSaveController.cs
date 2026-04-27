@@ -8,7 +8,8 @@ using System.Collections;
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 /// Saving system controller for UI.
-///
+//NOT WORKING IN LAST VERSION, 
+//TODO: FIX IN THE FUTURE, Not core for the MVP.
 public class InGameSaveController : MonoBehaviour
 {
     [Header("UI")]

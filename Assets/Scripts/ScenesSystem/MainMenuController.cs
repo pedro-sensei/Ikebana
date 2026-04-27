@@ -2,7 +2,6 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Text;
 using TMPro;
-using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
@@ -71,6 +70,7 @@ public class MainMenuController : MonoBehaviour
         else
             HideAllMenus();
 
+        // Run the pause sync once on startup so in-game overlays cannot leave gameplay unpaused by mistake.
         SyncPauseStateWithMenus();
     }
 
@@ -201,6 +201,7 @@ public class MainMenuController : MonoBehaviour
 
     public void OnReturnToMainMenuClicked()
     {
+        Time.timeScale = 1f;
         SceneManager.LoadScene("START");
     }
 
@@ -233,14 +234,12 @@ public class MainMenuController : MonoBehaviour
     //Pause fix, some menus interacted poorly with the game.
     private void SyncPauseStateWithMenus()
     {
-        GameController gc = null;
-        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
-            gc = GameResources.Instance.GameController;
-        else
-            gc = GameController.Instance;
+        GameController gc = GameResources.GetGameController();
 
         if (gc == null) return;
 
+        // Treat any visible menu panel as a full gameplay lock.
+        // This centralized check fixed bugs where one submenu paused correctly but another one did not.
         bool anyMenuActive = (mainMenuPanel != null && mainMenuPanel.activeSelf)
                           || (newGamePanel != null && newGamePanel.activeSelf)
                           || (loadGamePanel != null && loadGamePanel.activeSelf)

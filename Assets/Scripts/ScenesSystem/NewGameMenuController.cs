@@ -113,6 +113,7 @@ public class NewGameMenuController : MonoBehaviour
     {
         ResolveResourcesFromGameResources();
 
+        // Reset every time the panel opens so stale values from a previous setup session do not leak through.
         // Reset to defaults when the panel opens
         _selectedPlayerCount = 2;
         if (playerCountDropdown != null) playerCountDropdown.value = 0;
@@ -174,6 +175,7 @@ public class NewGameMenuController : MonoBehaviour
         WriteSetupData();
 
         string sceneName = setupData.GetSceneForPlayerCount();
+        Time.timeScale = 1f;
         SceneManager.LoadScene(sceneName);
     }
 
@@ -260,6 +262,7 @@ public class NewGameMenuController : MonoBehaviour
         AIOpponentData opp = opponentRepository.Get(slot.OpponentDropdown.value);
         if (opp == null) return;
 
+ 
         if (slot.NameInput != null)
             slot.NameInput.text = opp.OpponentName;
 
@@ -309,6 +312,7 @@ public class NewGameMenuController : MonoBehaviour
             {
                 if (hasRepo && slot.OpponentDropdown != null)
                 {
+                    // Copy the whole preset brain.
                     AIOpponentData opponent = opponentRepository.Get(slot.OpponentDropdown.value);
                     if (opponent != null)
                     {

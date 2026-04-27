@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Generic;
 using TMPro;
-using Unity.InferenceEngine;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -83,7 +81,7 @@ public class EndGameMenuController : MonoBehaviour
 
     public void Refresh()
     {
-        GameController gameController = GameController.Instance;
+        GameController gameController = GameResources.GetGameController();
         if (gameController == null || gameController.Model == null)
         {
             ClearView();
@@ -124,6 +122,7 @@ public class EndGameMenuController : MonoBehaviour
         for (int i = 0; i < model.NumberOfPlayers; i++)
             result.Add(i);
 
+        // Sort by score first, then completed rows as the tie-breaker, then player index for stable ordering.
         result.Sort(delegate (int left, int right)
         {
             int scoreCompare = model.Players[right].Score.CompareTo(model.Players[left].Score);
@@ -168,7 +167,7 @@ public class EndGameMenuController : MonoBehaviour
     {
         int placement = rankingIndex + 1;
         
-        switch (placement % 10)
+        switch (placement)
         {
             case 1:
                 return placement + "st";
@@ -209,6 +208,7 @@ public class EndGameMenuController : MonoBehaviour
 
         if (setupData != null)
         {
+            // Clear load-mode flags before replaying, otherwise the new match could accidentally boot from the old save snapshot.
             setupData.IsLoadingFromSave = false;
             setupData.SavedGameJson = null;
             setupData.SaveRuntimeSnapshot();

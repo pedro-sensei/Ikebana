@@ -9,7 +9,8 @@ using UnityEngine;
 
 // Manages saving and loading the game state to JSON files.
 // Save files are stored in Application.persistentDataPath/Saves/.
-
+//NOT WORKING IN LAST VERSION, 
+//TODO: FIX IN THE FUTURE, Not core for the MVP.
 public class SaveGameManager : MonoBehaviour
 {
     public static SaveGameManager Instance { get; private set; }

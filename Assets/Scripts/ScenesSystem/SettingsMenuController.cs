@@ -59,8 +59,7 @@ public class SettingsMenuController : MonoBehaviour
 
     private void Awake()
     {
-        if (mainMenuController == null && GameResources.Instance != null)
-            mainMenuController = GameResources.Instance.MainMenuControllerRef;
+        ResolveResources();
 
         if (backButton != null)
             backButton.onClick.AddListener(OnBackClicked);
@@ -108,24 +107,42 @@ public class SettingsMenuController : MonoBehaviour
 
     private void OnEnable()
     {
+        ResolveResources();
+
+        // Pull every control from PlayerPrefs when the menu opens.
+        // This keeps the UI honest even if settings changed from another scene or from startup code.
         //Set sliders to current values from PlayerPrefs
         if (musicVolumeSlider != null)
-            musicVolumeSlider.value = PlayerPrefs.GetFloat("MusicVolume", 1f);
+            musicVolumeSlider.SetValueWithoutNotify(PlayerPrefs.GetFloat("MusicVolume", 1f));
         if (sfxVolumeSlider != null)
-            sfxVolumeSlider.value = PlayerPrefs.GetFloat("SFXVolume", 1f);
+            sfxVolumeSlider.SetValueWithoutNotify(PlayerPrefs.GetFloat("SFXVolume", 1f));
         if (announcementDurationSlider != null)
-            announcementDurationSlider.value = PlayerPrefs.GetFloat(GameController.AnnouncementDurationPrefKey, GameController.AnnouncementDurationDefault);
+            announcementDurationSlider.SetValueWithoutNotify(PlayerPrefs.GetFloat(GameController.AnnouncementDurationPrefKey, GameController.AnnouncementDurationDefault));
         if (animationDurationSlider != null)
-            animationDurationSlider.value = PlayerPrefs.GetFloat(GameController.AnimationDurationPrefKey, GameController.AnimationDurationDefault);
+            animationDurationSlider.SetValueWithoutNotify(PlayerPrefs.GetFloat(GameController.AnimationDurationPrefKey, GameController.AnimationDurationDefault));
         if (aiThinkingTimeSlider != null)
-            aiThinkingTimeSlider.value = PlayerPrefs.GetFloat(GameController.AIThinkingTimePrefKey, GameController.AIThinkingTimeDefault);
+            aiThinkingTimeSlider.SetValueWithoutNotify(PlayerPrefs.GetFloat(GameController.AIThinkingTimePrefKey, GameController.AIThinkingTimeDefault));
         if (boardRotationToggle != null)
-            boardRotationToggle.isOn = PlayerPrefs.GetInt(BoardRotationPrefKey, 1) == 1;
+            boardRotationToggle.SetIsOnWithoutNotify(PlayerPrefs.GetInt(BoardRotationPrefKey, 1) == 1);
         if (scoringHelperToggle != null)
-            scoringHelperToggle.isOn = PlayerPrefs.GetInt(ScoringHelperPrefKey, 1) == 1;
-        WireFlowerSelectorButtons();
+            scoringHelperToggle.SetIsOnWithoutNotify(PlayerPrefs.GetInt(ScoringHelperPrefKey, 1) == 1);
         RefreshFlowerSelectorUI();
 
+    }
+
+    private void ResolveResources()
+    {
+        GameResources resources = GameResources.Instance;
+        if (resources == null) return;
+
+        if (mainMenuController == null)
+            mainMenuController = resources.MainMenuControllerRef;
+
+        if (flowerSpriteLibrary == null)
+            flowerSpriteLibrary = resources.SpriteLibrary;
+
+        if (flowerSpriteData == null)
+            flowerSpriteData = resources.SpriteData;
     }
 
     private void MusicVolumeChanged(float value)
@@ -143,21 +160,25 @@ public class SettingsMenuController : MonoBehaviour
     private void OnAnnouncementDurationChanged(float value)
     {
         PlayerPrefs.SetFloat(GameController.AnnouncementDurationPrefKey, value);
-        if (GameController.Instance != null)
-            GameController.Instance.SetAnnouncementMultiplier(value);
+        GameController gc = GameResources.GetGameController();
+        if (gc != null)
+            gc.SetAnnouncementMultiplier(value);
     }
 
     private void OnAnimationDurationChanged(float value)
     {
         PlayerPrefs.SetFloat(GameController.AnimationDurationPrefKey, value);
-        if (GameController.Instance != null)
-            GameController.Instance.SetAnimationMultiplier(value);
+        GameController gc = GameResources.GetGameController();
+        if (gc != null)
+            gc.SetAnimationMultiplier(value);
     }
 
     private void OnAIThinkingTimeChanged(float seconds)
     {
         PlayerPrefs.SetFloat(GameController.AIThinkingTimePrefKey, seconds);
-        AIPlayerController ai = FindObjectOfType<AIPlayerController>();
+        AIPlayerController ai = GameResources.Instance != null
+            ? GameResources.Instance.AIPlayerController
+            : FindFirstObjectByType<AIPlayerController>();
         if (ai != null)
             ai.SetAIThinkingTimeMs(seconds * 1000f);
     }
@@ -166,7 +187,8 @@ public class SettingsMenuController : MonoBehaviour
     {
         PlayerPrefs.SetInt(BoardRotationPrefKey, enabled ? 1 : 0);
 
-        PlayerBoardView[] views = FindObjectsOfType<PlayerBoardView>(true);
+        // Refresh every visible board immediately
+        PlayerBoardView[] views = FindObjectsByType<PlayerBoardView>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         for (int i = 0; i < views.Length; i++)
             views[i].RefreshBoardRotationMode();
     }
@@ -175,7 +197,8 @@ public class SettingsMenuController : MonoBehaviour
     {
         PlayerPrefs.SetInt(ScoringHelperPrefKey, enabled ? 1 : 0);
 
-        PlayerGridView[] grids = FindObjectsOfType<PlayerGridView>(true);
+        // Force all board overlays to redraw
+        PlayerGridView[] grids = FindObjectsByType<PlayerGridView>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         for (int i = 0; i < grids.Length; i++)
             grids[i].RefreshScoringHelperOverlay();
     }
@@ -212,6 +235,7 @@ public class SettingsMenuController : MonoBehaviour
         int count = flowerSpriteLibrary.VariantCount(color);
         if (count <= 0) return;
 
+        // Wrap around in both directions so left/right cycling never gets stuck at the ends.
         int current = FlowerSpriteSettings.LoadIndex(color);
         int next = (current + delta) % count;
         if (next < 0) next += count;

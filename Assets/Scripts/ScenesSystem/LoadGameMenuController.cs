@@ -8,7 +8,8 @@ using UnityEngine.UI;
 //                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
-
+//NOT WORKING IN LAST VERSION, 
+//TODO: FIX IN THE FUTURE, Not core for the MVP.
 /// Controls the "Load Game" menu.
 public class LoadGameMenuController : MonoBehaviour
 {
@@ -73,6 +74,7 @@ public class LoadGameMenuController : MonoBehaviour
 
     private void RefreshSaveList()
     {
+        // Clear old buttons first because this panel can be reopened many times in one app session.
         // Destroy previously spawned slots
         foreach (GameObject slot in _spawnedSlots)
         {
@@ -110,6 +112,8 @@ public class LoadGameMenuController : MonoBehaviour
 
             if (btn != null)
             {
+                // Capture the current loop value so each button keeps its own save name.
+                // Without the local variable, every button could end up pointing at the last save in the list.
                 string captured = saveName; // capture for closure
                 btn.onClick.AddListener(() => OnSaveSlotSelected(captured));
             }
@@ -146,6 +150,7 @@ public class LoadGameMenuController : MonoBehaviour
 
         // Launch the correct game scene based on the loaded player count
         string sceneName = setupData.GetSceneForPlayerCount();
+        Time.timeScale = 1f;
         SceneManager.LoadScene(sceneName);
     }
 
