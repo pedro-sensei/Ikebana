@@ -15,7 +15,7 @@ MonoBehaviour:
   OpponentName: Mini-Max
   Portrait: {fileID: 1719056679, guid: 99941df9b16e4134d89b0b244f1041a6, type: 3}
   BrainType: 1
-  OptimizerWeights: {fileID: 0}
+  OptimizerWeights: {fileID: 11400000, guid: fd3a7422b1972444c9c041c08b21009a, type: 2}
   EmilyEarlyWeights: {fileID: 0}
   EmilyMidWeights: {fileID: 0}
   EmilyLateWeights: {fileID: 0}
@@ -25,5 +25,5 @@ MonoBehaviour:
   RelativeImmediateSimulationWeight: 1
   RelativeTerminalDeltaWeight: 10000
   RelativeExpectedMoveWeight: 0.35
-  RelativeUsePhaseAwareImmediateWeight: 1
+  RelativeUsePhaseAwareImmediateWeight: 0
   NeuralNetwork: {fileID: 0}

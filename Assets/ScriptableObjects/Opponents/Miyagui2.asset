@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AIOpponentData
   OpponentName: Miyagui2.0
   Portrait: {fileID: -199135487, guid: 170a74e15b9083e46afac79d13c53b86, type: 3}
-  BrainType: 11
-  OptimizerWeights: {fileID: 11400000, guid: e6c873678d3470d4aa9e35889ad07145, type: 2}
+  BrainType: 1
+  OptimizerWeights: {fileID: 11400000, guid: bece208f5699dae469bbf46f0dfa2261, type: 2}
   EmilyEarlyWeights: {fileID: 0}
   EmilyMidWeights: {fileID: 0}
   EmilyLateWeights: {fileID: 0}

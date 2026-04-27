@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7941677e5f4c4a94b85e54a68f190cd3, type: 3}
-  m_Name: Zero
+  m_Name: Zero 1
   m_EditorClassIdentifier: Assembly-CSharp::GAGenome
   placingWeight: 1
   oneMoveFillingBonus: 1

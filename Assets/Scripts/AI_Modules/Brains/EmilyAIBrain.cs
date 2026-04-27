@@ -175,6 +175,17 @@ public class MinEmilyBrain : IMinimalAIBrain, IEvolvableBrain
         ApplyStageGenome(2, late);
         BuildWorkers();
     }
+
+    public MinEmilyBrain(BasicGAGenome early, BasicGAGenome mid, BasicGAGenome late, GameConfigSnapshot config) : this()
+    {
+        if (config != null)
+            _config = config;
+
+        ApplyStageGenome(0, early);
+        ApplyStageGenome(1, mid);
+        ApplyStageGenome(2, late);
+        BuildWorkers();
+    }
     #endregion
 
     #region INTERFACE IMPLEMENTATION

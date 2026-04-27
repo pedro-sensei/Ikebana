@@ -2063,7 +2063,7 @@ PrefabInstance:
       objectReference: {fileID: -419431673, guid: 09598600f657be9478a6e7f324f37596, type: 3}
     - target: {fileID: 5449938673450777204, guid: b47962f938f9183418a655ca85354d67, type: 3}
       propertyPath: playerSlots.Array.data[0].PlayerName
-      value: Optimus
+      value: GENOME
       objectReference: {fileID: 0}
     - target: {fileID: 5449938673450777204, guid: b47962f938f9183418a655ca85354d67, type: 3}
       propertyPath: playerSlots.Array.data[0].PlayerType
@@ -4534,7 +4534,7 @@ PrefabInstance:
     - target: {fileID: 3872441015164255821, guid: 962032573d6d43f4b9427ad09193b00d, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 1514481293}
     - target: {fileID: 3872441015164255821, guid: 962032573d6d43f4b9427ad09193b00d, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 

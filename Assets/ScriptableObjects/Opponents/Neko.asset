@@ -25,5 +25,5 @@ MonoBehaviour:
   RelativeImmediateSimulationWeight: 1
   RelativeTerminalDeltaWeight: 10000
   RelativeExpectedMoveWeight: 0.35
-  RelativeUsePhaseAwareImmediateWeight: 1
+  RelativeUsePhaseAwareImmediateWeight: 0
   NeuralNetwork: {fileID: 0}

@@ -15,7 +15,7 @@ MonoBehaviour:
   OpponentName: Friendly
   Portrait: {fileID: 1315785179, guid: 170a74e15b9083e46afac79d13c53b86, type: 3}
   BrainType: 3
-  OptimizerWeights: {fileID: 0}
+  OptimizerWeights: {fileID: 11400000, guid: ac702867ec02082459708ad349da5cab, type: 2}
   EmilyEarlyWeights: {fileID: 0}
   EmilyMidWeights: {fileID: 0}
   EmilyLateWeights: {fileID: 0}

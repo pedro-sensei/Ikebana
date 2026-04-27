@@ -16,7 +16,7 @@ MonoBehaviour:
   NumPlayers: 2
   CountPerColor: 20
   NumColors: 5
-  FlowerColors: 
+  FlowerColors: 0001020304
   NumFactories: 5
   FlowersPerDisplay: 4
   GridSize: 5

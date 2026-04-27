@@ -3,8 +3,8 @@ using System.Collections;
 
 
 
-//=^..^=   =^..^=   VERSION 1.0.5 (April 2026)    =^..^=    =^..^=
-//                    Last Update 15/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 
@@ -57,7 +57,7 @@ public class GameSimulatorRunner : MonoBehaviour
     [SerializeField] private bool autoRun = true;
 
     [Header("Output (Optional)")]
-    [SerializeField] private TMPro.TextMeshProUGUI resultsText;
+    [SerializeField] private LogSystem resultsLog;
 
     private bool _isRunning = false;
    // private SimulationBatchResult _lastResult;
@@ -100,6 +100,9 @@ public class GameSimulatorRunner : MonoBehaviour
     private IEnumerator RunSimulationCoroutine()
     {
         _isRunning = true;
+
+        if (resultsLog != null)
+            resultsLog.ClearLogs();
 
         // Apply the assigned game config (or keep current defaults)
         if (gameConfigData != null)
@@ -150,8 +153,12 @@ public class GameSimulatorRunner : MonoBehaviour
         }
 
         Debug.Log($"Starting simulation: {numberOfGames} games, {numPlayers} players");
+        AppendResultsLine($"Starting simulation: {numberOfGames} games, {numPlayers} players");
         for (int i = 0; i < numPlayers; i++)
+        {
             Debug.Log($"  Player {i}: {names[i]} ({brains[i].BrainName})");
+            AppendResultsLine($"  Player {i}: {names[i]} ({brains[i].BrainName})");
+        }
 
         SimulationBatchResult batch = new SimulationBatchResult(numPlayers, numberOfGames);
         for (int i = 0; i < numPlayers; i++)
@@ -180,7 +187,9 @@ public class GameSimulatorRunner : MonoBehaviour
 
                 if (logEveryGame)
                 {
-                    Debug.Log($"Game {g + 1}/{numberOfGames} completed. Winner: {result.PlayerNames[result.WinnerIndex]} (Score: {result.Scores[result.WinnerIndex]})");
+                    string gameLog = $"Game {g + 1}/{numberOfGames} completed. Winner: {result.PlayerNames[result.WinnerIndex]} (Score: {result.Scores[result.WinnerIndex]})";
+                    Debug.Log(gameLog);
+                    AppendResultsLine(gameLog);
                 }
                 else
                 {
@@ -216,10 +225,18 @@ public class GameSimulatorRunner : MonoBehaviour
 
         Debug.Log(summary);
 
-        if (resultsText != null)
-            resultsText.text = summary;
+        if (resultsLog != null)
+            resultsLog.AddLog(summary);
 
         _isRunning = false;
+    }
+
+    private void AppendResultsLine(string line)
+    {
+        if (resultsLog == null)
+            return;
+
+        resultsLog.AddLog(line);
     }
     #endregion
 }
@@ -243,7 +260,7 @@ public class SimulationPlayerConfig
     //[Tooltip("Weights asset (only for GreedyAdjustable)")]
    // public GAGenome GreedyWeights;
 
-    [Tooltip("Weights asset (only for Optimizer)")]
+    [Tooltip("Weights asset (used by Optimizer and Friendly)")]
     public BasicGAGenome OptimizerWeights;
 
     [Tooltip("Emily early-game weights (rounds 1-2).")]

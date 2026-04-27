@@ -4,8 +4,8 @@ using Unity.Burst;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-//=^..^=   =^..^=   VERSION 1.0.2 (April 2026)    =^..^=    =^..^=
-//                    Last Update 01/042026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 
@@ -149,7 +149,7 @@ public class MinimalSimulationPlayerConfig
 
     public AIBrainType BrainType = AIBrainType.Random;
 
-    [Tooltip("Weights asset (only for GreedyAdjustable)")]
+    [Tooltip("Weights asset (used by Optimizer and Friendly)")]
     public BasicGAGenome GreedyWeights;
 
     [Tooltip("Emily early-game weights (rounds 1-2).")]
@@ -192,10 +192,18 @@ public static class MinimalBrainFactory
             //    return new MinMaxBrain(minMaxDepth);
             case AIBrainType.Rookie:
                 return new MinRookieBrain();
-            //case AIBrainType.Friendly:
-            //    return new MinimalFriendlyBrain();
+            case AIBrainType.Friendly:
+                return weights != null
+                    ? new MinFriendlyBrain(new float[]
+                    {
+                        weights.SimulateScoringWeight,
+                        weights.PenaltyWeight,
+                        weights.TilesPlacedWeight,
+                        weights.LineCompletionWeight
+                    }, GameConfig.CreateSnapshot())
+                    : new MinFriendlyBrain();
             case AIBrainType.Optimizer:
-                return new MinOptimizerBrain();
+                return weights != null ? new MinOptimizerBrain(weights) : new MinOptimizerBrain();
             case AIBrainType.Emily:
                 return new MinEmilyBrain(emilyEarly, emilyMid, emilyLate);
             case AIBrainType.GoodRandom:

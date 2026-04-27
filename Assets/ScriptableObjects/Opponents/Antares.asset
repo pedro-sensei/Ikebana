@@ -14,11 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AIOpponentData
   OpponentName: Antares
   Portrait: {fileID: -1719629389, guid: 170a74e15b9083e46afac79d13c53b86, type: 3}
-  BrainType: 12
+  BrainType: 7
   OptimizerWeights: {fileID: 0}
-  EmilyEarlyWeights: {fileID: 11400000, guid: bdc80a7cddf72084782cda6bcfc504bb, type: 2}
-  EmilyMidWeights: {fileID: 11400000, guid: 2af1b0106aadd394096988483cc23c16, type: 2}
-  EmilyLateWeights: {fileID: 11400000, guid: 52de02f5879e89f44a49ffbb72ba1fc3, type: 2}
+  EmilyEarlyWeights: {fileID: 11400000, guid: a4e171bb63ced0d45a72c496568234e4, type: 2}
+  EmilyMidWeights: {fileID: 11400000, guid: 1d71e003ec4bb2c46b1ba712f4b9d062, type: 2}
+  EmilyLateWeights: {fileID: 11400000, guid: 8032f4d41da5281478b86a282c74c69b, type: 2}
   MinMaxDepth: 1
   MinMaxTimeLimitMs: 100
+  MinMaxEvaluator: 0
+  RelativeImmediateSimulationWeight: 1
+  RelativeTerminalDeltaWeight: 10000
+  RelativeExpectedMoveWeight: 0.35
+  RelativeUsePhaseAwareImmediateWeight: 1
   NeuralNetwork: {fileID: 0}

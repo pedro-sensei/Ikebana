@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73f1118f8e80b274dbdb740b9c60c674, type: 3}
   m_Name: emily0_early
   m_EditorClassIdentifier: Assembly-CSharp::BasicGAGenome
-  SimulateScoringWeight: 3.493124
-  PenaltyWeight: 15.838838
-  TilesPlacedWeight: 17.708544
-  LineCompletionWeight: 14.314662
+  SimulateScoringWeight: 4
+  PenaltyWeight: 25
+  TilesPlacedWeight: 18
+  LineCompletionWeight: 15
   ChaseBonusRowWeights:
   - 12.784281
   - 21.370672
@@ -34,9 +34,9 @@ MonoBehaviour:
   - 10.166311
   - 9.071767
   - 21.278221
-  TryPushPenaltyWeight: 0.8391482
-  TryDenyMoveWeight: 1.973531
-  AvoidPartialLineWeight: 8.517019
-  FirstPlayerTokenWeight: 9.744855
-  PrioritizeCentralPlacementWeight: 17.838163
-  PrioritizeTopRowsWeight: 5.9585867
+  TryPushPenaltyWeight: 1
+  TryDenyMoveWeight: 2
+  AvoidPartialLineWeight: 10
+  FirstPlayerTokenWeight: 10
+  PrioritizeCentralPlacementWeight: 25
+  PrioritizeTopRowsWeight: 12

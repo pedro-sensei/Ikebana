@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AIOpponentData
   OpponentName: Emily
   Portrait: {fileID: -723515647, guid: 09598600f657be9478a6e7f324f37596, type: 3}
-  BrainType: 12
+  BrainType: 7
   OptimizerWeights: {fileID: 0}
   EmilyEarlyWeights: {fileID: 11400000, guid: 01760569598e2b648b589dd9b4b04b7e, type: 2}
   EmilyMidWeights: {fileID: 11400000, guid: 50734bc62356780468dd329faea896c0, type: 2}
@@ -22,4 +22,8 @@ MonoBehaviour:
   MinMaxDepth: 1
   MinMaxTimeLimitMs: 100
   MinMaxEvaluator: 0
+  RelativeImmediateSimulationWeight: 1
+  RelativeTerminalDeltaWeight: 10000
+  RelativeExpectedMoveWeight: 0.35
+  RelativeUsePhaseAwareImmediateWeight: 1
   NeuralNetwork: {fileID: 0}

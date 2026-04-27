@@ -38,7 +38,9 @@ public static class AIBrainFactory
                 return new RookieAIBrain();
 
             case AIBrainType.Friendly:
-                return new FriendlyAIBrain();
+                return optimizerWeights != null
+                    ? new FriendlyAIBrain(optimizerWeights)
+                    : new FriendlyAIBrain();
 
             case AIBrainType.MinMax:
             {
@@ -83,13 +85,13 @@ public static class AIBrainFactory
             case AIBrainType.Emily:
                 return new EmilyAIBrain(emilyEarlyWeights, emilyMidWeights, emilyLateWeights);
 
-            case AIBrainType.IkebanaAgentV2:
-                if (mlAgentModel != null)
-                {
-                    return new IkebanaAgentV2Brain(mlAgentModel);
-                }
-                Debug.LogWarning("IkebanaAgentV2 brain requires a ModelAsset (.onnx)");
-                return new RookieAIBrain();
+            //case AIBrainType.IkebanaAgentV2:
+            //    if (mlAgentModel != null)
+            //    {
+            //        return new IkebanaAgentV2Brain(mlAgentModel);
+            //    }
+            //    Debug.LogWarning("IkebanaAgentV2 brain requires a ModelAsset (.onnx)");
+            //    return new RookieAIBrain();
 
             default:
                 Debug.LogWarning("Using Random by default");

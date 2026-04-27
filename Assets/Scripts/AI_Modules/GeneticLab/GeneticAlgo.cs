@@ -21,6 +21,14 @@ using UnityEngine;
 //
 
 #region NEW GENETIC ALGORITHM
+
+public enum BestGenomeSelectionMethod
+{
+    BestEver,
+    BestLastGen,
+    Highlander
+}
+
 public class EvolvableGeneticAlgo
 {
     #region CONFIGURATION
@@ -29,7 +37,7 @@ public class EvolvableGeneticAlgo
     public int GamesPerEval = 20;
     public float MutationRate = 0.2f;
     public float MutationAmount = 5f;
-    public int SurvivorsCount = 5;
+    public int EliteCount = 5;
     public int TournamentSize = 3;
     public bool Coevolution = false;
     public GAOpponentConfig[] Opponents = { new GAOpponentConfig() };
@@ -38,7 +46,10 @@ public class EvolvableGeneticAlgo
     public int numPlayers = 2;
     public int ThreadCount = 1;
     public GameConfigData GameConfigData;
-    public TextMeshProUGUI LogOutput { get; internal set; }
+    public BestGenomeSelectionMethod BestGenomeSelection = BestGenomeSelectionMethod.BestEver;
+    public int HighlanderChampionsPerGeneration = 1;
+    public int HighlanderFinalOpponentCount = 3;
+    public LogSystem LogOutput { get; internal set; }
     #endregion
 
     #region FIELDS AND PROPERTIES
@@ -51,21 +62,69 @@ public class EvolvableGeneticAlgo
     private float[] _fitness;
     private float[] _bestEverGenes;
     private float _bestEverFitness = float.MinValue;
+    private float[] _bestLastGenerationGenes;
+    private float _bestLastGenerationFitness = float.MinValue;
+    private int _bestLastGenerationGeneration = -1;
+    private float[] _selectedBestGenes;
+    private float _selectedBestFitness = float.MinValue;
+    private int _selectedBestGeneration = -1;
     private System.Random _rand;
     private int _currentGeneration;
+    private int _bestEverGeneration = -1;
+    private bool _highlanderResolved;
+
+    private int _totalGamesPlayed;
+    private int _abortedGames;
+    private int _gamesLessThanFiveRounds;
+    private int _gamesZeroPointsBothPlayers;
 
     private MinimalGameSimulator[] _threadSimulators;
     private System.Random[] _threadRngs;
     private GameConfigSnapshot _configSnapshot;
+    private List<GenerationChampion> _highlanderChampions;
 
     // Factory delegate: creates a fresh IMinimalAIBrain from a gene array.
     public delegate IMinimalAIBrain BrainFactory(float[] genes, GameConfigSnapshot config);
     private BrainFactory _brainFactory;
 
-    public float BestFitness => _bestEverFitness;
-    public float[] BestGenes => _bestEverGenes;
+    private sealed class GenerationChampion
+    {
+        public float[] Genes;
+        public float Fitness;
+        public int Generation;
+    }
+
+    public float BestFitness
+    {
+        get
+        {
+            EnsureBestGenomeSelectionResolved();
+            return _selectedBestFitness;
+        }
+    }
+
+    public float[] BestGenes
+    {
+        get
+        {
+            EnsureBestGenomeSelectionResolved();
+            return _selectedBestGenes;
+        }
+    }
     public int CurrentGeneration => _currentGeneration;
+    public int BestGeneration
+    {
+        get
+        {
+            EnsureBestGenomeSelectionResolved();
+            return _selectedBestGeneration;
+        }
+    }
     public bool IsComplete => _currentGeneration >= Generations;
+    public int TotalGamesPlayed => _totalGamesPlayed;
+    public int AbortedGames => _abortedGames;
+    public int GamesLessThanFiveRounds => _gamesLessThanFiveRounds;
+    public int GamesZeroPointsBothPlayers => _gamesZeroPointsBothPlayers;
     #endregion
 
     #region INITIALIZATION
@@ -77,15 +136,9 @@ public class EvolvableGeneticAlgo
         _geneCount = template.GeneCount;
 
         _rand = new System.Random(RandomSeed);
-        _currentGeneration = 0;
-        _bestEverFitness = float.MinValue;
-        _bestEverGenes = null;
+        ResetTrainingState();
 
-        if (GameConfigData != null)
-            GameConfig.Initialize(GameConfigData);
-        _configSnapshot = GameConfig.CreateSnapshot();
-        if (GameConfigData != null)
-            GameConfig.ResetToDefaults();
+        _configSnapshot = CreateTrainingConfigSnapshot();
 
         _population = new float[PopulationSize][];
         for (int i = 0; i < PopulationSize; i++)
@@ -97,6 +150,26 @@ public class EvolvableGeneticAlgo
 
         _threadSimulators = new MinimalGameSimulator[] { new MinimalGameSimulator(_configSnapshot) };
         _threadRngs = new System.Random[] { new System.Random(RandomSeed + 1) };
+    }
+
+    private void ResetTrainingState()
+    {
+        _currentGeneration = 0;
+        _bestEverFitness = float.MinValue;
+        _bestEverGenes = null;
+        _bestEverGeneration = -1;
+        _bestLastGenerationGenes = null;
+        _bestLastGenerationFitness = float.MinValue;
+        _bestLastGenerationGeneration = -1;
+        _selectedBestGenes = null;
+        _selectedBestFitness = float.MinValue;
+        _selectedBestGeneration = -1;
+        _highlanderResolved = false;
+        _highlanderChampions = new List<GenerationChampion>();
+        _totalGamesPlayed = 0;
+        _abortedGames = 0;
+        _gamesLessThanFiveRounds = 0;
+        _gamesZeroPointsBothPlayers = 0;
     }
 
     public void Dispose()
@@ -113,7 +186,7 @@ public class EvolvableGeneticAlgo
         if (IsComplete) return true;
 
         EvaluateFitness();
-        UpdateBestEver();
+        UpdateBestGenomeSelectionState();
         if (LogEachGeneration) LogGeneration();
 
         float[][] parents = TournamentSelection();
@@ -122,6 +195,9 @@ public class EvolvableGeneticAlgo
         NewGenerationFormation(offspring);
 
         _currentGeneration++;
+        if (IsComplete)
+            FinalizeBestGenomeSelection();
+
         return IsComplete;
     }
     #endregion
@@ -132,47 +208,69 @@ public class EvolvableGeneticAlgo
     {
         int threads = Math.Max(1, ThreadCount);
 
-        IMinimalAIBrain[] opponentBrains = null;
-        if (!Coevolution && Opponents != null)
-        {
-            opponentBrains = new IMinimalAIBrain[Opponents.Length];
-            for (int o = 0; o < Opponents.Length; o++)
-                opponentBrains[o] = CreateMinimalBrain(Opponents[o]);
-        }
+        IMinimalAIBrain[] opponentBrains = CreateOpponentBrains();
 
         if (threads <= 1)
         {
-            for (int i = 0; i < PopulationSize; i++)
-                _fitness[i] = EvaluateGenome(i, opponentBrains,
-                                             _threadSimulators[0], _threadRngs[0]);
+            EvaluateFitnessSingleThread(opponentBrains);
         }
         else
         {
-            int seedCounter = 0;
-            var configSnap = _configSnapshot;
-            var threadSim = new ThreadLocal<MinimalGameSimulator>(() => new MinimalGameSimulator(configSnap));
-            var threadRng = new ThreadLocal<System.Random>(
-                () => new System.Random(RandomSeed + Interlocked.Increment(ref seedCounter)));
+            EvaluateFitnessParallel(opponentBrains, threads);
+        }
+    }
 
-            try
-            {
-                var rangePartitioner = Partitioner.Create(0, PopulationSize);
-                var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = threads };
+    private IMinimalAIBrain[] CreateOpponentBrains()
+    {
+        if (Coevolution)
+            return null;
 
-                Parallel.ForEach(rangePartitioner, parallelOptions,
-                (range, loopState) =>
-                {
-                    var sim = threadSim.Value;
-                    var rng = threadRng.Value;
-                    for (int i = range.Item1; i < range.Item2; i++)
-                        _fitness[i] = EvaluateGenome(i, opponentBrains, sim, rng);
-                });
-            }
-            finally
+        if (Opponents == null)
+            return null;
+
+        IMinimalAIBrain[] opponentBrains = new IMinimalAIBrain[Opponents.Length];
+        for (int i = 0; i < Opponents.Length; i++)
+            opponentBrains[i] = CreateMinimalBrain(Opponents[i], _configSnapshot);
+
+        return opponentBrains;
+    }
+
+    private void EvaluateFitnessSingleThread(IMinimalAIBrain[] opponentBrains)
+    {
+        for (int i = 0; i < PopulationSize; i++)
+        {
+            _fitness[i] = EvaluateGenome(i, opponentBrains, _threadSimulators[0], _threadRngs[0]);
+        }
+    }
+
+    private void EvaluateFitnessParallel(IMinimalAIBrain[] opponentBrains, int threads)
+    {
+        int seedCounter = 0;
+        GameConfigSnapshot configSnapshot = _configSnapshot;
+        ThreadLocal<MinimalGameSimulator> threadSimulators =
+            new ThreadLocal<MinimalGameSimulator>(delegate { return new MinimalGameSimulator(configSnapshot); });
+        ThreadLocal<System.Random> threadRandoms = new ThreadLocal<System.Random>(
+            delegate { return new System.Random(RandomSeed + Interlocked.Increment(ref seedCounter)); });
+
+        try
+        {
+            OrderablePartitioner<Tuple<int, int>> populationRanges = Partitioner.Create(0, PopulationSize);
+            ParallelOptions options = new ParallelOptions();
+            options.MaxDegreeOfParallelism = threads;
+
+            Parallel.ForEach(populationRanges, options, delegate (Tuple<int, int> range, ParallelLoopState loopState)
             {
-                threadSim.Dispose();
-                threadRng.Dispose();
-            }
+                MinimalGameSimulator simulator = threadSimulators.Value;
+                System.Random rng = threadRandoms.Value;
+
+                for (int i = range.Item1; i < range.Item2; i++)
+                    _fitness[i] = EvaluateGenome(i, opponentBrains, simulator, rng);
+            });
+        }
+        finally
+        {
+            threadSimulators.Dispose();
+            threadRandoms.Dispose();
         }
     }
 
@@ -182,40 +280,131 @@ public class EvolvableGeneticAlgo
         IMinimalAIBrain candidate = _brainFactory(_population[genomeIndex], _configSnapshot);
         float totalScore = 0f;
         int totalGames = 0;
+        int localPlayed = 0;
+        int localAborted = 0;
+        int localShortGames = 0;
+        int localZeroGames = 0;
 
-        int loopCount = Coevolution
-            ? GamesPerEval
-            : (opponentBrains != null ? opponentBrains.Length * GamesPerEval : GamesPerEval);
+        int loopCount = GetEvaluationCount(opponentBrains);
 
         for (int g = 0; g < loopCount; g++)
         {
-            IMinimalAIBrain[] match = new IMinimalAIBrain[numPlayers];
-            match[0] = candidate;
+            IMinimalAIBrain[] match = CreateMatchup(candidate, genomeIndex, g, opponentBrains, rng);
 
-            for (int p = 1; p < numPlayers; p++)
+            localPlayed++;
+
+            try
             {
-                if (Coevolution)
-                {
-                    int oppIdx = rng.Next(PopulationSize);
-                    if (oppIdx == genomeIndex) oppIdx = (oppIdx + 1) % PopulationSize;
-                    match[p] = _brainFactory(_population[oppIdx], _configSnapshot);
-                }
-                else
-                {
-                    int configIdx = (g / GamesPerEval) % opponentBrains.Length;
-                    match[p] = opponentBrains[configIdx];
-                }
-            }
+                MinimalSimulationGameResult result = sim.RunGame(match);
+                if (result.IsAborted)
+                    localAborted++;
+                if (result.EndedInLessThanFiveRounds)
+                    localShortGames++;
+                if (result.AllPlayersHaveZeroScore)
+                    localZeroGames++;
 
-            MinimalSimulationGameResult result = sim.RunGame(match);
-            totalScore += EvolvableScoreFromResult(result);
-            totalGames++;
+                totalScore += EvolvableScoreFromResult(result);
+                totalGames++;
+            }
+            catch (Exception ex)
+            {
+                localAborted++;
+                totalScore -= 1f;
+                totalGames++;
+                Debug.LogWarning($"[EvolvableGeneticAlgo] Game aborted due to exception while evaluating genome {genomeIndex}: {ex.Message}");
+            }
         }
 
-        return totalGames > 0 ? totalScore / totalGames : 0f;
+        Interlocked.Add(ref _totalGamesPlayed, localPlayed);
+        Interlocked.Add(ref _abortedGames, localAborted);
+        Interlocked.Add(ref _gamesLessThanFiveRounds, localShortGames);
+        Interlocked.Add(ref _gamesZeroPointsBothPlayers, localZeroGames);
+
+        if (totalGames > 0)
+            return totalScore / totalGames;
+
+        return 0f;
+    }
+
+    private int GetEvaluationCount(IMinimalAIBrain[] opponentBrains)
+    {
+        if (Coevolution)
+            return GamesPerEval;
+
+        if (opponentBrains == null)
+            return GamesPerEval;
+
+        return opponentBrains.Length * GamesPerEval;
+    }
+
+    private IMinimalAIBrain[] CreateMatchup(IMinimalAIBrain candidate, int genomeIndex, int gameIndex,
+                                            IMinimalAIBrain[] opponentBrains, System.Random rng)
+    {
+        IMinimalAIBrain[] match = new IMinimalAIBrain[numPlayers];
+        match[0] = candidate;
+
+        // Seat 0 is always the candidate so the fitness extraction remains stable.
+        for (int playerIndex = 1; playerIndex < numPlayers; playerIndex++)
+        {
+            match[playerIndex] = CreateOpponentForMatch(genomeIndex, gameIndex, opponentBrains, rng);
+        }
+
+        return match;
+    }
+
+    private IMinimalAIBrain CreateOpponentForMatch(int genomeIndex, int gameIndex,
+                                                   IMinimalAIBrain[] opponentBrains, System.Random rng)
+    {
+        if (Coevolution)
+            return CreateCoevolutionOpponent(genomeIndex, rng);
+
+        return GetConfiguredOpponent(gameIndex, opponentBrains);
+    }
+
+    private IMinimalAIBrain CreateCoevolutionOpponent(int genomeIndex, System.Random rng)
+    {
+        int opponentIndex = rng.Next(PopulationSize);
+        if (opponentIndex == genomeIndex)
+            opponentIndex = (opponentIndex + 1) % PopulationSize;
+
+        return _brainFactory(_population[opponentIndex], _configSnapshot);
+    }
+
+    private IMinimalAIBrain GetConfiguredOpponent(int gameIndex, IMinimalAIBrain[] opponentBrains)
+    {
+        if (opponentBrains == null || opponentBrains.Length == 0)
+            return new MinimalRandomBrain();
+
+        int opponentIndex = (gameIndex / GamesPerEval) % opponentBrains.Length;
+        return opponentBrains[opponentIndex];
     }
     
-    private static IMinimalAIBrain CreateMinimalBrain(GAOpponentConfig config)
+    private GameConfigSnapshot CreateTrainingConfigSnapshot()
+    {
+        if (GameConfigData == null)
+            return GameConfig.CreateSnapshot();
+
+        int originalNumPlayers = GameConfigData.NumPlayers;
+        int originalNumFactories = GameConfigData.NumFactories;
+
+        try
+        {
+            GameConfigData.NumPlayers = numPlayers;
+            if (!GameConfigData.NonStandardSetups)
+                GameConfigData.NumFactories = GameConfig.GetDisplayCount(numPlayers);
+
+            GameConfig.Initialize(GameConfigData);
+            return GameConfig.CreateSnapshot();
+        }
+        finally
+        {
+            GameConfig.ResetToDefaults();
+            GameConfigData.NumPlayers = originalNumPlayers;
+            GameConfigData.NumFactories = originalNumFactories;
+        }
+    }
+
+    private static IMinimalAIBrain CreateMinimalBrain(GAOpponentConfig config, GameConfigSnapshot configSnapshot)
     {
         switch (config.BrainType)
         {
@@ -225,38 +414,87 @@ public class EvolvableGeneticAlgo
             //    return new MinimalGreedyBrainEML(config.Genome);
             //case AIBrainType.Greedy:
             //    return new MinimalGreedyBrain();
-            case AIBrainType.Optimizer when config.OptimizerGenome != null:
-                return new MinOptimizerBrain(config.OptimizerGenome);
+            case AIBrainType.Friendly:
+                return CreateFriendlyBrain(config, configSnapshot);
             case AIBrainType.Optimizer:
-                return new MinOptimizerBrain();
+                return CreateOptimizerBrain(config, configSnapshot);
             case AIBrainType.Emily:
-                return new MinEmilyBrain(config.EmilyEarlyGenome, config.EmilyMidGenome, config.EmilyLateGenome);
+                return new MinEmilyBrain(config.EmilyEarlyGenome, config.EmilyMidGenome, config.EmilyLateGenome, configSnapshot);
             default:
                 return new MinimalRandomBrain();
        }
     }
 
+    private static IMinimalAIBrain CreateFriendlyBrain(GAOpponentConfig config, GameConfigSnapshot configSnapshot)
+    {
+        if (config.OptimizerGenome == null)
+            return new MinFriendlyBrain(null, configSnapshot);
+
+        float[] genes = new float[]
+        {
+            config.OptimizerGenome.SimulateScoringWeight,
+            config.OptimizerGenome.PenaltyWeight,
+            config.OptimizerGenome.TilesPlacedWeight,
+            config.OptimizerGenome.LineCompletionWeight
+        };
+
+        return new MinFriendlyBrain(genes, configSnapshot);
+    }
+
+    private static IMinimalAIBrain CreateOptimizerBrain(GAOpponentConfig config, GameConfigSnapshot configSnapshot)
+    {
+        if (config.OptimizerGenome == null)
+            return new MinOptimizerBrain(configSnapshot);
+
+        return new MinOptimizerBrain(config.OptimizerGenome, configSnapshot);
+    }
+
     private static float EvolvableScoreFromResult(MinimalSimulationGameResult result)
     {
-        float base_score;
-        if (result.IsDraw)
-            base_score = 0.1f;
-        else if (result.WinnerIndex == 0)
-            base_score = 1.0f;
-        else
-            base_score = -0.5f;
+        float baseScore = GetBaseScore(result);
 
         int myScore = result.Scores[0];
-        int bestOppScore = 0;
-        for (int i = 1; i < result.Scores.Length; i++)
-            if (result.Scores[i] > bestOppScore)
-                bestOppScore = result.Scores[i];
+        int bestOppScore = GetBestOpponentScore(result.Scores);
+        float margin = ClampMargin((myScore - bestOppScore) / 100f);
 
-        float margin = (myScore - bestOppScore) / 100f;
-        if (margin < -0.5f) margin = -0.5f;
-        else if (margin > 0.5f) margin = 0.5f;
-        if (myScore <= 30 && bestOppScore > 30) margin = -0.5f;
-        return base_score + margin;
+        if (myScore <= 30 && bestOppScore > 30)
+            margin = -0.5f;
+
+        return baseScore + margin;
+    }
+
+    private static float GetBaseScore(MinimalSimulationGameResult result)
+    {
+        if (result.IsDraw)
+            return 0.1f;
+
+        if (result.WinnerIndex == 0)
+            return 1.0f;
+
+        return -0.5f;
+    }
+
+    private static int GetBestOpponentScore(int[] scores)
+    {
+        int bestOpponentScore = 0;
+        for (int i = 1; i < scores.Length; i++)
+        {
+            if (scores[i] > bestOpponentScore)
+                bestOpponentScore = scores[i];
+        }
+
+        return bestOpponentScore;
+    }
+
+    private static float ClampMargin(float margin)
+    {
+        if (margin < -0.5f)
+            return -0.5f;
+
+        if (margin > 0.5f)
+            return 0.5f;
+
+        return margin;
     }
     #endregion
 
@@ -289,8 +527,7 @@ public class EvolvableGeneticAlgo
         for (int i = 0; i < PopulationSize; i += 2)
         {
             float[] p1 = parents[i];
-            float[] p2 = parents[(i + 1) % PopulationSize];
-            if (p1 == p2) p2 = _population[_rand.Next(PopulationSize)];
+            float[] p2 = GetSecondParent(parents, i, p1);
 
             float alpha = (float)_rand.NextDouble();
             float[] c1 = new float[_geneCount];
@@ -303,9 +540,19 @@ public class EvolvableGeneticAlgo
             }
 
             offspring[count++] = c1;
-            if (count < PopulationSize) offspring[count++] = c2;
+            if (count < PopulationSize)
+                offspring[count++] = c2;
         }
         return offspring;
+    }
+
+    private float[] GetSecondParent(float[][] parents, int firstParentIndex, float[] firstParent)
+    {
+        float[] secondParent = parents[(firstParentIndex + 1) % PopulationSize];
+        if (secondParent == firstParent)
+            return _population[_rand.Next(PopulationSize)];
+
+        return secondParent;
     }
     #endregion
 
@@ -323,7 +570,9 @@ public class EvolvableGeneticAlgo
 
     private float MutateGene(float value)
     {
-        if ((float)_rand.NextDouble() > MutationRate) return value;
+        if ((float)_rand.NextDouble() > MutationRate)
+            return value;
+
         float delta = (float)(_rand.NextDouble() * 2.0 - 1.0) * MutationAmount;
         return Math.Max(0f, value + delta);
     }
@@ -333,14 +582,15 @@ public class EvolvableGeneticAlgo
 
     private void NewGenerationFormation(float[][] offspring)
     {
-        var sortedIndices = Enumerable.Range(0, PopulationSize)
+        List<int> sortedIndices = Enumerable.Range(0, PopulationSize)
             .OrderByDescending(i => _fitness[i]).ToList();
 
-        int eliteCount = Math.Min(SurvivorsCount, PopulationSize);
+        int eliteCount = Math.Min(EliteCount, PopulationSize);
 
         float[][] nextGen = new float[PopulationSize][];
         int idx = 0;
 
+        // Elitism keeps the strongest genomes unchanged before filling with offspring.
         for (int i = 0; i < eliteCount; i++)
         {
             nextGen[idx] = new float[_geneCount];
@@ -367,6 +617,14 @@ public class EvolvableGeneticAlgo
 
     #region BEST EVER TRACKING
 
+    private void UpdateBestGenomeSelectionState()
+    {
+        UpdateBestEver();
+        UpdateBestLastGeneration();
+        StoreHighlanderChampionsForGeneration();
+        UpdateSelectedBestForTrainingMode();
+    }
+
     private void UpdateBestEver()
     {
         for (int i = 0; i < PopulationSize; i++)
@@ -374,688 +632,278 @@ public class EvolvableGeneticAlgo
             if (_fitness[i] >= _bestEverFitness)
             {
                 _bestEverFitness = _fitness[i];
+                _bestEverGeneration = _currentGeneration;
                 if (_bestEverGenes == null)
                     _bestEverGenes = new float[_geneCount];
                 Array.Copy(_population[i], _bestEverGenes, _geneCount);
             }
         }
     }
-    #endregion
 
-    #region LOGGING
-
-    private void LogGeneration()
+    private void UpdateBestLastGeneration()
     {
-        float avg = 0f;
-        float best = float.MinValue;
-        foreach (float f in _fitness) { avg += f; if (f > best) best = f; }
-        avg /= PopulationSize;
-        Debug.Log($"Gen {_currentGeneration:D3} | Best: {best:F3}  Avg: {avg:F3}  BestEver: {_bestEverFitness:F3}");
-        if (LogOutput != null)
-            LogOutput.text += $"\nGen {_currentGeneration:D3} | Best: {best:F3}  Avg: {avg:F3}  BestEver: {_bestEverFitness:F3}";
+        int bestIndex = GetBestGenomeIndex();
+        if (bestIndex < 0)
+            return;
+
+        _bestLastGenerationFitness = _fitness[bestIndex];
+        _bestLastGenerationGeneration = _currentGeneration;
+        _bestLastGenerationGenes = CloneGenes(_population[bestIndex]);
     }
 
-    public string GetBestGenomeSummary()
+    private void StoreHighlanderChampionsForGeneration()
     {
-        if (_bestEverGenes == null) return "No training run yet.";
+        if (_highlanderChampions == null)
+            return;
 
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        sb.AppendLine($"Best fitness: {_bestEverFitness:F4}");
-        for (int i = 0; i < _geneCount; i++)
-            sb.AppendLine($"{_template.GetGeneName(i)}: {_bestEverGenes[i]:F2}");
-        return sb.ToString();
-    }
-    #endregion
-}
-#endregion
+        int championsToKeep = Math.Min(HighlanderChampionsPerGeneration, PopulationSize);
+        if (championsToKeep <= 0)
+            return;
 
-//DEPRECATED 15/04/2026.
-//OLD VERSION TO BE DEPRECATED
-/*
+        List<int> sortedIndices = Enumerable.Range(0, PopulationSize)
+            .OrderByDescending(i => _fitness[i]).ToList();
 
-#region OLD GENETIC ALGORITHM (TO BE DEPRECATED)
-
-/*
-// Implements a genetic algorithm to evolve GAGenome instances
-// TODO: TO BE DEPRECATED and replaced by EvolvableGeneticAlgo
-public class GeneticAlgo
-{
-    #region UNITY EDITOR FIELDS
-    [Header("Genetic Algorithm Parameters")]
-    [Tooltip("Number of individuals in each generation.")]
-    public int   PopulationSize    = 50;
-    [Tooltip("Number of generations to run.")]
-    public int   Generations       = 100;
-    [Tooltip("Number of games to play for each genome during fitness evaluation.")]
-    public int   GamesPerEval      = 20;
-    [Tooltip("Probability of mutating each gene in an offspring.")]
-    public float MutationRate      = 0.2f;
-    [Tooltip("Amount by which each gene is mutated.")]
-    public float MutationAmount    = 5f;
-    [Tooltip("Number of top-performing individuals to retain each generation.")]
-    public int   SurvivorsCount    = 5;
-    [Tooltip("Number of individuals participating in each tournament selection.")]
-    public int   TournamentSize    = 3;
-    [Tooltip("Whether to use coevolution during training.")]
-    public bool  Coevolution       = false;
-    [Tooltip("List of opponents to play against during fitness evaluation. Ignored if Coevolution is true.")]
-    public GAOpponentConfig[] Opponents = { new GAOpponentConfig() };
-    [Tooltip("Random seed for reproducibility.")]
-    public int   RandomSeed        = 42;
-    [Tooltip("Whether to log fitness stats each generation.")]
-    public bool  LogEachGeneration = true;
-    [Tooltip("Number of players in the game (2 or more).")]
-    public int numPlayers = 2;
-    [Tooltip("Number of threads for parallel fitness evaluation. 1 = single-threaded.")]
-    public int ThreadCount = 1;
-
-    [Tooltip("When true, uses GreedyAdjustableEML (round-gated) instead of GreedyAdjustable for candidate brains.")]
-    public bool UseEarlyMidLateStrategies = false;
-
-    [Tooltip("Game config data to use for simulations. If null, global defaults are used.")]
-    public GameConfigData GameConfigData;
-
-    [Tooltip("Log output")]
-    public TextMeshProUGUI LogOutput { get; internal set; }
-
-    //TODO: Consider adding ELO system.
-
-    #endregion
-    #region FIELDS AND PROPERTIES
-    private List<GAGenome> _population;
-    private float[]        _fitness;
-    private GAGenome       _bestEverGenome;
-    private float          _bestEverFitness = float.MinValue;
-    private System.Random  _rand;
-    private int            _currentGeneration;
-
-    private List<GAGenome> _genomePool;
-    private int            _poolNextFree;
-
-    private MinimalGameSimulator[] _threadSimulators;
-    private System.Random[]        _threadRngs;
-
-
-    // Config snapshot to be read by threads.
-    // Necessary when the hardcoded defaults 
-    // were removed.
-
-    private GameConfigSnapshot _configSnapshot;
-
-    //Public getters 
-    public GAGenome BestGenome        => _bestEverGenome;
-    public float    BestFitness       => _bestEverFitness;
-    public int      CurrentGeneration => _currentGeneration;
-    public bool     IsComplete        => _currentGeneration >= Generations;
-
-    #endregion
-    #region INITIALIZATION AND REMOVAL
-    public void Initialize()
-    {
-        _rand              = new System.Random(RandomSeed);
-        _currentGeneration = 0;
-        _bestEverFitness   = float.MinValue;
-        _bestEverGenome    = null;
-
-        // Build config snapshot.
-        if (GameConfigData != null)
-            GameConfig.Initialize(GameConfigData);
-        _configSnapshot = GameConfig.CreateSnapshot();
-        if (GameConfigData != null)
-            GameConfig.ResetToDefaults();
-
-        //Pool for population to avoid instantiation during runtime
-        int poolSize = PopulationSize * 2 + 1;
-        _genomePool  = new List<GAGenome>(poolSize);
-        for (int i = 0; i < poolSize; i++)
-            _genomePool.Add(ScriptableObject.CreateInstance<GAGenome>());
-        _poolNextFree = 0;
-
-        // Build initial population from the pool
-        _population = new List<GAGenome>(PopulationSize);
-        for (int i = 0; i < PopulationSize; i++)
+        for (int i = 0; i < championsToKeep; i++)
         {
-            GAGenome g = AcquireGenome(); //Avoids too much instantiation.
-            g.RandomInitialise(); 
-            _population.Add(g);
-        }
-
-        _fitness = new float[PopulationSize];
-
-        _threadSimulators = new MinimalGameSimulator[] { new MinimalGameSimulator(_configSnapshot) };
-        _threadRngs       = new System.Random[] { new System.Random(RandomSeed + 1) };
-    }
-    #endregion
-    #region GENOME POOL MANAGEMENT
-    
-
-    // Returns a genome from the pre-allocated pool. 
-    private GAGenome AcquireGenome()
-    {
-        if (_poolNextFree < _genomePool.Count)
-            return _genomePool[_poolNextFree++];
-
-        //Expansion in case the pool runs out.
-        GAGenome g = ScriptableObject.CreateInstance<GAGenome>();
-        _genomePool.Add(g);
-        _poolNextFree++;
-        return g;
-    }
-
-    // Resets the pool cursor to 0
-    private void ResetPool()
-    {
-        _poolNextFree = 0;
-    }
-
-    // Destroys all pooled ScriptableObjects. 
-    // Avoid leaking memory.
-    public void Dispose()
-    {
-        if (_genomePool != null)
-        {
-            foreach (var g in _genomePool)
-                if (g != null) UnityEngine.Object.Destroy(g);
-            _genomePool.Clear();
-        }
-        if (_bestEverGenome != null)
-        {
-            UnityEngine.Object.Destroy(_bestEverGenome);
-            _bestEverGenome = null;
+            int genomeIndex = sortedIndices[i];
+            GenerationChampion champion = new GenerationChampion();
+            champion.Genes = CloneGenes(_population[genomeIndex]);
+            champion.Fitness = _fitness[genomeIndex];
+            champion.Generation = _currentGeneration;
+            _highlanderChampions.Add(champion);
         }
     }
 
-    #endregion
-    #region GENERATIONS
-
-    // Runs one full generation. 
-    // Returns true when training is complete.
-    public bool ExecuteGeneration()
+    private void UpdateSelectedBestForTrainingMode()
     {
-        if (IsComplete) return true;
+        if (BestGenomeSelection == BestGenomeSelectionMethod.BestEver)
+        {
+            SetSelectedBestGenome(_bestEverGenes, _bestEverFitness, _bestEverGeneration);
+            return;
+        }
 
-        EvaluateFitness();
-        UpdateBestEver();
-
-        if (LogEachGeneration) LogGeneration();
-
-        List<GAGenome> parents   = TournamentSelection();
-        List<GAGenome> offspring = Crossover(parents);
-        MutatePopulation(offspring);
-        NewGenerationFormation(offspring);
-
-        _currentGeneration++;
-        return IsComplete;
+        if (BestGenomeSelection == BestGenomeSelectionMethod.BestLastGen)
+        {
+            SetSelectedBestGenome(_bestLastGenerationGenes, _bestLastGenerationFitness, _bestLastGenerationGeneration);
+        }
     }
 
-    #endregion
-    #region FITNESS EVALUATION
-
-    //Based on game results.
-    private void EvaluateFitness()
+    private void FinalizeBestGenomeSelection()
     {
-        int threads = 1;
-        if (ThreadCount > 1) threads = ThreadCount;
-        
-        // Snapshot all genome weights
-        GenomeWeights[] weightSnapshots = new GenomeWeights[PopulationSize];
-        for (int i = 0; i < PopulationSize; i++)
-            weightSnapshots[i] = GenomeWeights.FromGenome(_population[i]);
-
-        // Pre-create opponent brains
-        //Changed to minimal to be able to run it.
-        IMinimalAIBrain[] opponentBrainTemplates = null;
-        if (!Coevolution && Opponents != null)
+        if (BestGenomeSelection == BestGenomeSelectionMethod.Highlander)
         {
-            opponentBrainTemplates = new IMinimalAIBrain[Opponents.Length];
-            for (int o = 0; o < Opponents.Length; o++)
-                opponentBrainTemplates[o] = CreateMinimalBrain(Opponents[o]);
+            ResolveHighlanderChampion();
+            return;
         }
 
-        if (threads <= 1)
+        UpdateSelectedBestForTrainingMode();
+    }
+
+    private void EnsureBestGenomeSelectionResolved()
+    {
+        if (!IsComplete)
+            return;
+
+        if (BestGenomeSelection == BestGenomeSelectionMethod.Highlander && !_highlanderResolved)
         {
-            for (int i = 0; i < PopulationSize; i++)
-                _fitness[i] = EvaluateGenome(i, weightSnapshots, opponentBrainTemplates,
-                                            _threadSimulators[0], _threadRngs[0]);
+            ResolveHighlanderChampion();
+            return;
         }
-        else
+
+        if (_selectedBestGenes == null)
+            FinalizeBestGenomeSelection();
+    }
+
+    private void ResolveHighlanderChampion()
+    {
+        _highlanderResolved = true;
+
+        if (_highlanderChampions == null || _highlanderChampions.Count == 0)
         {
-            int seedCounter = 0;
-            var configSnap = _configSnapshot; // capture for lambda
-            var threadSim = new ThreadLocal<MinimalGameSimulator>(() => new MinimalGameSimulator(configSnap));
-            var threadRng = new ThreadLocal<System.Random>(
+            SetSelectedBestGenome(_bestLastGenerationGenes, _bestLastGenerationFitness, _bestLastGenerationGeneration);
+            return;
+        }
 
-                () => new System.Random(RandomSeed + Interlocked.Increment(ref seedCounter)));
+        if (_highlanderChampions.Count == 1)
+        {
+            GenerationChampion onlyChampion = _highlanderChampions[0];
+            SetSelectedBestGenome(onlyChampion.Genes, onlyChampion.Fitness, onlyChampion.Generation);
+            return;
+        }
 
-            try
+        GenerationChampion bestChampion = null;
+        float bestChampionFitness = float.MinValue;
+
+        for (int i = 0; i < _highlanderChampions.Count; i++)
+        {
+            GenerationChampion candidate = _highlanderChampions[i];
+            List<GenerationChampion> opponentPool = SelectHighlanderOpponentPool(i);
+            float tournamentFitness = EvaluateHighlanderChampion(candidate, opponentPool);
+
+            if (bestChampion == null || tournamentFitness >= bestChampionFitness)
             {
-                var rangePartitioner = Partitioner.Create(0, PopulationSize);
-                var parallelOptions  = new ParallelOptions { MaxDegreeOfParallelism = threads };
-
-                Parallel.ForEach(rangePartitioner, parallelOptions,
-                (range, loopState) =>
-                {
-                    var sim = threadSim.Value;
-                    var rng = threadRng.Value;
-
-                    for (int i = range.Item1; i < range.Item2; i++)
-                    {
-                        _fitness[i] = EvaluateGenome(i, weightSnapshots, opponentBrainTemplates,
-                                                    sim, rng);
-                    }
-                });
-            }
-            finally
-            {
-                threadSim.Dispose();
-                threadRng.Dispose();
+                bestChampion = candidate;
+                bestChampionFitness = tournamentFitness;
             }
         }
+
+        if (bestChampion != null)
+            SetSelectedBestGenome(bestChampion.Genes, bestChampionFitness, bestChampion.Generation);
     }
 
-    // Evaluates a single genome's fitness. 
-    // Thread-safe.
-    private float EvaluateGenome(int genomeIndex, GenomeWeights[] weights,
-                                 IMinimalAIBrain[] opponentBrains,
-                                 MinimalGameSimulator sim, System.Random rng)
+    private List<GenerationChampion> SelectHighlanderOpponentPool(int championIndex)
     {
-        IMinimalAIBrain candidate = UseEarlyMidLateStrategies
-            ? (IMinimalAIBrain)new MinimalGreedyBrainEML(weights[genomeIndex])
-            : new MinimalGreedyBrain(weights[genomeIndex]);
+        List<GenerationChampion> pool = new List<GenerationChampion>();
+        List<int> availableIndices = new List<int>();
+
+        for (int i = 0; i < _highlanderChampions.Count; i++)
+        {
+            if (i != championIndex)
+                availableIndices.Add(i);
+        }
+
+        int opponentsToKeep = Math.Min(HighlanderFinalOpponentCount, availableIndices.Count);
+        for (int i = 0; i < opponentsToKeep; i++)
+        {
+            int pickedIndex = _rand.Next(availableIndices.Count);
+            int championPoolIndex = availableIndices[pickedIndex];
+            pool.Add(_highlanderChampions[championPoolIndex]);
+            availableIndices.RemoveAt(pickedIndex);
+        }
+
+        return pool;
+    }
+
+    private float EvaluateHighlanderChampion(GenerationChampion champion, List<GenerationChampion> opponentPool)
+    {
+        if (opponentPool == null || opponentPool.Count == 0)
+            return champion.Fitness;
+
+        MinimalGameSimulator simulator = _threadSimulators[0];
+        System.Random rng = _threadRngs[0];
+        IMinimalAIBrain championBrain = _brainFactory(champion.Genes, _configSnapshot);
         float totalScore = 0f;
-        int   totalGames = 0;
+        int totalGames = 0;
 
-        int loopCount = Coevolution ? GamesPerEval : (opponentBrains != null ? opponentBrains.Length * GamesPerEval : GamesPerEval);
-
-        for (int g = 0; g < loopCount; g++)
+        // Final Highlander games use a fixed pool per champion so all finalists are judged under comparable pressure.
+        for (int gameIndex = 0; gameIndex < GamesPerEval; gameIndex++)
         {
-            IMinimalAIBrain[] match = new IMinimalAIBrain[numPlayers];
-            match[0] = candidate;
+            IMinimalAIBrain[] match = CreateHighlanderMatch(championBrain, opponentPool, gameIndex, rng);
+            MinimalSimulationGameResult result = simulator.RunGame(match);
 
-            for (int p = 1; p < numPlayers; p++)
-            {
-                if (Coevolution)
-                {
-                    int oppIdx = rng.Next(PopulationSize);
-                    if (oppIdx == genomeIndex) oppIdx = (oppIdx + 1) % PopulationSize;
-                    match[p] = UseEarlyMidLateStrategies
-                        ? (IMinimalAIBrain)new MinimalGreedyBrainEML(weights[oppIdx])
-                        : new MinimalGreedyBrain(weights[oppIdx]);
-                }
-                else
-                {
-                    int configIdx = (g / GamesPerEval) % opponentBrains.Length;
-                    match[p] = opponentBrains[configIdx];
-                }
-            }
-
-            MinimalSimulationGameResult result = sim.RunGame(match);
-            totalScore += ScoreFromResult(result);
+            totalScore += EvolvableScoreFromResult(result);
             totalGames++;
         }
 
-        //Avoid 0 division
-        return totalGames > 0 ? totalScore / totalGames : 0f;
-       
+        if (totalGames > 0)
+            return totalScore / totalGames;
+
+        return 0f;
     }
 
-    // Creates the appropriate IMinimalAIBrain.
-    // Based on game config.
-    // Allows multiple game setups.
-    private static IMinimalAIBrain CreateMinimalBrain(GAOpponentConfig config)
+    private IMinimalAIBrain[] CreateHighlanderMatch(IMinimalAIBrain championBrain, List<GenerationChampion> opponentPool,
+                                                    int gameIndex, System.Random rng)
     {
-        switch (config.BrainType)
+        IMinimalAIBrain[] match = new IMinimalAIBrain[numPlayers];
+        match[0] = championBrain;
+
+        for (int playerIndex = 1; playerIndex < numPlayers; playerIndex++)
         {
-            case AIBrainType.GreedyAdjustable when config.Genome != null:
-                return new MinimalGreedyBrain(config.Genome);
-            case AIBrainType.GreedyAdjustableEML when config.Genome != null:
-                return new MinimalGreedyBrainEML(config.Genome);
-            case AIBrainType.Greedy:
-                return new MinimalGreedyBrain();
-            case AIBrainType.Optimizer when config.OptimizerGenome != null:
-                return new MinOptimizerBrain(config.OptimizerGenome);
-            case AIBrainType.Optimizer:
-                return new MinOptimizerBrain();
-            default:
-                return new MinimalRandomBrain();
+            int opponentIndex = rng.Next(opponentPool.Count);
+            if (opponentPool.Count > 1)
+                opponentIndex = (opponentIndex + gameIndex + playerIndex - 1) % opponentPool.Count;
+
+            match[playerIndex] = _brainFactory(opponentPool[opponentIndex].Genes, _configSnapshot);
         }
+
+        return match;
     }
 
-    // Converts a game result into a fitness value.
-    // Thread-safe.
-    private static float ScoreFromResult(MinimalSimulationGameResult result)
+    private int GetBestGenomeIndex()
     {
-        float base_score;
-        if (result.IsDraw)
-            base_score = 0.1f;
-        else if (result.WinnerIndex == 0)
-            base_score = 1.0f;
-        else
-            base_score = -0.5f;
-
-        int myScore      = result.Scores[0];
-        int bestOppScore = 0;
-        for (int i = 1; i < result.Scores.Length; i++)
-        {
-            if (result.Scores[i] > bestOppScore)
-                bestOppScore = result.Scores[i];
-        }
-        float margin = (myScore - bestOppScore) / 100f;
-        if (margin < -0.5f) margin = -0.5f;
-        else if (margin > 0.5f) margin = 0.5f;
-        if (myScore <= 30 && bestOppScore >30) margin = -0.5f; //Extra penalty for losing with a low score.  
-        return base_score + margin;
-    }
-    #endregion
-    #region SELECTION
-
-    // Performs tournament selection to choose parents for crossover.
-    private List<GAGenome> TournamentSelection()
-    {
-        List<GAGenome> parents = new List<GAGenome>(PopulationSize);
+        int bestIndex = -1;
         for (int i = 0; i < PopulationSize; i++)
         {
-            int bestIdx = -1;
-            for (int t = 0; t < TournamentSize; t++)
-            {
-                int challenger = _rand.Next(PopulationSize);
-                if (bestIdx == -1 || _fitness[challenger] > _fitness[bestIdx])
-                    bestIdx = challenger;
-            }
-            parents.Add(_population[bestIdx]);
-        }
-        return parents;
-    }
-    #endregion
-    #region CROSSOVER
-
-
-    // Arithmetic crossover: each offspring gene = alpha*p1 + (1-alpha)*p2.
-    // Offspring are acquired from the genome pool (no new ScriptableObjects).
-    private List<GAGenome> Crossover(List<GAGenome> parents)
-    {
-        List<GAGenome> offspring = new List<GAGenome>(PopulationSize);
-        for (int i = 0; i < PopulationSize; i += 2)
-        {
-            GAGenome p1 = parents[i];
-            GAGenome p2 = parents[(i + 1) % PopulationSize];
-            if (p1 == p2) p2 = _population[_rand.Next(PopulationSize)];
-
-            float alpha = (float)_rand.NextDouble();
-            GAGenome c1 = AcquireGenome();
-            GAGenome c2 = AcquireGenome();
-
-            BlendGenes(p1, p2, alpha, c1);
-            BlendGenes(p1, p2, 1f - alpha, c2);
-
-            offspring.Add(c1);
-            if (offspring.Count < PopulationSize) offspring.Add(c2);
-        }
-        return offspring;
-    }
-
-
-    // Blends the genes of two parent genomes
-    private void BlendGenes(GAGenome a, GAGenome b, float alpha, GAGenome child)
-    {
-        child.placingWeight            = alpha * a.placingWeight            + (1-alpha) * b.placingWeight;
-        child.endGameBonusWeight       = alpha * a.endGameBonusWeight       + (1-alpha) * b.endGameBonusWeight;
-        child.denyOpponentWeight       = alpha * a.denyOpponentWeight       + (1-alpha) * b.denyOpponentWeight;
-        child.pushingPenaltiesWeight   = alpha * a.pushingPenaltiesWeight   + (1-alpha) * b.pushingPenaltiesWeight;
-        child.topRowsWeight            = alpha * a.topRowsWeight            + (1-alpha) * b.topRowsWeight;
-        child.centralPlacementWeight   = alpha * a.centralPlacementWeight   + (1-alpha) * b.centralPlacementWeight;
-        child.avoidPartialLinesWeight  = alpha * a.avoidPartialLinesWeight  + (1-alpha) * b.avoidPartialLinesWeight;
-        child.penaltyPerflower           = alpha * a.penaltyPerflower           + (1-alpha) * b.penaltyPerflower;
-        child.firstPlayerTokenBaseBonus= alpha * a.firstPlayerTokenBaseBonus+ (1-alpha) * b.firstPlayerTokenBaseBonus;
-        child.denyColorBaseBonus       = alpha * a.denyColorBaseBonus       + (1-alpha) * b.denyColorBaseBonus;
-        child.disruptExistingLineBonus = alpha * a.disruptExistingLineBonus + (1-alpha) * b.disruptExistingLineBonus;
-        child.denyCompletionBonus      = alpha * a.denyCompletionBonus      + (1-alpha) * b.denyCompletionBonus;
-        child.poisonColorBonus         = alpha * a.poisonColorBonus         + (1-alpha) * b.poisonColorBonus;
-        child.oneMoveFillingBonus      = alpha * a.oneMoveFillingBonus      + (1-alpha) * b.oneMoveFillingBonus;
-
-        int aIdx = _population.IndexOf(a);
-        int bIdx = _population.IndexOf(b);
-        float fitA = aIdx >= 0 ? _fitness[aIdx] : 0f;
-        float fitB = bIdx >= 0 ? _fitness[bIdx] : 0f;
-        //child.earlyRoundsThreshold = fitA >= fitB ? a.earlyRoundsThreshold : b.earlyRoundsThreshold;
-    }
-
-    #endregion
-    #region MUTATION
-
-  
-    // Creates mutations in the offspring population by randomly
-    // altering their genes based on MutationRate and MutationAmount.
-    private void MutatePopulation(List<GAGenome> offspring)
-    {
-        foreach (GAGenome genome in offspring)
-            MutateGenome(genome);
-    }
-
-
-
-    // Performs the mutation of a single genome's genes. 
-    // Each gene has a chance to be altered by a random 
-    //amount within MutationAmount.
-    private void MutateGenome(GAGenome g)
-    {
-        g.placingWeight            = MutateGene(g.placingWeight);
-        g.endGameBonusWeight       = MutateGene(g.endGameBonusWeight);
-        g.denyOpponentWeight       = MutateGene(g.denyOpponentWeight);
-        g.pushingPenaltiesWeight   = MutateGene(g.pushingPenaltiesWeight);
-        g.topRowsWeight            = MutateGene(g.topRowsWeight);
-        g.centralPlacementWeight   = MutateGene(g.centralPlacementWeight);
-        g.avoidPartialLinesWeight  = MutateGene(g.avoidPartialLinesWeight);
-        g.penaltyPerflower           = MutateGene(g.penaltyPerflower);
-        g.firstPlayerTokenBaseBonus= MutateGene(g.firstPlayerTokenBaseBonus);
-        g.denyColorBaseBonus       = MutateGene(g.denyColorBaseBonus);
-        g.disruptExistingLineBonus = MutateGene(g.disruptExistingLineBonus);
-        g.denyCompletionBonus      = MutateGene(g.denyCompletionBonus);
-        g.poisonColorBonus         = MutateGene(g.poisonColorBonus);
-        g.oneMoveFillingBonus      = MutateGene(g.oneMoveFillingBonus);
-
-    }
-
-
-
-    // Mutates a single gene value with a certain probability.
-    // Uses mutation rate to determine if mutation occurs,
-    // and mutation amount to determine the range of mutation.
-
-    private float MutateGene(float value)
-    {
-        if ((float)_rand.NextDouble() > MutationRate) return value;
-        float delta = (float)(_rand.NextDouble() * 2.0 - 1.0) * MutationAmount;
-        return Math.Max(0f, value + delta);
-    }
-
-    #endregion
-    #region NEW GENERATION FORMATION
-
-
-    // Elitism: keep top SurvivorsCount genomes, fill the rest with offspring..
-    private void NewGenerationFormation(List<GAGenome> offspring)
-    {
-        var sortedIndices = Enumerable.Range(0, PopulationSize)
-            .OrderByDescending(i => _fitness[i]).ToList();
-
-        // Snapshot elite gene values before resetting the pool
-        int eliteCount = Math.Min(SurvivorsCount, PopulationSize);
-        GAGenome[] eliteSnapshots = new GAGenome[eliteCount];
-        for (int i = 0; i < eliteCount; i++)
-            eliteSnapshots[i] = _population[sortedIndices[i]];
-
-        // Offspring gene values are already in pool slots from Crossover().
-        // Snapshot them as well before pool reset.
-        GAGenome[] offspringSnapshots = new GAGenome[offspring.Count];
-        for (int i = 0; i < offspring.Count; i++)
-            offspringSnapshots[i] = offspring[i];
-
-        // Reset pool cursor — all existing genomes become available for reuse
-        ResetPool();
-
-        // Build new population: elites first, then offspring
-        List<GAGenome> nextGen = new List<GAGenome>(PopulationSize);
-
-        for (int i = 0; i < eliteCount; i++)
-        {
-            GAGenome g = AcquireGenome();
-            g.CopyFrom(eliteSnapshots[i]);
-            nextGen.Add(g);
+            if (bestIndex == -1 || _fitness[i] > _fitness[bestIndex])
+                bestIndex = i;
         }
 
-        int outIdx = 0;
-        while (nextGen.Count < PopulationSize && outIdx < offspringSnapshots.Length)
-        {
-            GAGenome g = AcquireGenome();
-            g.CopyFrom(offspringSnapshots[outIdx++]);
-            nextGen.Add(g);
-        }
-
-        _population = nextGen;
-        _fitness    = new float[PopulationSize];
+        return bestIndex;
     }
 
-    #endregion
-    #region BEST EVER TRACKING
-
-    // Updates the best genome and fitness found so far across all generations.
-    // On ties keep the new one (latest found).(>=)
-
-    private void UpdateBestEver()
+    private float[] CloneGenes(float[] genes)
     {
-        for (int i = 0; i < PopulationSize; i++)
-        {
-            if (_fitness[i] >= _bestEverFitness)
-            {
-                _bestEverFitness = _fitness[i];
-                // bestEverGenome lives outside the pool — it's a standalone clone
-                if (_bestEverGenome == null)
-                    _bestEverGenome = _population[i].Clone();
-                else
-                    _bestEverGenome.CopyFrom(_population[i]);
-            }
-        }
+        if (genes == null)
+            return null;
+
+        float[] copy = new float[genes.Length];
+        Array.Copy(genes, copy, genes.Length);
+        return copy;
     }
 
+    private void SetSelectedBestGenome(float[] genes, float fitness, int generation)
+    {
+        _selectedBestGenes = CloneGenes(genes);
+        _selectedBestFitness = fitness;
+        _selectedBestGeneration = generation;
+    }
     #endregion
+
     #region LOGGING
-
-
-    // Creates a log entry for the current generation, 
-    // including best fitness, average fitness, and best-ever fitness.
 
     private void LogGeneration()
     {
-        float avg  = 0f;
-        float best = float.MinValue;
-        foreach (float f in _fitness) { avg += f; if (f > best) best = f; }
-        avg /= PopulationSize;
-        Debug.Log($"Gen {_currentGeneration:D3} | Best: {best:F3}  Avg: {avg:F3}  BestEver: {_bestEverFitness:F3}");
+        float averageFitness;
+        float bestFitness;
+        CalculateGenerationStats(out averageFitness, out bestFitness);
+
+        string message = $"Gen {_currentGeneration:D3} | Best: {bestFitness:F3}  Avg: {averageFitness:F3}  BestEver: {_bestEverFitness:F3}";
+        Debug.Log(message);
         if (LogOutput != null)
-        {
-            LogOutput.text += ($"\nGen {_currentGeneration:D3} | Best: {best:F3}  Avg: {avg:F3}  BestEver: {_bestEverFitness:F3}");
-        }
+            LogOutput.AddLog(message);
     }
 
+    private void CalculateGenerationStats(out float averageFitness, out float bestFitness)
+    {
+        float totalFitness = 0f;
+        bestFitness = float.MinValue;
 
-    // Generates a formatted summary of the best genome's fitness and parameter values.
+        foreach (float fitnessValue in _fitness)
+        {
+            totalFitness += fitnessValue;
+            if (fitnessValue > bestFitness)
+                bestFitness = fitnessValue;
+        }
+
+        averageFitness = totalFitness / PopulationSize;
+    }
 
     public string GetBestGenomeSummary()
     {
-        if (_bestEverGenome == null) return "No training run yet.";
+        EnsureBestGenomeSelectionResolved();
+
+        if (_selectedBestGenes == null)
+            return "No training run yet.";
 
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        sb.AppendLine($"Best fitness: {_bestEverFitness:F4}");
-        sb.AppendLine($"placingWeight:             {_bestEverGenome.placingWeight:F2}");
-        sb.AppendLine($"endGameBonusWeight:        {_bestEverGenome.endGameBonusWeight:F2}");
-        sb.AppendLine($"denyOpponentWeight:        {_bestEverGenome.denyOpponentWeight:F2}");
-        sb.AppendLine($"pushingPenaltiesWeight:    {_bestEverGenome.pushingPenaltiesWeight:F2}");
-        sb.AppendLine($"topRowsWeight:             {_bestEverGenome.topRowsWeight:F2}");
-        sb.AppendLine($"earlyRoundsThreshold:      {_bestEverGenome.earlyRoundsThreshold}");
-        sb.AppendLine($"centralPlacementWeight:    {_bestEverGenome.centralPlacementWeight:F2}");
-        sb.AppendLine($"avoidPartialLinesWeight:   {_bestEverGenome.avoidPartialLinesWeight:F2}");
-        sb.AppendLine($"penaltyPerflower:            {_bestEverGenome.penaltyPerflower:F2}");
-        sb.AppendLine($"firstPlayerTokenBonus:     {_bestEverGenome.firstPlayerTokenBaseBonus:F2}");
-        sb.AppendLine($"denyColorBaseBonus:        {_bestEverGenome.denyColorBaseBonus:F2}");
-        sb.AppendLine($"disruptExistingLineBonus:  {_bestEverGenome.disruptExistingLineBonus:F2}");
-        sb.AppendLine($"denyCompletionBonus:       {_bestEverGenome.denyCompletionBonus:F2}");
-        sb.AppendLine($"poisonColorBonus:          {_bestEverGenome.poisonColorBonus:F2}");
-        sb.AppendLine($"oneMoveFillingBonus:       {_bestEverGenome.oneMoveFillingBonus:F2}");
+        sb.AppendLine($"Best selection method: {BestGenomeSelection}");
+        sb.AppendLine($"Best fitness: {_selectedBestFitness:F4}");
+        sb.AppendLine($"Best generation: {_selectedBestGeneration + 1}");
+        for (int i = 0; i < _geneCount; i++)
+            sb.AppendLine($"{_template.GetGeneName(i)}: {_selectedBestGenes[i]:F2}");
+        return sb.ToString();
+    }
+
+    public string GetRunStatisticsSummary()
+    {
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        sb.AppendLine("GA run statistics:");
+        sb.AppendLine($"Games played: {_totalGamesPlayed}");
+        sb.AppendLine($"Games aborted (errors or safety limits): {_abortedGames}");
+        sb.AppendLine($"Games with less than 5 rounds: {_gamesLessThanFiveRounds}");
+        sb.AppendLine($"Games with 0 points for both players: {_gamesZeroPointsBothPlayers}");
         return sb.ToString();
     }
     #endregion
 }
 #endregion
-
-#region AUXILIARY CLASSES AND STRUCTS
-
-
-// Safe to read from threads.
-// Lighter than GAGenome (ScriptableObject) 
-public struct GenomeWeights
-{
-    public float placingWeight;
-    public float endGameBonusWeight;
-    public float denyOpponentWeight;
-    public float pushingPenaltiesWeight;
-    public float topRowsWeight;
-    public int earlyRoundsThreshold;
-    public float centralPlacementWeight;
-    public float avoidPartialLinesWeight;
-    public float penaltyPerflower;
-    public float firstPlayerTokenBaseBonus;
-    public float denyColorBaseBonus;
-    public float disruptExistingLineBonus;
-    public float denyCompletionBonus;
-    public float poisonColorBonus;
-    public float oneMoveFillingBonus;
-    public float lineCompletionBonus;
-
-    public static GenomeWeights FromGenome(GAGenome g)
-    {
-        return new GenomeWeights
-        {
-            placingWeight = g.placingWeight,
-            endGameBonusWeight = g.endGameBonusWeight,
-            denyOpponentWeight = g.denyOpponentWeight,
-            pushingPenaltiesWeight = g.pushingPenaltiesWeight,
-            topRowsWeight = g.topRowsWeight,
-            earlyRoundsThreshold = g.earlyRoundsThreshold,
-            centralPlacementWeight = g.centralPlacementWeight,
-            avoidPartialLinesWeight = g.avoidPartialLinesWeight,
-            penaltyPerflower = g.penaltyPerflower,
-            firstPlayerTokenBaseBonus = g.firstPlayerTokenBaseBonus,
-            denyColorBaseBonus = g.denyColorBaseBonus,
-            disruptExistingLineBonus = g.disruptExistingLineBonus,
-            denyCompletionBonus = g.denyCompletionBonus,
-            poisonColorBonus = g.poisonColorBonus,
-            oneMoveFillingBonus = g.oneMoveFillingBonus,
-            lineCompletionBonus = g.lineCompletionBonus,
-        };
-    }
-}
-
-
-
-// Represents the configuration for an AI opponent 
-// using a genetic algorithm or other AI brain types.
-
-[System.Serializable]
-public class GAOpponentConfig
-{
-    public AIBrainType BrainType = AIBrainType.Random;
-
-    [Tooltip("Required when BrainType is GreedyAdjustable. Assign a GAGenome SO.")]
-    public GAGenome Genome;
-
-    [Tooltip("Required when BrainType is Optimizer. Assign a BasicGAGenome SO.")]
-    public BasicGAGenome OptimizerGenome;
-
-    public IPlayerAIBrain CreateBrain()
-    {
-        return AIBrainFactory.CreateBrain(BrainType, Genome, optimizerWeights: OptimizerGenome);
-    }
-}
-*/
-

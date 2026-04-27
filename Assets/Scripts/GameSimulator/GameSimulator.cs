@@ -1,9 +1,10 @@
 using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-//=^..^=   =^..^=   VERSION 1.0.5 (April 2026)    =^..^=    =^..^=
-//                    Last Update 15/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 #region GAME SIMULATOR
@@ -16,12 +17,12 @@ public class GameSimulator
 {
     #region FIELDS AND PROPERTIES
     private const int MAX_ROUNDS_SAFETY = 50;
-    private const int MAX_TURNS_PER_ROUND_SAFETY = 500;
-    private const int MAX_TOTAL_TURNS_SAFETY = 5000;
-    private const int MAX_GAME_WALLCLOCK_MS = 15000;
+    private const int MAX_TURNS_PER_ROUND = 500;
+    private const int MAX_TOTAL_TURNS = 5000;
+    private const int MAX_GAME_DURATION_MS = 15000;
 
-    [Tooltip("Enable detailed logging of each move and round. Can slow down performance significantly.")]
-    [SerializeField] private bool LogIsOn = false;
+    //[Tooltip("Enable detailed logging of each move and round. Can slow down performance significantly.")]
+    //[SerializeField] private bool LogIsOn = false;
 
     #endregion
 
@@ -48,17 +49,18 @@ public class GameSimulator
         int totalTurns  = 0;
         int totalRounds = 0;
         bool abortedBySafety = false;
-        System.Diagnostics.Stopwatch gameWatch = System.Diagnostics.Stopwatch.StartNew();
+        int shortRoundsCount = 0;
+        System.Diagnostics.Stopwatch gameTimer = System.Diagnostics.Stopwatch.StartNew();
 
         model.GameSetup();
 
-        //Game loop: continue until game over
+        //Round loop: continue until game over
         while (!model.CheckEndGameConditions() && totalRounds < MAX_ROUNDS_SAFETY)
         {
-            if (gameWatch.ElapsedMilliseconds >= MAX_GAME_WALLCLOCK_MS)
+            if (gameTimer.ElapsedMilliseconds >= MAX_GAME_DURATION_MS)
             {
                 abortedBySafety = true;
-                Debug.LogWarning($"[GameSimulator] Game wall-clock safety break at {gameWatch.ElapsedMilliseconds}ms.");
+                Debug.LogWarning($"[GameSimulator] Game ABORTED by safety timer at {gameTimer.ElapsedMilliseconds}ms.");
                 break;
             }
 
@@ -66,21 +68,22 @@ public class GameSimulator
             int turnsThisRound = 0;
             int totalTurnsAtRoundStart = totalTurns;
             model.SimStartRound();
-                if (LogIsOn) Debug.Log($"--- Round {model.GetRoundNumber()} ---");
+
+            //Turn loop: continue until round over
             while (!model.CheckEndRoundConditions())
             {
                 turnsThisRound++;
-                if (turnsThisRound > MAX_TURNS_PER_ROUND_SAFETY || totalTurns >= MAX_TOTAL_TURNS_SAFETY)
+                if (turnsThisRound > MAX_TURNS_PER_ROUND || totalTurns >= MAX_TOTAL_TURNS)
                 {
                     abortedBySafety = true;
-                    Debug.LogWarning($"[GameSimulator] Safety break triggered at round {model.GetRoundNumber()} after {turnsThisRound} turns (totalTurns={totalTurns}).");
+                    Debug.LogWarning($"[GameSimulator] Safety break: Round {model.GetRoundNumber()} Turns in round:{turnsThisRound} TotalTurns:{totalTurns}");
                     break;
                 }
 
-                if (gameWatch.ElapsedMilliseconds >= MAX_GAME_WALLCLOCK_MS)
+                if (gameTimer.ElapsedMilliseconds >= MAX_GAME_DURATION_MS)
                 {
                     abortedBySafety = true;
-                    Debug.LogWarning($"[GameSimulator] Game wall-clock safety break at {gameWatch.ElapsedMilliseconds}ms.");
+                    Debug.LogWarning($"[GameSimulator] Game ABORTED by safety timer at {gameTimer.ElapsedMilliseconds}ms.");
                     break;
                 }
 
@@ -88,33 +91,29 @@ public class GameSimulator
                 IPlayerAIBrain brain  = brains[playerIndex];
 
                 List<GameMove> validMoves = model.GetPossibleMoves();
-                if (LogIsOn) Debug.Log($"Player {playerIndex} ({brain.BrainName}) has {validMoves.Count} valid moves.");
                 if (validMoves.Count == 0) break;
 
                 GameMove move = brain.ChooseMove(model, validMoves);
-                if (LogIsOn) Debug.Log($"Player {playerIndex} ({brain.BrainName}) chooses: {move}");
 
                 ExecuteMove(model, move);
                 totalTurns++;
                 model.SimEndTurn();
             }
 
+            //Turn loop over-> end round.
             model.SimEndRound();
 
+            if (turnsThisRound < 5)
+                shortRoundsCount++;
+
+            //Check if game was aborted.
             if (abortedBySafety)
             {
                 model.SimEndGame();
                 break;
             }
 
-            if (totalTurns == totalTurnsAtRoundStart && !model.CheckEndGameConditions())
-            {
-                abortedBySafety = true;
-                Debug.LogWarning($"[GameSimulator] No turn-progress detected in round {model.GetRoundNumber()}; forcing game end.");
-                model.SimEndGame();
-                break;
-            }
-
+            //Check end game conditions after round ends.
             if (model.CheckEndGameConditions())
             {
                 model.SimEndGame();
@@ -122,10 +121,69 @@ public class GameSimulator
             }
         }
 
-        return BuildResult(model, brains, totalTurns);
+        if (!abortedBySafety && !model.CheckEndGameConditions())
+        {
+            abortedBySafety = true;
+            model.SimEndGame();
+        }
+
+        //Game over, build result.
+        gameTimer.Stop();
+        return BuildResult(model, brains, totalRounds, totalTurns, abortedBySafety, shortRoundsCount, gameTimer.Elapsed.TotalMilliseconds);
     }
 
-    /// Runs multiple games and returns statistics.
+    //Builds the result struct for the log and statistics.
+    private SimulationGameResult BuildResult(
+        GameModel model,
+        IPlayerAIBrain[] brains,
+        int totalRounds,
+        int totalTurns,
+        bool abortedBySafety,
+        int shortRoundsCount,
+        double durationMs)
+    {
+        int numPlayers = brains.Length;
+        SimulationGameResult result = new SimulationGameResult();
+        result.NumPlayers = numPlayers;
+        result.TotalRounds = totalRounds;
+        result.TotalTurns = totalTurns;
+        result.IsAborted = abortedBySafety;
+        result.ShortRoundsCount = shortRoundsCount;
+        result.DurationMs = durationMs;
+        result.Scores = new int[numPlayers];
+        result.PlayerNames = new string[numPlayers];
+
+        int bestScore = int.MinValue;
+        bool allPlayersHaveZeroScore = true;
+        result.WinnerIndex = 0;
+
+        for (int i = 0; i < numPlayers; i++)
+        {
+            result.Scores[i] = model.Players[i].Score;
+            result.PlayerNames[i] = model.Players[i].PlayerName;
+            if (result.Scores[i] != 0)
+                allPlayersHaveZeroScore = false;
+            if (model.Players[i].Score > bestScore)
+            {
+                bestScore = model.Players[i].Score;
+                result.WinnerIndex = i;
+            }
+        }
+
+        result.IsDraw = false;
+        for (int i = 0; i < numPlayers; i++)
+            if (i != result.WinnerIndex && result.Scores[i] == bestScore)
+            { result.IsDraw = true; break; }
+
+        result.AllPlayersHaveZeroScore = allPlayersHaveZeroScore;
+        result.EndedInLessThanFiveRounds = totalRounds < 5;
+        result.HasErrors = result.EndedInLessThanFiveRounds || shortRoundsCount > 0;
+
+        return result;
+    }
+
+    /*
+    //Runs multiple games and returns statistics.
     public SimulationBatchResult RunBatch(IPlayerAIBrain[] brains, int numberOfGames, string[] names = null)
     {
         int numPlayers = brains.Length;
@@ -146,6 +204,7 @@ public class GameSimulator
         batch.CalculateFinalStatistics();
         return batch;
     }
+    */
 
 
     #endregion
@@ -173,58 +232,27 @@ public class GameSimulator
             return;
         }
        
-        //If target is penalty line.
         if (move.IsPenalty)
         {
             List<FlowerPiece> excess = player.PenaltyLine.AddFlowers(pickResult.Pickedflowers);
             //Excess from penalty line goes to discard. (Edge case)
             if (excess.Count > 0) model.Discard.AddRange(excess);
         }
+
         //Normal placement in lines.
         else
         {
-            //PlaceflowersInLine takes 0-based line index; TargetLineIndex is now 0-based.
+            //PlaceflowersInLine takes 0-based line index; 
             int lineIndex = move.TargetLineIndex;
             PlaceResult placeResult = player.PlaceflowersInLine(lineIndex, pickResult.Pickedflowers);
             
-            //Excess flowers go to discard.
+            //Excess flowers go to discard (EDGE).
             if (placeResult.Excessflowers != null && placeResult.Excessflowers.Count > 0)
                 model.Discard.AddRange(placeResult.Excessflowers);
         }
     }
 
-    //Builds the result struct for the log and statistics.
-    private SimulationGameResult BuildResult(GameModel model, IPlayerAIBrain[] brains, int totalTurns)
-    {
-        int numPlayers = brains.Length;
-        SimulationGameResult result = new SimulationGameResult();
-        result.NumPlayers   = numPlayers;
-        result.TotalRounds  = model.CurrentRound;
-        result.TotalTurns   = totalTurns;
-        result.Scores       = new int[numPlayers];
-        result.PlayerNames  = new string[numPlayers];
-
-        int bestScore = int.MinValue;
-        result.WinnerIndex = 0;
-
-        for (int i = 0; i < numPlayers; i++)
-        {
-            result.Scores[i]      = model.Players[i].Score;
-            result.PlayerNames[i] = model.Players[i].PlayerName;
-            if (model.Players[i].Score > bestScore)
-            {
-                bestScore          = model.Players[i].Score;
-                result.WinnerIndex = i;
-            }
-        }
-
-        result.IsDraw = false;
-        for (int i = 0; i < numPlayers; i++)
-            if (i != result.WinnerIndex && result.Scores[i] == bestScore)
-            { result.IsDraw = true; break; }
-
-        return result;
-    }
+   
     #endregion
 }
 #endregion
@@ -240,12 +268,19 @@ public struct SimulationGameResult
     public bool IsDraw;
     public int TotalRounds;
     public int TotalTurns;
+    public bool IsAborted;
+    public bool HasErrors;
+    public bool AllPlayersHaveZeroScore;
+    public bool EndedInLessThanFiveRounds;
+    public int ShortRoundsCount;
+    public double DurationMs;
 }
 public class SimulationBatchResult
 {
     public int NumPlayers;
     public int TotalGames;
     public string[] PlayerNames;
+    public int SimulatedGames;
 
     // Player stats
     public int[] Wins;
@@ -253,45 +288,74 @@ public class SimulationBatchResult
     public int[] MaxScore;
     public float[] AverageScore;
     public float[] MedianScore;
+    public int[] BestDelta;
+    public float[] MedianDelta;
     public float[] WinPercentage;
     public int Draws;
 
     // Game detail
     private List<int>[] _allScores;
+    private List<int>[] _allDeltas;
 
     // Aggregate
     public float AverageRounds;
     public float AverageTurns;
+    public double AverageGameDurationMs;
+    public int LongestGameTurns;
+    public int HighestScore;
+    public int AbortedGames;
+    public int GamesWithErrors;
+    public int WarningGamesEndedWithZeroPoints;
+    public int ErrorGamesEndedInLessThanFiveRounds;
+    public int ErrorRoundsEndedInLessThanFiveTurns;
     private int _totalRounds;
     private int _totalTurns;
+    private double _totalGameDurationMs;
 
     public SimulationBatchResult(int numPlayers, int totalGames)
     {
         NumPlayers = numPlayers;
         TotalGames = totalGames;
         PlayerNames = new string[numPlayers];
+        SimulatedGames = 0;
         Wins = new int[numPlayers];
         MinScore = new int[numPlayers];
         MaxScore = new int[numPlayers];
         AverageScore = new float[numPlayers];
         MedianScore = new float[numPlayers];
+        BestDelta = new int[numPlayers];
+        MedianDelta = new float[numPlayers];
         WinPercentage = new float[numPlayers];
         Draws = 0;
+        AverageGameDurationMs = 0d;
+        LongestGameTurns = 0;
+        HighestScore = int.MinValue;
+        AbortedGames = 0;
+        GamesWithErrors = 0;
+        WarningGamesEndedWithZeroPoints = 0;
+        ErrorGamesEndedInLessThanFiveRounds = 0;
+        ErrorRoundsEndedInLessThanFiveTurns = 0;
 
         _allScores = new List<int>[numPlayers];
+        _allDeltas = new List<int>[numPlayers];
         for (int i = 0; i < numPlayers; i++)
         {
             _allScores[i] = new List<int>(totalGames);
+            _allDeltas[i] = new List<int>(totalGames);
             MinScore[i] = int.MaxValue;
             MaxScore[i] = int.MinValue;
+            BestDelta[i] = int.MinValue;
         }
 
         _totalRounds = 0;
         _totalTurns = 0;
+        _totalGameDurationMs = 0d;
     }
 
     public void AddGameResult(SimulationGameResult result)
     {
+        SimulatedGames++;
+
         // Update wins/draws
         if (result.IsDraw)
         {
@@ -308,43 +372,90 @@ public class SimulationBatchResult
             int score = result.Scores[i];
             _allScores[i].Add(score);
 
+            int delta = score - GetBestOpponentScore(result.Scores, i);
+            _allDeltas[i].Add(delta);
+
             if (score < MinScore[i]) MinScore[i] = score;
             if (score > MaxScore[i]) MaxScore[i] = score;
+            if (delta > BestDelta[i]) BestDelta[i] = delta;
+            if (score > HighestScore) HighestScore = score;
         }
+
+        if (result.IsAborted) AbortedGames++;
+        if (result.HasErrors) GamesWithErrors++;
+        if (result.AllPlayersHaveZeroScore) WarningGamesEndedWithZeroPoints++;
+        if (result.EndedInLessThanFiveRounds) ErrorGamesEndedInLessThanFiveRounds++;
+        ErrorRoundsEndedInLessThanFiveTurns += result.ShortRoundsCount;
 
         _totalRounds += result.TotalRounds;
         _totalTurns += result.TotalTurns;
+        _totalGameDurationMs += result.DurationMs;
+
+        if (result.TotalTurns > LongestGameTurns)
+            LongestGameTurns = result.TotalTurns;
     }
 
     public void CalculateFinalStatistics()
     {
+        if (SimulatedGames == 0)
+            return;
+
         for (int i = 0; i < NumPlayers; i++)
         {
             // Average score
             long sum = 0;
             foreach (int s in _allScores[i])
                 sum += s;
-            AverageScore[i] = (float)sum / TotalGames;
+            AverageScore[i] = (float)sum / SimulatedGames;
 
             // Win percentage
-            WinPercentage[i] = (float)Wins[i] / TotalGames * 100f;
+            WinPercentage[i] = (float)Wins[i] / SimulatedGames * 100f;
 
             // Median score
-            List<int> sorted = new List<int>(_allScores[i]);
-            sorted.Sort();
-            if (sorted.Count % 2 == 0)
-            {
-                int mid = sorted.Count / 2;
-                MedianScore[i] = (sorted[mid - 1] + sorted[mid]) / 2f;
-            }
-            else
-            {
-                MedianScore[i] = sorted[sorted.Count / 2];
-            }
+            MedianScore[i] = CalculateMedian(_allScores[i]);
+            MedianDelta[i] = CalculateMedian(_allDeltas[i]);
+
+            if (BestDelta[i] == int.MinValue)
+                BestDelta[i] = 0;
         }
 
-        AverageRounds = (float)_totalRounds / TotalGames;
-        AverageTurns = (float)_totalTurns / TotalGames;
+        AverageRounds = (float)_totalRounds / SimulatedGames;
+        AverageTurns = (float)_totalTurns / SimulatedGames;
+        AverageGameDurationMs = _totalGameDurationMs / SimulatedGames;
+
+        if (HighestScore == int.MinValue)
+            HighestScore = 0;
+    }
+
+    private static int GetBestOpponentScore(int[] scores, int playerIndex)
+    {
+        int bestOpponentScore = int.MinValue;
+
+        for (int i = 0; i < scores.Length; i++)
+        {
+            if (i == playerIndex) continue;
+            if (scores[i] > bestOpponentScore)
+                bestOpponentScore = scores[i];
+        }
+
+        return bestOpponentScore == int.MinValue ? 0 : bestOpponentScore;
+    }
+
+    private static float CalculateMedian(List<int> values)
+    {
+        if (values == null || values.Count == 0)
+            return 0f;
+
+        List<int> sorted = new List<int>(values);
+        sorted.Sort();
+
+        if (sorted.Count % 2 == 0)
+        {
+            int mid = sorted.Count / 2;
+            return (sorted[mid - 1] + sorted[mid]) / 2f;
+        }
+
+        return sorted[sorted.Count / 2];
     }
 
     /// Returns a string summary of the results.
@@ -353,10 +464,11 @@ public class SimulationBatchResult
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
         sb.AppendLine(":¨:..:¨:..:¨:..:¨:..:¨:..:¨:..:¨:.:¨:..:¨:..:¨:..:¨:..:¨:..:¨:..:¨:..:¨:..:¨:.:¨:..:¨:.:¨:");
-        sb.AppendLine($"  SIMULATION RESULTS — {TotalGames} games");
+        sb.AppendLine($"  SIMULATION RESULTS — {SimulatedGames} games");
         sb.AppendLine(":¨:..:¨:..:¨:..:¨:..:¨:..:¨:..:¨:.:¨:..:¨:..:¨:..:¨:..:¨:..:¨:..:¨:..:¨:..:¨:.:¨:..:¨:.:¨:");
         sb.AppendLine($"  Avg Rounds/Game: {AverageRounds:F1}  |  Avg Turns/Game: {AverageTurns:F1}");
-        sb.AppendLine($"  Draws: {Draws} ({(float)Draws / TotalGames * 100f:F1}%)");
+        sb.AppendLine($"  Draws: {Draws} ({(SimulatedGames > 0 ? (float)Draws / SimulatedGames * 100f : 0f):F1}%)");
+        sb.AppendLine($"  Longest Game: {LongestGameTurns} turns  |  Highest Score: {HighestScore}");
         sb.AppendLine(":¨:..:¨:..:¨:..:¨:..:¨:..:¨:..:¨:.:¨:..:¨:..:¨:..:¨:..:¨:..:¨:..:¨:..:¨:..:¨:.:¨:..:¨:.:¨:");
 
         for (int i = 0; i < NumPlayers; i++)
@@ -364,8 +476,19 @@ public class SimulationBatchResult
             sb.AppendLine($"  Player {i}: {PlayerNames[i]}");
             sb.AppendLine($"    Wins:    {Wins[i]} ({WinPercentage[i]:F1}%)");
             sb.AppendLine($"    Score:   min={MinScore[i]}  max={MaxScore[i]}  avg={AverageScore[i]:F1}  median={MedianScore[i]:F1}");
+            sb.AppendLine($"    Delta:   best={BestDelta[i]}  median={MedianDelta[i]:F1}");
             sb.AppendLine("....................................................................................");
         }
+
+        sb.AppendLine("  Simulation Error Log Results:");
+        sb.AppendLine($"    [Warning] Games ended with 0 points for both players: {WarningGamesEndedWithZeroPoints}");
+        sb.AppendLine($"    [Error] Games ended in less than 5 rounds: {ErrorGamesEndedInLessThanFiveRounds}");
+        sb.AppendLine($"    [Error] Rounds ended in less than 5 turns: {ErrorRoundsEndedInLessThanFiveTurns}");
+        sb.AppendLine("  Simulator Statistics:");
+        sb.AppendLine($"    Number of simulated games: {SimulatedGames}");
+        sb.AppendLine($"    Number of aborted games: {AbortedGames}");
+        sb.AppendLine($"    Number of games with errors: {GamesWithErrors}");
+        sb.AppendLine($"    Average game duration: {AverageGameDurationMs:F2} ms");
 
         sb.AppendLine("\":¨:..:¨:..:¨:..:¨:..:¨:..:¨:..:¨:.:¨:..:¨:..:¨:..:¨:..:¨:..:¨:..:¨:..:¨:..:¨:.:¨:..:¨:.:¨:");
         return sb.ToString();

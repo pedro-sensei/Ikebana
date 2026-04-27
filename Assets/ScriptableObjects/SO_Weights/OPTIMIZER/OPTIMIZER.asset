@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73f1118f8e80b274dbdb740b9c60c674, type: 3}
+  m_Name: OPTIMIZER
+  m_EditorClassIdentifier: Assembly-CSharp::BasicGAGenome
+  SimulateScoringWeight: 8.3074665
+  PenaltyWeight: 14.128116
+  TilesPlacedWeight: 21.789598
+  LineCompletionWeight: 5.701833
+  ChaseBonusRowWeights:
+  - 10.037822
+  - 12.675149
+  - 12.598012
+  - 11.806341
+  - 9.859792
+  ChaseBonusColumnWeights:
+  - 10.23715
+  - 6.2939196
+  - 1.4307731
+  - 5.1076884
+  - 9.409597
+  ChaseBonusColorWeights:
+  - 7.5801554
+  - 3.136097
+  - 4.088403
+  - 15.576236
+  - 16.02355
+  TryPushPenaltyWeight: 2.5336218
+  TryDenyMoveWeight: 3.776181
+  AvoidPartialLineWeight: 5.3088155
+  FirstPlayerTokenWeight: 7.4486294
+  PrioritizeCentralPlacementWeight: 18.953508
+  PrioritizeTopRowsWeight: 3.1388774

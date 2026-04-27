@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 73f1118f8e80b274dbdb740b9c60c674, type: 3}
-  m_Name: OptimizerTest
+  m_Name: OptimizerBaseNoAdjust
   m_EditorClassIdentifier: Assembly-CSharp::BasicGAGenome
   SimulateScoringWeight: 11.51325
   PenaltyWeight: 15.749143

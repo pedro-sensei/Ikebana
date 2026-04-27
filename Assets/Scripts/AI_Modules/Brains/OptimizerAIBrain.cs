@@ -300,9 +300,21 @@ public class MinOptimizerBrain : OptimalHeuristicBase, IMinimalAIBrain
         ApplyGenomeWeights(genome);
     }
 
+    public MinOptimizerBrain(BasicGAGenome genome, GameConfigSnapshot config) : this(genome)
+    {
+        if (config != null)
+            LoadConfig(config);
+    }
+
     public MinOptimizerBrain(OptimizerGenomeWeights w) : this()
     {
         ApplyWeightsSnapshot(w);
+    }
+
+    public MinOptimizerBrain(GameConfigSnapshot config) : this()
+    {
+        if (config != null)
+            LoadConfig(config);
     }
 
     public MinOptimizerBrain(float[] genes, GameConfigSnapshot config) : this()

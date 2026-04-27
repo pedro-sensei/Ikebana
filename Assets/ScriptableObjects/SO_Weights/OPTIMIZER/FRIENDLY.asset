@@ -10,32 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 73f1118f8e80b274dbdb740b9c60c674, type: 3}
-  m_Name: emily0_late
+  m_Name: FRIENDLY
   m_EditorClassIdentifier: Assembly-CSharp::BasicGAGenome
-  SimulateScoringWeight: 13
-  PenaltyWeight: 12
-  TilesPlacedWeight: 10
-  LineCompletionWeight: 13
-  ChaseBonusRowWeights:
-  - 9.144976
-  - 6.809988
-  - 11.95728
-  - 9.968468
-  - 11.392079
-  ChaseBonusColumnWeights:
-  - 9.563614
-  - 11.579953
-  - 6.240304
-  - 12.44788
-  - 8.81693
-  ChaseBonusColorWeights:
-  - 14.535829
-  - 7.9011693
-  - 9.045808
-  - 11.64452
-  - 14.518489
-  TryPushPenaltyWeight: 12
-  TryDenyMoveWeight: 12
+  SimulateScoringWeight: 19.555897
+  PenaltyWeight: 7.0679436
+  TilesPlacedWeight: 40.023834
+  LineCompletionWeight: 37.165627
+  ChaseBonusRowWeights: []
+  ChaseBonusColumnWeights: []
+  ChaseBonusColorWeights: []
+  TryPushPenaltyWeight: 0
+  TryDenyMoveWeight: 0
   AvoidPartialLineWeight: 0
   FirstPlayerTokenWeight: 0
   PrioritizeCentralPlacementWeight: 0

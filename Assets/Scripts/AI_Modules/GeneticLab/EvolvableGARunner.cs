@@ -12,14 +12,26 @@ using UnityEngine;
 #region RUNNER FOR EVOLVABLE GA
 public class EvolvableGARunner : MonoBehaviour
 {
+    private enum BrainTemplateType
+    {
+        Optimizer,
+        Friendly,
+        Emily
+    }
+
     #region CONFIGURATION PARAMETERS
     [Header("GA Parameters")]
+    [Tooltip("Number of genomes in each generation.")]
     [SerializeField] private int   populationSize    = 50;
+    [Tooltip("Number of generations.")]
     [SerializeField] private int   generations       = 100;
+    [Tooltip("Number of games played in the fitness function against EACH opponent.")]
     [SerializeField] private int   gamesPerEval      = 20;
+    [Tooltip("Chance for each gene to mutate each generation. 0-1")]
     [SerializeField] private float mutationRate      = 0.2f;
     [SerializeField] private float mutationAmount    = 5f;
-    [SerializeField] private int   survivorsCount    = 5;
+    [SerializeField] private int   eliteCount    = 5;
+    [Tooltip("Number of genomes competing in tournament selection.")]
     [SerializeField] private int   tournamentSize    = 3;
     [SerializeField] private int   randomSeed        = 42;
 
@@ -29,35 +41,43 @@ public class EvolvableGARunner : MonoBehaviour
     [Header("Game Parameters")]
     [SerializeField] private int numPlayers = 2;
 
-    [Tooltip("Game config to use for simulations. If null, global defaults are used.")]
+    [Tooltip("Setup for the game (2p, 3p, 4p...).")]
     [SerializeField] private GameConfigData gameConfigData;
 
     [Header("Opponent Configuration")]
     [SerializeField] private GAOpponentConfig[] opponents = { new GAOpponentConfig() };
+    [Tooltip("If true opponents list is not used")]
     [SerializeField] private bool coevolution = false;
+
+    [Header("Best Genome Selection")]
+    [SerializeField] private BestGenomeSelectionMethod bestGenomeSelectionMethod = BestGenomeSelectionMethod.BestEver;
+    [Tooltip("For Highlander, how many top genomes from each generation are archived as champions.")]
+    [SerializeField] private int highlanderChampionsPerGeneration = 1;
+    [Tooltip("For Highlander, how many archived champions are sampled as the final opponent pool for each finalist.")]
+    [SerializeField] private int highlanderFinalOpponentCount = 3;
 
     [Header("Output")]
     [SerializeField] private bool logEachGeneration = true;
 
     [Header("Brain Template")]
-    [SerializeField] private bool useEmilyTemplate = false;
+    [SerializeField] private BrainTemplateType brainTemplate = BrainTemplateType.Optimizer;
 
-    [Tooltip("Optional BasicGAGenome asset to write the best result into.")]
+    [Tooltip("Genome to SAVE results.")]
     [SerializeField] private BasicGAGenome targetOptimizerGenomeAsset;
 
     [Header("Emily Output Assets")]
-    [Tooltip("Optional BasicGAGenome for Emily early game (rounds 1-2).")]
+    [Tooltip("SAVE  Emily early game (rounds 1-2).")]
     [SerializeField] private BasicGAGenome targetEmilyEarlyGenomeAsset;
-    [Tooltip("Optional BasicGAGenome for Emily mid game (rounds 3-4).")]
+    [Tooltip("SAVE Emily mid game (rounds 3-4).")]
     [SerializeField] private BasicGAGenome targetEmilyMidGenomeAsset;
-    [Tooltip("Optional BasicGAGenome for Emily late game (rounds 5+).")]
+    [Tooltip("SAVE Emily late game (rounds 5+).")]
     [SerializeField] private BasicGAGenome targetEmilyLateGenomeAsset;
 
     [Header("Auto Run")]
     [SerializeField] private bool autoRun = true;
 
     [Header("Log Output")]
-    [SerializeField] private TextMeshProUGUI logOutput;
+    [SerializeField] private LogSystem logOutput;
     #endregion
 
     #region STATE
@@ -82,9 +102,18 @@ public class EvolvableGARunner : MonoBehaviour
             return;
         }
 
-        _template = useEmilyTemplate
-            ? (IEvolvableBrain)new EmilyAIBrain()
-            : new OptimizerAIBrain();
+        switch (brainTemplate)
+        {
+            case BrainTemplateType.Emily:
+                _template = new EmilyAIBrain();
+                break;
+            case BrainTemplateType.Friendly:
+                _template = new FriendlyAIBrain();
+                break;
+            default:
+                _template = new OptimizerAIBrain();
+                break;
+        }
 
         _ga = new EvolvableGeneticAlgo
         {
@@ -93,11 +122,14 @@ public class EvolvableGARunner : MonoBehaviour
             GamesPerEval      = gamesPerEval,
             MutationRate      = mutationRate,
             MutationAmount    = mutationAmount,
-            SurvivorsCount    = survivorsCount,
+            EliteCount    = eliteCount,
             TournamentSize    = tournamentSize,
             RandomSeed        = randomSeed,
             Opponents         = opponents,
             Coevolution       = coevolution,
+            BestGenomeSelection = bestGenomeSelectionMethod,
+            HighlanderChampionsPerGeneration = highlanderChampionsPerGeneration,
+            HighlanderFinalOpponentCount = highlanderFinalOpponentCount,
             LogEachGeneration = logEachGeneration,
             LogOutput         = logOutput,
             numPlayers        = numPlayers,
@@ -105,28 +137,39 @@ public class EvolvableGARunner : MonoBehaviour
             GameConfigData    = gameConfigData,
         };
 
+        if (logOutput != null)
+            logOutput.ClearLogs();
+
         _ga.Initialize(_template, (genes, config) =>
         {
-            if (useEmilyTemplate)
-                return new MinEmilyBrain(genes, config);
-            return new MinOptimizerBrain(genes, config);
+            switch (brainTemplate)
+            {
+                case BrainTemplateType.Emily:
+                    return new MinEmilyBrain(genes, config);
+                case BrainTemplateType.Friendly:
+                    return new MinFriendlyBrain(genes, config);
+                default:
+                    return new MinOptimizerBrain(genes, config);
+            }
         });
 
         string brainName = (_template as IPlayerAIBrain) != null
             ? (_template as IPlayerAIBrain).BrainName
-            : (useEmilyTemplate ? "Emily" : "Optimizer");
+            : brainTemplate.ToString();
 
         Debug.Log("//============= Starting Evolvable GA Training =============");
         Debug.Log($"Brain: {brainName}  Genes: {_template.GeneCount}");
         Debug.Log($"Population: {populationSize}  Generations: {generations}");
+        Debug.Log($"Best Selection: {bestGenomeSelectionMethod}");
         Debug.Log("=============================================================");
 
         if (logOutput != null)
         {
-            logOutput.text += "\n//============= Starting Evolvable GA Training =============";
-            logOutput.text += $"\nBrain: {brainName}  Genes: {_template.GeneCount}";
-            logOutput.text += $"\nPopulation: {populationSize}  Generations: {generations}";
-            logOutput.text += "\n=============================================================";
+            logOutput.AddLog("//============= Starting Evolvable GA Training =============");
+            logOutput.AddLog($"Brain: {brainName}  Genes: {_template.GeneCount}");
+            logOutput.AddLog($"Population: {populationSize}  Generations: {generations}");
+            logOutput.AddLog($"Best Selection: {bestGenomeSelectionMethod}");
+            logOutput.AddLog("=============================================================");
         }
 
         StartCoroutine(RunTrainingCoroutine());
@@ -155,7 +198,7 @@ public class EvolvableGARunner : MonoBehaviour
         sw.Stop();
         _isRunning = false;
 
-        string summary = _ga.GetBestGenomeSummary();
+        string summary = _ga.GetRunStatisticsSummary() + "\n" + _ga.GetBestGenomeSummary();
         summary += $"\nElapsed: {sw.Elapsed.TotalSeconds:F1}s  " +
                    $"({(float)generations / sw.Elapsed.TotalSeconds:F1} gen/s)";
 
@@ -164,11 +207,11 @@ public class EvolvableGARunner : MonoBehaviour
 
         if (logOutput != null)
         {
-            logOutput.text += "\n.oOo. EVOLVABLE GA TRAINING COMPLETE .oOo.";
-            logOutput.text += $"\n{summary}";
+            logOutput.AddLog(".oOo. EVOLVABLE GA TRAINING COMPLETE .oOo.");
+            logOutput.AddLog(summary);
         }
 
-        if (useEmilyTemplate)
+        if (brainTemplate == BrainTemplateType.Emily)
             ApplyBestEmilyGenesToAssets();
         else if (targetOptimizerGenomeAsset != null)
             ApplyBestGenesToAsset();
@@ -180,7 +223,7 @@ public class EvolvableGARunner : MonoBehaviour
     private void ApplyBestGenesToAsset()
     {
         float[] genes = _ga.BestGenes;
-        if (useEmilyTemplate)
+        if (brainTemplate == BrainTemplateType.Emily)
         {
             Debug.LogWarning("ApplyBestGenesToAsset is only supported for Optimizer template.");
             return;
@@ -188,30 +231,52 @@ public class EvolvableGARunner : MonoBehaviour
 
         if (genes == null || targetOptimizerGenomeAsset == null) return;
 
-        OptimizerAIBrain temp = new OptimizerAIBrain();
-        temp.SetGenes(genes);
+        if (brainTemplate == BrainTemplateType.Friendly)
+        {
+            FriendlyAIBrain temp = new FriendlyAIBrain();
+            temp.SetGenes(genes);
 
-        targetOptimizerGenomeAsset.SimulateScoringWeight            = temp.SimulateScoringWeight;
-        targetOptimizerGenomeAsset.PenaltyWeight                    = temp.PenaltyWeight;
-        targetOptimizerGenomeAsset.TilesPlacedWeight                = temp.TilesPlacedWeight;
-        targetOptimizerGenomeAsset.LineCompletionWeight             = temp.LineCompletionWeight;
-        targetOptimizerGenomeAsset.TryPushPenaltyWeight             = temp.TryPushPenaltyWeight;
-        targetOptimizerGenomeAsset.TryDenyMoveWeight                = temp.TryDenyMoveWeight;
-        targetOptimizerGenomeAsset.AvoidPartialLineWeight           = temp.AvoidPartialLineWeight;
-        targetOptimizerGenomeAsset.FirstPlayerTokenWeight           = temp.FirstPlayerTokenWeight;
-        targetOptimizerGenomeAsset.PrioritizeCentralPlacementWeight = temp.PrioritizeCentralPlacementWeight;
-        targetOptimizerGenomeAsset.PrioritizeTopRowsWeight          = temp.PrioritizeTopRowsWeight;
+            targetOptimizerGenomeAsset.SimulateScoringWeight = genes[0];
+            targetOptimizerGenomeAsset.PenaltyWeight = genes[1];
+            targetOptimizerGenomeAsset.TilesPlacedWeight = genes[2];
+            targetOptimizerGenomeAsset.LineCompletionWeight = genes[3];
+            targetOptimizerGenomeAsset.TryPushPenaltyWeight = 0f;
+            targetOptimizerGenomeAsset.TryDenyMoveWeight = 0f;
+            targetOptimizerGenomeAsset.AvoidPartialLineWeight = 0f;
+            targetOptimizerGenomeAsset.FirstPlayerTokenWeight = 0f;
+            targetOptimizerGenomeAsset.PrioritizeCentralPlacementWeight = 0f;
+            targetOptimizerGenomeAsset.PrioritizeTopRowsWeight = 0f;
+            targetOptimizerGenomeAsset.ChaseBonusRowWeights = null;
+            targetOptimizerGenomeAsset.ChaseBonusColumnWeights = null;
+            targetOptimizerGenomeAsset.ChaseBonusColorWeights = null;
+        }
+        else
+        {
+            OptimizerAIBrain temp = new OptimizerAIBrain();
+            temp.SetGenes(genes);
 
-        targetOptimizerGenomeAsset.ChaseBonusRowWeights    = temp.ChaseBonusRowWeights != null ? (float[])temp.ChaseBonusRowWeights.Clone() : null;
-        targetOptimizerGenomeAsset.ChaseBonusColumnWeights = temp.ChaseBonusColumnWeights != null ? (float[])temp.ChaseBonusColumnWeights.Clone() : null;
-        targetOptimizerGenomeAsset.ChaseBonusColorWeights  = temp.ChaseBonusColorWeights != null ? (float[])temp.ChaseBonusColorWeights.Clone() : null;
+            targetOptimizerGenomeAsset.SimulateScoringWeight            = temp.SimulateScoringWeight;
+            targetOptimizerGenomeAsset.PenaltyWeight                    = temp.PenaltyWeight;
+            targetOptimizerGenomeAsset.TilesPlacedWeight                = temp.TilesPlacedWeight;
+            targetOptimizerGenomeAsset.LineCompletionWeight             = temp.LineCompletionWeight;
+            targetOptimizerGenomeAsset.TryPushPenaltyWeight             = temp.TryPushPenaltyWeight;
+            targetOptimizerGenomeAsset.TryDenyMoveWeight                = temp.TryDenyMoveWeight;
+            targetOptimizerGenomeAsset.AvoidPartialLineWeight           = temp.AvoidPartialLineWeight;
+            targetOptimizerGenomeAsset.FirstPlayerTokenWeight           = temp.FirstPlayerTokenWeight;
+            targetOptimizerGenomeAsset.PrioritizeCentralPlacementWeight = temp.PrioritizeCentralPlacementWeight;
+            targetOptimizerGenomeAsset.PrioritizeTopRowsWeight          = temp.PrioritizeTopRowsWeight;
+
+            targetOptimizerGenomeAsset.ChaseBonusRowWeights    = temp.ChaseBonusRowWeights != null ? (float[])temp.ChaseBonusRowWeights.Clone() : null;
+            targetOptimizerGenomeAsset.ChaseBonusColumnWeights = temp.ChaseBonusColumnWeights != null ? (float[])temp.ChaseBonusColumnWeights.Clone() : null;
+            targetOptimizerGenomeAsset.ChaseBonusColorWeights  = temp.ChaseBonusColorWeights != null ? (float[])temp.ChaseBonusColorWeights.Clone() : null;
+        }
 
 #if UNITY_EDITOR
         UnityEditor.EditorUtility.SetDirty(targetOptimizerGenomeAsset);
         UnityEditor.AssetDatabase.SaveAssets();
         Debug.Log($"Best genome applied to: {targetOptimizerGenomeAsset.name}");
         if (logOutput != null)
-            logOutput.text += $"\nBest genome applied to: {targetOptimizerGenomeAsset.name}";
+            logOutput.AddLog($"Best genome applied to: {targetOptimizerGenomeAsset.name}");
 #endif
     }
 
@@ -272,7 +337,7 @@ public class GAOpponentConfig
 {
     public AIBrainType BrainType = AIBrainType.Random;
 
-    [Tooltip("Required when BrainType is Optimizer. Assign a BasicGAGenome SO.")]
+    [Tooltip("Required when BrainType is Optimizer or Friendly. Assign a BasicGAGenome SO.")]
     public BasicGAGenome OptimizerGenome;
 
     [Tooltip("Emily early-game weights (rounds 1-2).")]

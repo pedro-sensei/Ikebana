@@ -1,7 +1,8 @@
 using System.Collections.Generic;
+using UnityEngine;
 
-//=^..^=   =^..^=   VERSION 1.0.2 (April 2026)    =^..^=    =^..^=
-//                    Last Update 01/042026 
+//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
+//                    Last Update 21/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 
@@ -11,6 +12,8 @@ using System.Collections.Generic;
 public class MinimalGameSimulator
 {
     private const int MAX_ROUNDS_SAFETY = 50;
+    private const int MAX_TURNS_PER_ROUND = 500;
+    private const int MAX_TOTAL_TURNS = 5000;
 
     // Callers that want parallelism should create one MinimalGameSimulator per thread.
     private MinimalGM _minimalModel;
@@ -53,19 +56,39 @@ public class MinimalGameSimulator
 
         int totalTurns  = 0;
         int totalRounds = 1;
+        bool abortedBySafety = false;
 
         while (!model.IsGameOver && model.CurrentRound <= MAX_ROUNDS_SAFETY)
         {
+            int turnsThisRound = 0;
             while (model.Phase == RoundPhaseEnum.PlacementPhase)
             {
+                turnsThisRound++;
+                if (turnsThisRound > MAX_TURNS_PER_ROUND || totalTurns >= MAX_TOTAL_TURNS)
+                {
+                    abortedBySafety = true;
+                    model.SimEndGame();
+                    break;
+                }
+
                 int n = model.GetValidMoves(_moveBuffer);
                 if (n == 0) break;
 
                 int chosen = brains[model.CurrentPlayer].ChooseMoveIndex(model, _moveBuffer, n);
+                if (chosen < 0 || chosen >= n)
+                {
+                    abortedBySafety = true;
+                    model.SimEndGame();
+                    break;
+                }
+
                 model.ExecuteMove(_moveBuffer[chosen]);
                 totalTurns++;
                 model.SimEndTurn(); // may trigger SimEndRound ? SimEndGame
             }
+
+            if (abortedBySafety)
+                break;
 
             if (!model.IsGameOver && model.CurrentRound <= MAX_ROUNDS_SAFETY)
                 totalRounds = model.CurrentRound;
@@ -73,7 +96,14 @@ public class MinimalGameSimulator
                 break;
         }
 
-        return BuildResultMinimal(model, brains, names, totalRounds, totalTurns);
+        if (!abortedBySafety && !model.IsGameOver && model.CurrentRound > MAX_ROUNDS_SAFETY)
+        {
+            abortedBySafety = true;
+            model.SimEndGame();
+        }
+
+        int roundsPlayed = System.Math.Max(totalRounds, model.CurrentRound + 1);
+        return BuildResultMinimal(model, brains, names, roundsPlayed, totalTurns, abortedBySafety);
     }
 
     public MinimalSimulationBatchResult RunBatch(IMinimalAIBrain[] brains, int numberOfGames, string[] names = null)
@@ -99,23 +129,27 @@ public class MinimalGameSimulator
 
     private MinimalSimulationGameResult BuildResultMinimal(
         MinimalGM model, IMinimalAIBrain[] brains, string[] names,
-        int totalRounds, int totalTurns)
+        int totalRounds, int totalTurns, bool abortedBySafety)
     {
         int numPlayers = brains.Length;
         MinimalSimulationGameResult result = new MinimalSimulationGameResult();
         result.NumPlayers   = numPlayers;
         result.TotalRounds  = totalRounds;
         result.TotalTurns   = totalTurns;
+        result.IsAborted    = abortedBySafety;
         result.Scores       = new int[numPlayers];
         result.PlayerNames  = new string[numPlayers];
 
         int bestScore = int.MinValue;
+        bool allPlayersHaveZeroScore = true;
         result.WinnerIndex = 0;
 
         for (int i = 0; i < numPlayers; i++)
         {
             result.Scores[i]      = model.Players[i].Score;
             result.PlayerNames[i] = names[i];
+            if (result.Scores[i] != 0)
+                allPlayersHaveZeroScore = false;
             if (model.Players[i].Score > bestScore)
             {
                 bestScore          = model.Players[i].Score;
@@ -127,6 +161,9 @@ public class MinimalGameSimulator
         for (int i = 0; i < numPlayers; i++)
             if (i != result.WinnerIndex && result.Scores[i] == bestScore)
             { result.IsDraw = true; break; }
+
+        result.AllPlayersHaveZeroScore = allPlayersHaveZeroScore;
+        result.EndedInLessThanFiveRounds = totalRounds < 5;
 
         return result;
     }
@@ -141,6 +178,9 @@ public struct MinimalSimulationGameResult
     public bool IsDraw;
     public int TotalRounds;
     public int TotalTurns;
+    public bool IsAborted;
+    public bool AllPlayersHaveZeroScore;
+    public bool EndedInLessThanFiveRounds;
 }
 
 public class MinimalSimulationBatchResult

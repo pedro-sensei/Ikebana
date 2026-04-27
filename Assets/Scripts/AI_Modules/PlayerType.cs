@@ -24,11 +24,11 @@ public enum AIBrainType
     Friendly,
     Optimizer,
     GoodRandom,
-    MLAgent,
-    BasicAgent,
-    BasicAgentV2,
-    Evaluator,
-    IkebanaAgentV2,
+    //MLAgent,
+    //BasicAgent,
+    //BasicAgentV2,
+    //Evaluator,
+    //IkebanaAgentV2,
     MinMaxOptimizer,
     Emily
 }

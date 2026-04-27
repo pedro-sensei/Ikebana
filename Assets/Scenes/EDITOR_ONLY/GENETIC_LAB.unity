@@ -356,7 +356,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 214440832}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.99999887
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -852,6 +852,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1246651053}
   - component: {fileID: 1246651055}
+  - component: {fileID: 1246651056}
   m_Layer: 5
   m_Name: Content
   m_TagString: Untagged
@@ -876,9 +877,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.00007625581}
-  m_SizeDelta: {x: 0, y: 853.87}
-  m_Pivot: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0.0001107955}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 1}
 --- !u!23 &1246651055
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -928,6 +929,20 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1246651056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1246651052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0721922c0da6b94186c61490513f397, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LogSystem
+  logText: {fileID: 1858507391}
+  maxLines: 100
 --- !u!1 &1261427941
 GameObject:
   m_ObjectHideFlags: 0
@@ -1479,7 +1494,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_VerticalAlignment: 1024
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -1490,7 +1505,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 0
+  m_overflowMode: 4
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
@@ -1503,7 +1518,7 @@ MonoBehaviour:
   m_isOrthographic: 1
   m_isCullingEnabled: 0
   m_horizontalMapping: 0
-  m_verticalMapping: 0
+  m_verticalMapping: 1
   m_uvLineOffset: 0
   m_geometrySortingOrder: 0
   m_IsTextObjectScaleStatic: 0
@@ -1538,10 +1553,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1246651053}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 688.1398, y: -495.1328}
+  m_SizeDelta: {x: 1376.3, y: 990.2607}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1883001847
 GameObject:
@@ -1699,31 +1714,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c948e44e993798b4c847a4e804b6d640, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GeneticAlgoRunner
-  useEarlyMidLateStrategies: 1
-  populationSize: 1000
-  generations: 100
-  gamesPerEval: 15
-  mutationRate: 2
-  mutationAmount: 5
-  survivorsCount: 25
-  tournamentSize: 3
-  randomSeed: 42
-  threadCount: 12
-  numPlayers: 2
-  gameConfigData: {fileID: 11400000, guid: f320e0bbf3ddea54daf7525830429983, type: 2}
-  opponents:
-  - BrainType: 1
-    Genome: {fileID: 0}
-    OptimizerGenome: {fileID: 0}
-  - BrainType: 2
-    Genome: {fileID: 11400000, guid: 6c274092b9c098a42b6cd1121998938c, type: 2}
-    OptimizerGenome: {fileID: 0}
-  coevolution: 0
-  logEachGeneration: 1
-  saveToJson: 0
-  targetGenomeAsset: {fileID: 11400000, guid: f1e20e97b796a5449a39fd9ae202b4a6, type: 2}
-  autoRun: 1
-  logOutput: {fileID: 1858507391}
 --- !u!224 &2002856038
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1756,27 +1746,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8859539424f282b4aa3542cfb2f3e9e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EvolvableGARunner
-  populationSize: 50
-  generations: 100
+  populationSize: 1000
+  generations: 500
   gamesPerEval: 20
-  mutationRate: 0.2
-  mutationAmount: 5
-  survivorsCount: 5
+  mutationRate: 0.5
+  mutationAmount: 2
+  eliteCount: 5
   tournamentSize: 3
   randomSeed: 42
-  threadCount: 1
+  threadCount: 5
   numPlayers: 2
-  gameConfigData: {fileID: 11400000, guid: f320e0bbf3ddea54daf7525830429983, type: 2}
+  gameConfigData: {fileID: 11400000, guid: f828528fc05a67349b826d8b966b71b6, type: 2}
   opponents:
-  - BrainType: 0
-    Genome: {fileID: 0}
+  - BrainType: 4
+    OptimizerGenome: {fileID: 11400000, guid: bece208f5699dae469bbf46f0dfa2261, type: 2}
+    EmilyEarlyGenome: {fileID: 0}
+    EmilyMidGenome: {fileID: 0}
+    EmilyLateGenome: {fileID: 0}
+  - BrainType: 4
+    OptimizerGenome: {fileID: 11400000, guid: a1cd63b544e7a2f4380b8040c7c28ec3, type: 2}
+    EmilyEarlyGenome: {fileID: 0}
+    EmilyMidGenome: {fileID: 0}
+    EmilyLateGenome: {fileID: 0}
+  - BrainType: 3
+    OptimizerGenome: {fileID: 11400000, guid: ac702867ec02082459708ad349da5cab, type: 2}
+    EmilyEarlyGenome: {fileID: 0}
+    EmilyMidGenome: {fileID: 0}
+    EmilyLateGenome: {fileID: 0}
+  - BrainType: 2
     OptimizerGenome: {fileID: 0}
-  coevolution: 1
+    EmilyEarlyGenome: {fileID: 0}
+    EmilyMidGenome: {fileID: 0}
+    EmilyLateGenome: {fileID: 0}
+  coevolution: 0
+  bestGenomeSelectionMethod: 0
+  highlanderChampionsPerGeneration: 2
+  highlanderFinalOpponentCount: 3
   logEachGeneration: 1
-  saveToJson: 1
-  targetOptimizerGenomeAsset: {fileID: 11400000, guid: fd3a7422b1972444c9c041c08b21009a, type: 2}
+  brainTemplate: 2
+  targetOptimizerGenomeAsset: {fileID: 0}
+  targetEmilyEarlyGenomeAsset: {fileID: 11400000, guid: a4e171bb63ced0d45a72c496568234e4, type: 2}
+  targetEmilyMidGenomeAsset: {fileID: 11400000, guid: 1d71e003ec4bb2c46b1ba712f4b9d062, type: 2}
+  targetEmilyLateGenomeAsset: {fileID: 11400000, guid: 8032f4d41da5281478b86a282c74c69b, type: 2}
   autoRun: 1
-  logOutput: {fileID: 0}
+  logOutput: {fileID: 1246651056}
 --- !u!1 &2027203498
 GameObject:
   m_ObjectHideFlags: 0
@@ -1970,7 +1983,7 @@ MonoBehaviour:
   m_Content: {fileID: 1246651053}
   m_Horizontal: 1
   m_Vertical: 1
-  m_MovementType: 1
+  m_MovementType: 2
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135

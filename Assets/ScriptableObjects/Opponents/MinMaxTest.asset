@@ -22,4 +22,8 @@ MonoBehaviour:
   MinMaxDepth: 15
   MinMaxTimeLimitMs: 30000
   MinMaxEvaluator: 1
+  RelativeImmediateSimulationWeight: 1
+  RelativeTerminalDeltaWeight: 10000
+  RelativeExpectedMoveWeight: 0.35
+  RelativeUsePhaseAwareImmediateWeight: 1
   NeuralNetwork: {fileID: 0}
