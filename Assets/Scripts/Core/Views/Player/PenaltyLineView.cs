@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
-//                    Last Update 21/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.1 (April 2026)    =^..^=    =^..^=
+//                    Last Update 27/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 // View for the penalty line. Handles drag-and-drop and click-to-confirm.
@@ -73,10 +74,16 @@ public class PenaltyLineView : MonoBehaviour, IDropHandler, IPointerClickHandler
         GameEvents.OnSelectionCleared -= HandleSelectionCleared;
     }
 
+    private void OnDisable()
+    {
+        HandleSelectionCleared();
+    }
+
     public void SetInteractable(bool interactable)
     {
         isInteractable = interactable;
-        if (!interactable) SetHighlighted(false);
+        if (!interactable)
+            HandleSelectionCleared();
     }
 
     public void SetHighlighted(bool on)
@@ -95,6 +102,8 @@ public class PenaltyLineView : MonoBehaviour, IDropHandler, IPointerClickHandler
                                     List<int> validLines, bool hasPenalty)
     {
         if (!isInteractable) return;
+
+        // Same idea as placement lines
         _pendingSource = source;
         _pendingColor  = color;
         SetHighlighted(hasPenalty);
@@ -109,6 +118,12 @@ public class PenaltyLineView : MonoBehaviour, IDropHandler, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (eventData != null)
+        {
+            if (eventData.dragging) return;
+            if (eventData.button != PointerEventData.InputButton.Left) return;
+        }
+
         Debug.Log("[PenaltyLineView] OnPointerClick interactable=" + isInteractable
             + " highlighted=" + _highlighted
             + " pendingSource=" + (_pendingSource != null ? _pendingSource.name : "null"));
@@ -116,12 +131,9 @@ public class PenaltyLineView : MonoBehaviour, IDropHandler, IPointerClickHandler
         if (!isInteractable || !_highlighted) return;
         if (_pendingSource == null) return;
 
-        GameController gc = null;
-        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
-            gc = GameResources.Instance.GameController;
-        else
-            gc = GameController.Instance;
+        GameController gc = GameResources.GetGameController();
         if (gc == null) return;
+        if (!gc.IsHumanInteractionAllowed()) return;
 
         bool success;
         if (_pendingSource.IsCentral)
@@ -142,12 +154,9 @@ public class PenaltyLineView : MonoBehaviour, IDropHandler, IPointerClickHandler
 
         if (!isInteractable) return;
 
-        GameController gc = null;
-        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
-            gc = GameResources.Instance.GameController;
-        else
-            gc = GameController.Instance;
+        GameController gc = GameResources.GetGameController();
         if (gc == null) return;
+        if (!gc.IsHumanInteractionAllowed()) return;
 
         if (eventData.pointerDrag == null) return;
         FlowerDragHandler dragHandler = eventData.pointerDrag.GetComponent<FlowerDragHandler>();
@@ -169,7 +178,9 @@ public class PenaltyLineView : MonoBehaviour, IDropHandler, IPointerClickHandler
 
         if (success)
         {
+            // Mark the drag as completed
             dragHandler.MarkAsPlaced();
+            GameEvents.SelectionCleared();
             Debug.Log("[Drag] Flowers sent to penalty line");
         }
     }
@@ -183,12 +194,8 @@ public class PenaltyLineView : MonoBehaviour, IDropHandler, IPointerClickHandler
 
     public void Refresh()
     {
-        GameController gc = null;
-        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
-            gc = GameResources.Instance.GameController;
-        else
-            gc = GameController.Instance;
-        if (gc == null) return;
+        GameController gc = GameResources.GetGameController();
+        if (gc == null || gc.Model == null) return;
 
         PlayerModel[] players = gc.Model.Players;
         if (playerIndex < 0 || playerIndex >= players.Length) return;
@@ -222,7 +229,7 @@ public class PenaltyLineView : MonoBehaviour, IDropHandler, IPointerClickHandler
         if (spriteData != null) view.SetSpriteData(spriteData);
         view.Initialize(color);
 
-        // penalty flowers are display-only, dont block clicks
+        //Dont block raycast to make it easier for player to click target.
         Image img = flowerObj.GetComponent<Image>();
         if (img != null)
             img.raycastTarget = false;

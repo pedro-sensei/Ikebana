@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
-//                    Last Update 21/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.1 (April 2026)    =^..^=    =^..^=
+//                    Last Update 27/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 // Handles drag-and-drop of a flower from a display.
@@ -58,14 +59,35 @@ public class FlowerDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler,
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (eventData != null && eventData.button != PointerEventData.InputButton.Left)
+        {
+            eventData.pointerDrag = null;
+            return;
+        }
+
         if (!flowerPieceView.IsDraggable)
         {
             eventData.pointerDrag = null;
             return;
         }
 
+        GameController gc = GameResources.GetGameController();
+
+        if (gc == null || !gc.IsHumanInteractionAllowed())
+        {
+            eventData.pointerDrag = null;
+            return;
+        }
+
         Canvas dragCanvas = GetDragCanvas();
+        if (dragCanvas == null)
+        {
+            eventData.pointerDrag = null;
+            return;
+        }
+
         WasDroppedOnValidTarget = false;
+        GameEvents.SelectionCleared();
 
         dragCanvasRect = dragCanvas.transform as RectTransform;
         dragCanvasCamera = dragCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : dragCanvas.worldCamera;
@@ -77,6 +99,7 @@ public class FlowerDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler,
         sameflowerSiblings = GetSameColorSiblings();
         siblingOffsets = CalculateOffsets(sameflowerSiblings);
 
+        // Move the dragged flower group to the top canvas so it renders above every board panel.
         ReparentToCanvas(this, dragCanvas);
         for (int i = 0; i < sameflowerSiblings.Count; i++)
         {
@@ -91,6 +114,8 @@ public class FlowerDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler,
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (dragCanvasRect == null) return;
+
         Vector3 worldPoint;
         if (RectTransformUtility.ScreenPointToWorldPointInRectangle(
                 dragCanvasRect, eventData.position, dragCanvasCamera, out worldPoint))
@@ -109,24 +134,12 @@ public class FlowerDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler,
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        canvasGroup.alpha = 1f;
-        canvasGroup.blocksRaycasts = true;
+        CleanupAfterDrag(!WasDroppedOnValidTarget);
+    }
 
-        for (int i = 0; i < sameflowerSiblings.Count; i++)
-        {
-            sameflowerSiblings[i].canvasGroup.alpha = 1f;
-            sameflowerSiblings[i].canvasGroup.blocksRaycasts = true;
-        }
-
-        if (!WasDroppedOnValidTarget)
-        {
-            ReturnToOriginalPosition();
-            for (int i = 0; i < sameflowerSiblings.Count; i++)
-                sameflowerSiblings[i].ReturnToOriginalPosition();
-        }
-
-        sameflowerSiblings.Clear();
-        siblingOffsets.Clear();
+    private void OnDisable()
+    {
+        CleanupAfterDrag(true);
     }
 
     public void MarkAsPlaced()
@@ -185,5 +198,42 @@ public class FlowerDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler,
                 offsets[siblings[i]] = siblings[i].transform.position - transform.position;
         }
         return offsets;
+    }
+
+    private void CleanupAfterDrag(bool restoreOriginalPosition)
+    {
+        // Always restore raycasts and alfa.
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = 1f;
+            canvasGroup.blocksRaycasts = true;
+        }
+
+        for (int i = 0; i < sameflowerSiblings.Count; i++)
+        {
+            FlowerDragHandler sibling = sameflowerSiblings[i];
+            if (sibling == null || sibling.canvasGroup == null) continue;
+
+            sibling.canvasGroup.alpha = 1f;
+            sibling.canvasGroup.blocksRaycasts = true;
+        }
+
+        if (restoreOriginalPosition)
+        {
+            // Only snap back when the drop was rejected.
+            // Valid targets call MarkAsPlaced()
+            ReturnToOriginalPosition();
+            for (int i = 0; i < sameflowerSiblings.Count; i++)
+            {
+                if (sameflowerSiblings[i] != null)
+                    sameflowerSiblings[i].ReturnToOriginalPosition();
+            }
+        }
+
+        dragCanvasRect = null;
+        dragCanvasCamera = null;
+        WasDroppedOnValidTarget = false;
+        sameflowerSiblings.Clear();
+        siblingOffsets.Clear();
     }
 }

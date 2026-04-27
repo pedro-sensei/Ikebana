@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
-//                    Last Update 21/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.1 (April 2026)    =^..^=    =^..^=
+//                    Last Update 27/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 
@@ -50,19 +50,19 @@ public class GameController : MonoBehaviour
     [Tooltip("Base seconds to wait after fully scoring one player before moving to the next (multiplied by the settings slider).")]
     [SerializeField] private float scoringBetweenPlayersDelay = 1.2f;
 
-    // Announcement duration multiplier (PlayerPrefs key + slider range)
+    // Announcement duration multiplier (PlayerPrefs key + slider in settings)
     public const string AnnouncementDurationPrefKey = "AnnouncementDuration";
     public const float  AnnouncementDurationMin     = 0.5f;
     public const float  AnnouncementDurationMax     = 3f;
     public const float  AnnouncementDurationDefault = 1f;
 
-    // Animation duration multiplier (PlayerPrefs key + slider range)
+    // Animation duration multiplier (PlayerPrefs key + slider in settings)
     public const string AnimationDurationPrefKey    = "AnimationDuration";
     public const float  AnimationDurationMin        = 0.5f;
     public const float  AnimationDurationMax        = 3f;
     public const float  AnimationDurationDefault    = 1f;
 
-    // AI thinking time (PlayerPrefs key + slider range, stored in seconds)
+    // AI thinking time (PlayerPrefs key + slider in settings, stored in seconds)
     public const string AIThinkingTimePrefKey       = "AIThinkingTime";
     public const float  AIThinkingTimeMin           = 1f;
     public const float  AIThinkingTimeMax           = 10f;
@@ -90,10 +90,33 @@ public class GameController : MonoBehaviour
     public PlayerSlotConfig[] PlayerSlots => playerSlots;
     public float TurnAnnouncementDuration => _turnAnnouncementDuration;
 
+    //Replaces interactable checks.
+    public bool IsHumanInteractionAllowed()
+    {
+        // Added all checks since they were some loopholes freezing the turnflow.
+        // This avoids player messing with AI boards.
+
+        if (_isPaused || gameModel == null || gameModel.IsGameOver)
+            return false;
+
+        if (gameModel.CurrentPhase != RoundPhaseEnum.PlacementPhase)
+            return false;
+
+        if (playerSlots == null)
+            return false;
+
+        int currentPlayerIndex = gameModel.CurrentPlayerIndex;
+        if (currentPlayerIndex < 0 || currentPlayerIndex >= playerSlots.Length)
+            return false;
+
+        PlayerSlotConfig slot = playerSlots[currentPlayerIndex];
+        return slot != null && slot.PlayerType == PlayerType.Human;
+    }
+
 
     #endregion
 
-    #region SETUP
+    #region CONSTRUCTOR AND LIFECYCLE
 
     private void Awake()
     {
@@ -131,6 +154,7 @@ public class GameController : MonoBehaviour
 
         if (gameModel == null)
         {
+            // If we were not loading from a save, bootstrap a fresh match from the menu-selected player names.
             string[] names = BuildPlayerNames(numPlayers);
             gameModel = new GameModel(numPlayers, names);
         }
@@ -247,14 +271,13 @@ public class GameController : MonoBehaviour
         // Place on board and notify views.
         PlaceFlowersOnBoard(currentPlayer, targetLineIndex, pickResult);
 
+        // End turn is delayed so the placement animation/feedback can finish before the next player takes over.
         ScheduleEndTurn();
         return true;
     }
 
-    /// <summary>
-    /// Pick flowers of a colour from the central display and place them.
-    /// targetLineIndex: 0-based; -1 for penalty.
-    /// </summary>
+
+    // Pick flowers of a colour from the central display and place them.
     public bool PickFromCentralAndPlace(FlowerColor color, int targetLineIndex)
     {
         if (_isPaused || gameModel.IsGameOver || gameModel.CurrentPhase != RoundPhaseEnum.PlacementPhase)
@@ -321,11 +344,10 @@ public class GameController : MonoBehaviour
         GameEvents.ShowAnnouncement(msg, _roundAnnouncementDuration);
         _roundJustStarted = true;
     }
-
     private void HandleRoundEnd(int round) => GameEvents.RoundEnd(round);
     private void HandlePhaseStart(RoundPhaseEnum phase) => GameEvents.PhaseStart(phase);
 
-    // -- Turn lifecycle --------------------------------------------------
+    //TURN
 
     private void HandleTurnStart(int turnNumber, int playerIndex)
     {
@@ -334,11 +356,11 @@ public class GameController : MonoBehaviour
 
     private void HandleTurnEnd(int p, int t) => GameEvents.TurnEnd(p, t);
 
-    // Scoring ---------------------------------------------------------
+    //SCORE
 
     private void HandleScoringPhaseReady() => StartCoroutine(RunScoringSequence());
 
-    // Game over -------------------------------------------------------
+    //ENDGAME
 
     private void HandleGameOver()
     {
@@ -396,7 +418,7 @@ public class GameController : MonoBehaviour
         }
         else
         {
-        string playerName = gameModel.Players[nextPlayerIndex].PlayerName;
+            string playerName = gameModel.Players[nextPlayerIndex].PlayerName;
             GameEvents.ShowAnnouncement($"{playerName}'s Turn Starts", _turnAnnouncementDuration);
         }
 
@@ -411,6 +433,7 @@ public class GameController : MonoBehaviour
 
         for (int i = 0; i < numPlayers; i++)
         {
+            // Rotate the big board to each player during scoring so everyone gets their own scoring spotlight.
             GameEvents.ScoringTurnChanged(i, numPlayers);
             yield return new WaitForSeconds(_scoringBoardRotationDelay);
 
@@ -492,6 +515,7 @@ public class GameController : MonoBehaviour
             for (int colorIdx = 0; colorIdx < GameConfig.NUM_COLORS; colorIdx++)
             {
                 FlowerColor color = (FlowerColor)colorIdx;
+                // A color bonus means that color appears once in every row, so we probe row-by-row instead of scanning columns.
                 bool allPlaced = true;
                 for (int r = 0; r < size; r++)
                     if (!grid.IsColorPlacedInRow(r, color)) { allPlaced = false; break; }
@@ -554,6 +578,7 @@ public class GameController : MonoBehaviour
 
     private void ScheduleEndTurn()
     {
+        // Guard against double end, turns were sometimes counted double.
         if (_endTurnPending) return;
         _endTurnPending = true;
         StartCoroutine(EndTurnCoroutine());
@@ -569,15 +594,11 @@ public class GameController : MonoBehaviour
             yield return null;
         }
 
-        int endingPlayer = gameModel.CurrentPlayerIndex;
-        int endingTurn   = gameModel.TurnNumber;
-        GameEvents.TurnEnd(endingPlayer, endingTurn);
-
         _endTurnPending = false;
         gameModel.EndTurn();
     }
 
-    // Pushes the full current model state to views via GameEvents.
+    // Pushes the full current model state to views.
     private void NotifyViewsOfCurrentState()
     {
         for (int i = 0; i < gameModel.FactoryDisplays.Length; i++)
@@ -641,6 +662,9 @@ public class GameController : MonoBehaviour
     public void PauseGame()
     {
         if (_isPaused) return;
+
+        // Clear any active click-selection when opening menus so highlights do not survive into the paused state.
+        GameEvents.SelectionCleared();
         _isPaused = true;
         Time.timeScale = 0f;
         GameEvents.GamePaused();
@@ -660,10 +684,6 @@ public class GameController : MonoBehaviour
         else PauseGame();
     }
 
-    /// <summary>
-    /// Scales all announcement durations by <paramref name="multiplier"/> relative to the
-    /// Inspector base values. 1 = original speed, 0.5 = half duration, 2 = double.
-    /// </summary>
     public void SetAnnouncementMultiplier(float multiplier)
     {
         multiplier = Mathf.Clamp(multiplier, AnnouncementDurationMin, AnnouncementDurationMax);
@@ -672,10 +692,6 @@ public class GameController : MonoBehaviour
         _gameOverAnnouncementDuration = gameOverAnnouncementDuration * multiplier;
     }
 
-    /// <summary>
-    /// Scales all in-game animation / scoring delays by <paramref name="multiplier"/> relative
-    /// to the Inspector base values. Also forwards to AIFlowerAnimator if present.
-    /// </summary>
     public void SetAnimationMultiplier(float multiplier)
     {
         multiplier = Mathf.Clamp(multiplier, AnimationDurationMin, AnimationDurationMax);

@@ -35,6 +35,7 @@ public class AudioController : MonoBehaviour
     {
         if(isMusicSource)
         {
+           // Read from PlayerPrefs every time the event fires so new sliders apply immediately.
            audioSource.volume = PlayerPrefs.GetFloat("MusicVolume", 1f);
         }
         if (isSFXSource)
@@ -45,6 +46,7 @@ public class AudioController : MonoBehaviour
 
     void OnDestroy()
         {
+            // Unsubscribe from whichever channel this source listens to so scene reloads do not leave dangling listeners.
             if (isMusicSource)
             {
                 GameEvents.OnMusicVolumeChanged -= UpdateVolume;

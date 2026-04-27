@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -54,7 +55,7 @@ public class PlacementLineView : MonoBehaviour, IDropHandler, IPointerClickHandl
 
         ViewRegistry.RegisterPlacementLine(playerIndex, lineIndex, GetComponent<RectTransform>());
 
-        // Make sure theres a raycast-target Image so clicks and drops work
+        // Avoid click and drop errors.
         Image img = GetComponent<Image>();
         if (img == null)
         {
@@ -63,7 +64,6 @@ public class PlacementLineView : MonoBehaviour, IDropHandler, IPointerClickHandl
         }
         img.raycastTarget = true;
 
-        // If flowerContainer is a separate child, dont let it block raycasts
         if (flowerContainer != transform)
         {
             Image containerImg = flowerContainer.GetComponent<Image>();
@@ -87,15 +87,24 @@ public class PlacementLineView : MonoBehaviour, IDropHandler, IPointerClickHandl
 
     private void OnDestroy()
     {
+        if (flowerContainer != null)
+            flowerContainer.DOKill(false);
+
         ViewRegistry.UnregisterPlacementLine(playerIndex, lineIndex);
         GameEvents.OnflowerSelected    -= HandleflowerSelected;
         GameEvents.OnSelectionCleared -= HandleSelectionCleared;
     }
 
+    private void OnDisable()
+    {
+        HandleSelectionCleared();
+    }
+
     public void SetInteractable(bool interactable)
     {
         isInteractable = interactable;
-        if (!interactable) SetHighlighted(false);
+        if (!interactable)
+            HandleSelectionCleared();
     }
 
     // Shows or hides the green overlay that marks this line as a valid target
@@ -114,6 +123,7 @@ public class PlacementLineView : MonoBehaviour, IDropHandler, IPointerClickHandl
                                     List<int> validLines, bool hasPenalty)
     {
         if (!isInteractable) return;
+
         _pendingSource = source;
         _pendingColor  = color;
         SetHighlighted(validLines.Contains(lineIndex));
@@ -130,6 +140,12 @@ public class PlacementLineView : MonoBehaviour, IDropHandler, IPointerClickHandl
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (eventData != null)
+        {
+            if (eventData.dragging) return;
+            if (eventData.button != PointerEventData.InputButton.Left) return;
+        }
+
         Debug.Log("[PlacementLineView] OnPointerClick line=" + lineIndex
             + " interactable=" + isInteractable + " highlighted=" + _highlighted
             + " pendingSource=" + (_pendingSource != null ? _pendingSource.name : "null"));
@@ -137,12 +153,9 @@ public class PlacementLineView : MonoBehaviour, IDropHandler, IPointerClickHandl
         if (!isInteractable || !_highlighted) return;
         if (_pendingSource == null) return;
 
-        GameController gc = null;
-        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
-            gc = GameResources.Instance.GameController;
-        else
-            gc = GameController.Instance;
+        GameController gc = GameResources.GetGameController();
         if (gc == null) return;
+        if (!gc.IsHumanInteractionAllowed()) return;
 
         bool success;
         if (_pendingSource.IsCentral)
@@ -169,12 +182,9 @@ public class PlacementLineView : MonoBehaviour, IDropHandler, IPointerClickHandl
 
         if (!isInteractable) return;
 
-        GameController gc = null;
-        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
-            gc = GameResources.Instance.GameController;
-        else
-            gc = GameController.Instance;
+        GameController gc = GameResources.GetGameController();
         if (gc == null) return;
+        if (!gc.IsHumanInteractionAllowed()) return;
 
         if (eventData.pointerDrag == null) return;
         FlowerDragHandler dragHandler = eventData.pointerDrag.GetComponent<FlowerDragHandler>();
@@ -200,7 +210,9 @@ public class PlacementLineView : MonoBehaviour, IDropHandler, IPointerClickHandl
 
         if (success)
         {
+            // The board refresh will rebuild the contents.
             dragHandler.MarkAsPlaced();
+            GameEvents.SelectionCleared();
             AnimateLand();
             Debug.Log("[Drag] Flowers placed in line " + lineIndex);
         }
@@ -211,12 +223,8 @@ public class PlacementLineView : MonoBehaviour, IDropHandler, IPointerClickHandl
     // Reads the current model state and rebuilds the flower visuals.
     public void Refresh()
     {
-        GameController gc = null;
-        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
-            gc = GameResources.Instance.GameController;
-        else
-            gc = GameController.Instance;
-        if (gc == null) return;
+        GameController gc = GameResources.GetGameController();
+        if (gc == null || gc.Model == null) return;
 
         PlayerModel[] players = gc.Model.Players;
         if (playerIndex < 0 || playerIndex >= players.Length) return;
@@ -252,7 +260,7 @@ public class PlacementLineView : MonoBehaviour, IDropHandler, IPointerClickHandl
         if (spriteData != null) view.SetSpriteData(spriteData);
         view.Initialize(color);
 
-        // Flowers on placement lines are display-only, they must not eat clicks
+        // Avoid flowers blocking clicks.
         Image img = flowerObj.GetComponent<Image>();
         if (img != null)
             img.raycastTarget = false;
@@ -261,7 +269,7 @@ public class PlacementLineView : MonoBehaviour, IDropHandler, IPointerClickHandl
         if (cg != null)
             cg.blocksRaycasts = false;
 
-        // Remove drag handler if the prefab has one since these flowers arent draggable
+        // Remove drag handler to lock flowers in places.
         FlowerDragHandler drag = flowerObj.GetComponent<FlowerDragHandler>();
         if (drag != null)
             Destroy(drag);
@@ -301,6 +309,8 @@ public class PlacementLineView : MonoBehaviour, IDropHandler, IPointerClickHandl
 
     public void AnimateLand()
     {
+        if (flowerContainer == null) return;
+
         flowerContainer.DOKill(false);
         flowerContainer.localScale = Vector3.one;
         flowerContainer

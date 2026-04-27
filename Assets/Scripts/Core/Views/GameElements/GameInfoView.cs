@@ -3,8 +3,8 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
-//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
-//                    Last Update 21/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.1 (April 2026)    =^..^=    =^..^=
+//                    Last Update 27/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^==
 
 // Shows announcement messages during the game (round start, game over, etc.)
@@ -77,6 +77,7 @@ public class GameInfoView : MonoBehaviour
         if (messageText != null)
             messageText.text = message;
 
+        // Block clicks while the banner is visible.
         SetBlocking(true);
         yield return FadeTo(1f);
         yield return new WaitForSeconds(displayDuration);
@@ -99,7 +100,7 @@ public class GameInfoView : MonoBehaviour
     {
         if (panelGroup != null)
         {
-            float startAlpha = panelGroup.alpha;
+            // Use the CanvasGroup when available
             Tween t = DOTween.To(
                     delegate() { return panelGroup.alpha; },
                     delegate(float x) { panelGroup.alpha = x; },

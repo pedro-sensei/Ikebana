@@ -97,6 +97,21 @@ public class GameResources : MonoBehaviour
         get { return aiOpponentRepository; }
     }
 
+    public static GameController GetGameController()
+    {
+        if (Instance != null)
+        {
+            // Cache the scene controller lazily because GameResources can wake up before GameController in some scene setups.
+            if (Instance.gameController == null)
+                Instance.gameController = GameController.Instance;
+
+            if (Instance.gameController != null)
+                return Instance.gameController;
+        }
+
+        return GameController.Instance;
+    }
+
     public float AIflowerAnimDuration
     {
         get { return aiflowerAnimDuration; }
@@ -110,6 +125,8 @@ public class GameResources : MonoBehaviour
         if (Instance != null) { Destroy(gameObject); return; }
         Instance = this;
 
+        // Apply sprite choices here before any board/display view asks for sprites.
+        // Doing it later caused the first rendered frame to use old flower variants.
         // Apply the player's saved sprite choices before any view reads from spriteData
         FlowerSpriteSettings.ApplyAll(spriteLibrary, spriteData);
 

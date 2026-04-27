@@ -115,6 +115,8 @@ public static class GameEvents
 
     public static void TurnTransition(int pi, int np)
     {
+        // Newer UI listens to TurnTransition, while some older code still expects TurnChanged.
+        // We only fire the new one here and keep the legacy helper available for manual callers.
         OnTurnTransition?.Invoke(pi, np);
         // also fire the old event so old subscribers still work
         //OnTurnChanged?.Invoke(pi, np);
@@ -182,6 +184,7 @@ public static class GameEvents
         List<FlowerPiece> picked, List<FlowerPiece> remaining,
         bool hasToken, Action onComplete)
     {
+        // Thin wrapper kept for readability at call sites that specifically talk about AI animation.
         flowerAnimationRequested(from, to, central, penalty, picked, remaining, hasToken, onComplete);
     }
 

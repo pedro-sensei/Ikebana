@@ -1,11 +1,12 @@
 using System.Collections.Generic;
+using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
-//                    Last Update 21/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.1 (April 2026)    =^..^=    =^..^=
+//                    Last Update 27/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 // View for a single flower. Handles visuals, supports both drag (via FlowerDragHandler)
@@ -63,6 +64,7 @@ public class FlowerPieceView : MonoBehaviour, IPointerClickHandler
     private void OnEnable()
     {
         GameEvents.OnSelectionCleared += HandleSelectionCleared;
+        SubscribeToSpriteData();
     }
 
     private void OnDisable()
@@ -103,24 +105,21 @@ public class FlowerPieceView : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (eventData != null)
+        {
+            if (eventData.dragging) return;
+            if (eventData.button != PointerEventData.InputButton.Left) return;
+        }
+
         if (!IsSelectable) return;
         if (sourceDisplay == null) return;
 
-        GameController gc = null;
-        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
-            gc = GameResources.Instance.GameController;
-        else
-            gc = GameController.Instance;
+        GameController gc = GameResources.GetGameController();
         if (gc == null || gc.IsGameOver) return;
 
-        if (gc.Model.CurrentPhase != RoundPhaseEnum.PlacementPhase) return;
+        if (!gc.IsHumanInteractionAllowed()) return;
 
         int playerIndex = gc.Model.CurrentPlayerIndex;
-
-        // only human players can click-to-select
-        PlayerSlotConfig[] slots = gc.PlayerSlots;
-        if (slots == null || playerIndex >= slots.Length) return;
-        if (slots[playerIndex].PlayerType != PlayerType.Human) return;
 
         PlayerModel player = gc.Model.Players[playerIndex];
 
@@ -135,7 +134,7 @@ public class FlowerPieceView : MonoBehaviour, IPointerClickHandler
         Debug.Log("[FlowerPieceView] Selected " + flowerColor + " from " + sourceDisplay.name
             + " (isCentral=" + sourceDisplay.IsCentral + ", factoryIndex=" + sourceDisplay.FactoryIndex + ")");
 
-        // Clear previous selections first
+        // Clear previous selections
         GameEvents.SelectionCleared();
 
         // Highlight flowers of the same colour in this display
@@ -178,6 +177,7 @@ public class FlowerPieceView : MonoBehaviour, IPointerClickHandler
 
         if (selected)
         {
+            // Restart from the base scale.
             StopSelectionTween(false);
             transform.localScale = _baseScale;
             _selectionTween = transform.DOScale(_baseScale * 1.15f, 0.35f)

@@ -47,6 +47,7 @@ public class PlayerBoardView : MonoBehaviour
     private int displayedPlayerIndex = 0;
     private RectTransform _rectTransform;
     private Tween _boardTransitionTween;
+    private RectTransform _boardTransitionClone;
     private Tween _portraitThinkingTween;
     private Quaternion _portraitBaseLocalRotation;
     private bool _portraitBaseRotationCaptured;
@@ -87,6 +88,8 @@ public class PlayerBoardView : MonoBehaviour
         GameEvents.OnScoringTurnChanged   += HandleScoringTurnChanged;
         GameEvents.OnAIThinkingStart      += HandleAIThinkingStart;
         GameEvents.OnAIThinkingEnd        += HandleAIThinkingEnd;
+        GameEvents.OnGamePaused           += HandleGamePaused;
+        GameEvents.OnGameResumed          += HandleGameResumed;
         GameEvents.OnflowersPlacedInLine    += HandleflowersPlacedInLine;
         GameEvents.OnflowersAddedToPenalty  += HandleflowersAddedToPenalty;
         GameEvents.OnflowerScoredInGrid     += HandleflowerScoredInGrid;
@@ -99,11 +102,7 @@ public class PlayerBoardView : MonoBehaviour
 
     private void Start()
     {
-        GameController gc = null;
-        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
-            gc = GameResources.Instance.GameController;
-        else
-            gc = GameController.Instance;
+        GameController gc = GameResources.GetGameController();
 
         if (gc == null) return;
 
@@ -114,6 +113,7 @@ public class PlayerBoardView : MonoBehaviour
     {
         if (_boardTransitionTween != null) _boardTransitionTween.Kill();
         if (_portraitThinkingTween != null) _portraitThinkingTween.Kill();
+        DestroyBoardTransitionClone();
 
         ViewRegistry.UnregisterPlayerBoard(slotIndex);
 
@@ -122,6 +122,8 @@ public class PlayerBoardView : MonoBehaviour
         GameEvents.OnScoringTurnChanged   -= HandleScoringTurnChanged;
         GameEvents.OnAIThinkingStart      -= HandleAIThinkingStart;
         GameEvents.OnAIThinkingEnd        -= HandleAIThinkingEnd;
+        GameEvents.OnGamePaused           -= HandleGamePaused;
+        GameEvents.OnGameResumed          -= HandleGameResumed;
         GameEvents.OnflowersPlacedInLine    -= HandleflowersPlacedInLine;
         GameEvents.OnflowersAddedToPenalty  -= HandleflowersAddedToPenalty;
         GameEvents.OnflowerScoredInGrid     -= HandleflowerScoredInGrid;
@@ -132,11 +134,16 @@ public class PlayerBoardView : MonoBehaviour
         GameEvents.OnGameOver             -= HandleGameOver;
     }
 
-    // === EVENT HANDLERS ===
+    //EVENT HANDLERS
 
     private void HandleTurnTransition(int nextPlayerIndex, int numPlayers)
     {
-        if (!ShouldRotateForPlacement()) return;
+        if (!ShouldRotateForPlacement())
+        {
+            UpdateInteractable();
+            UpdateActiveIndicator();
+            return;
+        }
 
         PlayTurnTransitionClone(nextPlayerIndex, numPlayers);
         SwitchDisplayedPlayer(nextPlayerIndex, numPlayers);
@@ -144,23 +151,30 @@ public class PlayerBoardView : MonoBehaviour
 
     private void HandleTurnStart(int playerIndex, int turnNumber)
     {
-        GameController gc = null;
-        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
-            gc = GameResources.Instance.GameController;
-        else
-            gc = GameController.Instance;
+        GameController gc = GameResources.GetGameController();
         if (gc == null) return;
-        if (!ShouldRotateForPlacement()) return;
+
+        if (!ShouldRotateForPlacement())
+        {
+            UpdateInteractable();
+            UpdateActiveIndicator();
+            return;
+        }
 
         int numPlayers = gc.Model.NumberOfPlayers;
         int expected = (playerIndex + slotIndex) % numPlayers;
         if (displayedPlayerIndex != expected)
             SwitchDisplayedPlayer(playerIndex, numPlayers);
+        else
+        {
+            UpdateInteractable();
+            UpdateActiveIndicator();
+        }
     }
 
     private void HandleScoringTurnChanged(int scoringPlayerIndex, int numPlayers)
     {
-        // During scoring, rotation should still happen even if board rotation
+        // During scoring, rotation still happen even if board rotation
         // is disabled for placement turns.
         SwitchDisplayedPlayer(scoringPlayerIndex, numPlayers);
     }
@@ -172,6 +186,7 @@ public class PlayerBoardView : MonoBehaviour
         Transform target = GetAIThinkingWobbleTarget();
         if (target == null) return;
 
+        // Capture the original local rotation once and always return to it.
         if (!_portraitBaseRotationCaptured)
         {
             _portraitBaseLocalRotation = target.localRotation;
@@ -201,8 +216,20 @@ public class PlayerBoardView : MonoBehaviour
 
     private void HandleAIThinkingEnd(int pIndex)
     {
-        if (pIndex != displayedPlayerIndex || portraitImage == null) return;
+        if (pIndex != displayedPlayerIndex) return;
         StopPortraitThinkingAnimation();
+    }
+
+    private void HandleGamePaused()
+    {
+        UpdateInteractable();
+        UpdateActiveIndicator();
+    }
+
+    private void HandleGameResumed()
+    {
+        UpdateInteractable();
+        UpdateActiveIndicator();
     }
 
     private void StopPortraitThinkingAnimation()
@@ -275,8 +302,12 @@ public class PlayerBoardView : MonoBehaviour
         if (!ViewRegistry.GetPlayerBoardPosition(destinationSlot, out destinationRt) || destinationRt == null)
             return;
 
+        // Make a visual-only clone and animate
         RectTransform cloneRt = CreateTransitionCloneRect();
         if (cloneRt == null) return;
+
+        DestroyBoardTransitionClone();
+        _boardTransitionClone = cloneRt;
 
         cloneRt.anchoredPosition = _rectTransform.anchoredPosition;
         cloneRt.SetAsLastSibling();
@@ -294,10 +325,20 @@ public class PlayerBoardView : MonoBehaviour
         seq.OnComplete(delegate
         {
             _boardTransitionTween = null;
+            if (_boardTransitionClone == cloneRt)
+                _boardTransitionClone = null;
             if (cloneRt != null) Destroy(cloneRt.gameObject);
         });
 
         _boardTransitionTween = seq;
+    }
+
+    private void DestroyBoardTransitionClone()
+    {
+        if (_boardTransitionClone == null) return;
+
+        Destroy(_boardTransitionClone.gameObject);
+        _boardTransitionClone = null;
     }
 
     private RectTransform CreateTransitionCloneRect()
@@ -391,11 +432,7 @@ public class PlayerBoardView : MonoBehaviour
 
     public void RefreshBoardRotationMode()
     {
-        GameController gc = null;
-        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
-            gc = GameResources.Instance.GameController;
-        else
-            gc = GameController.Instance;
+        GameController gc = GameResources.GetGameController();
         if (gc == null) return;
 
         int numPlayers = gc.Model.NumberOfPlayers;
@@ -415,6 +452,7 @@ public class PlayerBoardView : MonoBehaviour
             }
             else
             {
+                // Fallback for AI-only
                 fixedPlayerIndex = slotIndex;
                 if (fixedPlayerIndex < 0) fixedPlayerIndex = 0;
                 if (fixedPlayerIndex >= numPlayers) fixedPlayerIndex = numPlayers - 1;
@@ -430,13 +468,9 @@ public class PlayerBoardView : MonoBehaviour
 
     private bool ShouldRotateForPlacement()
     {
-        GameController gc = null;
-        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
-            gc = GameResources.Instance.GameController;
-        else
-            gc = GameController.Instance;
+        GameController gc = GameResources.GetGameController();
 
-        // Multi-human sessions always rotate boards.
+        // Multi-human always rotate boards.
         if (gc != null && CountHumanPlayers(gc) > 1)
             return true;
 
@@ -478,7 +512,6 @@ public class PlayerBoardView : MonoBehaviour
     private void HandleflowersPlacedInLine(int pIndex, int lineIndex, List<FlowerPiece> flowers)
     {
         if (pIndex != displayedPlayerIndex) return;
-        // lineIndex is 0-based
         if (placementLineViews != null && lineIndex >= 0 && lineIndex < placementLineViews.Length)
         {
             if (placementLineViews[lineIndex] != null)
@@ -524,7 +557,7 @@ public class PlayerBoardView : MonoBehaviour
     {
         RefreshLines();
 
-        // After scoring rotations, return to normal placement seating mode.
+        // After scoring rotations, return to normal seats.
         RefreshBoardRotationMode();
     }
 
@@ -566,11 +599,7 @@ public class PlayerBoardView : MonoBehaviour
     // Rebuilds every visual to match the displayed player
     private void RefreshAll()
     {
-        GameController gc = null;
-        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
-            gc = GameResources.Instance.GameController;
-        else
-            gc = GameController.Instance;
+        GameController gc = GameResources.GetGameController();
         if (gc == null) return;
 
         PlayerModel player = gc.Model.Players[displayedPlayerIndex];
@@ -606,7 +635,10 @@ public class PlayerBoardView : MonoBehaviour
 
     private void UpdateInteractable()
     {
-        bool interactable = IsActiveSlot;
+        GameController gc = GameResources.GetGameController();
+
+        // Only the front board should accept input, and only on human turns.
+        bool interactable = IsActiveSlot && gc != null && gc.IsHumanInteractionAllowed();
         if (placementLineViews != null)
         {
             for (int i = 0; i < placementLineViews.Length; i++)
@@ -624,11 +656,7 @@ public class PlayerBoardView : MonoBehaviour
         if (boardBorderImage != null)
         {
             Color slotColor = activeColor;
-            GameController gc = null;
-            if (GameResources.Instance != null && GameResources.Instance.GameController != null)
-                gc = GameResources.Instance.GameController;
-            else
-                gc = GameController.Instance;
+            GameController gc = GameResources.GetGameController();
 
             if (gc != null && gc.PlayerSlots != null &&
                 displayedPlayerIndex >= 0 && displayedPlayerIndex < gc.PlayerSlots.Length)
@@ -660,11 +688,7 @@ public class PlayerBoardView : MonoBehaviour
 
     public void ForceUpdate()
     {
-        GameController gc = null;
-        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
-            gc = GameResources.Instance.GameController;
-        else
-            gc = GameController.Instance;
+        GameController gc = GameResources.GetGameController();
         if (gc == null) return;
 
         int current = gc.Model.CurrentPlayerIndex;

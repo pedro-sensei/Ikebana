@@ -269,7 +269,7 @@ public class PlayerModel
 
         //NOTIFY that the score has changed so the UI can update
         OnScoreChanged?.Invoke(PlayerIndex, _score);
-        Debug.Log($"End game bonus applied: {bonus} points");
+        //Debug.Log($"End game bonus applied: {bonus} points");
         return bonus;
     }
 

@@ -48,11 +48,20 @@ public class PlayerGridView : MonoBehaviour
     private void OnDestroy()
     {
         GameEvents.OnEndGameBonusCellScored -= HandleEndGameBonusCell;
+        StopAllCoroutines();
+        KillScoreTweens();
+    }
+
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+        KillScoreTweens();
     }
 
     private void HandleEndGameBonusCell(int pIndex, int row, int col, int bonus, BonusType type)
     {
         if (pIndex != playerIndex || _scores == null) return;
+        if (row < 0 || col < 0 || row >= _scores.GetLength(0) || col >= _scores.GetLength(1)) return;
 
         // pick the right color depending on the bonus type
         Color color;
@@ -89,9 +98,14 @@ public class PlayerGridView : MonoBehaviour
 
     public void Reinitialize()
     {
+        StopAllCoroutines();
+        KillScoreTweens();
+
         ClearContainer(gridContainer);
         if (scoreOverlayContainer != null)
         {
+            // Prebuilt overlays works now. Keeping this in case.
+            // Runtime overlays generated 
             if (_usingPrebuiltScoreOverlay)
                 ClearScoringHelperLabels();
             else
@@ -107,15 +121,18 @@ public class PlayerGridView : MonoBehaviour
 
     private void ClearContainer(Transform parent)
     {
+        if (parent == null) return;
+
         for (int i = parent.childCount - 1; i >= 0; i--)
             Destroy(parent.GetChild(i).gameObject);
     }
 
     private void CreateGrid()
     {
-        GameController gc = GameController.Instance;
-        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
-            gc = GameResources.Instance.GameController;
+        GameController gc = GameResources.GetGameController();
+        if (gc == null || gc.Model == null || gridContainer == null) return;
+
+        if (playerIndex < 0 || playerIndex >= gc.Model.Players.Length) return;
 
         FlowerSpriteData spriteData = null;
         if (GameResources.Instance != null)
@@ -166,14 +183,18 @@ public class PlayerGridView : MonoBehaviour
         CreateRuntimeScoreOverlay(size);
     }
 
+
+    //TODO: Fix all scenes or focus on runtime building but it also had errors.
     private bool TryBindPrebuiltScoreOverlay(int size)
     {
+        //Keep code overlays since some errors were found in some scenes.
         for (int r = 0; r < size; r++)
         {
             for (int c = 0; c < size; c++)
             {
                 string slotName = "Slot_" + (r + 1) + "_" + (c + 1);
                 Transform slot = scoreOverlayContainer.Find(slotName);
+                
                 if (slot == null) return false;
 
                 TMP_Text label = slot.GetComponentInChildren<TMP_Text>(true);
@@ -217,7 +238,7 @@ public class PlayerGridView : MonoBehaviour
     #region RUNTIME UPDATES
     public void Placeflower(int row, int col, FlowerColor color)
     {
-        if (_cells != null)
+        if (_cells != null && row >= 0 && col >= 0 && row < _cells.GetLength(0) && col < _cells.GetLength(1))
             _cells[row, col].color = Color.white;
 
         RefreshScoringHelperOverlay();
@@ -227,8 +248,12 @@ public class PlayerGridView : MonoBehaviour
     {
         Placeflower(row, col, color);
         if (_scores == null || points <= 0) return;
+        if (row < 0 || col < 0 || row >= _scores.GetLength(0) || col >= _scores.GetLength(1)) return;
 
         TMP_Text label = _scores[row, col];
+        if (label == null) return;
+
+        label.DOKill(false);
         label.color = Color.white;
         label.fontSize = 24 + Mathf.Min(points, 10);
         StartCoroutine(AnimateScore(label, points));
@@ -236,6 +261,9 @@ public class PlayerGridView : MonoBehaviour
 
     private IEnumerator AnimateScore(TMP_Text label, int points)
     {
+        if (label == null) yield break;
+
+        label.DOKill(false);
         label.text = "+" + points;
         label.DOFade(1f, fadeDuration * 0.5f).SetEase(Ease.OutQuad);
         yield return new WaitForSeconds(scoreDuration);
@@ -266,13 +294,12 @@ public class PlayerGridView : MonoBehaviour
         bool enabled = PlayerPrefs.GetInt(ScoringHelperPrefKey, 1) == 1;
         if (!enabled)
         {
+            // If the helper was turned off in settings, clear everything.
             ClearScoringHelperLabels();
             return;
         }
 
-        GameController gc = GameController.Instance;
-        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
-            gc = GameResources.Instance.GameController;
+        GameController gc = GameResources.GetGameController();
         if (gc == null || gc.Model == null || playerIndex < 0 || playerIndex >= gc.Model.Players.Length)
             return;
 
@@ -290,11 +317,13 @@ public class PlayerGridView : MonoBehaviour
 
                 if (grid.IsOccupied(r, c))
                 {
+                    // Occupied cells should not show helper values.
                     label.text = "";
                     label.color = new Color(1f, 1f, 1f, 0f);
                     continue;
                 }
 
+                // Ask the player model for the projected score 
                 int points = player.GetPotentialGridPlacementScore(r, c, includeProjectedFullLines: true);
                 label.text = points.ToString();
                 label.fontSize = helperFontSize;
@@ -314,6 +343,22 @@ public class PlayerGridView : MonoBehaviour
                 if (label == null) continue;
                 label.text = "";
                 label.color = new Color(1f, 1f, 1f, 0f);
+            }
+        }
+    }
+
+    private void KillScoreTweens()
+    {
+        if (_scores == null) return;
+
+        int rows = _scores.GetLength(0);
+        int cols = _scores.GetLength(1);
+        for (int r = 0; r < rows; r++)
+        {
+            for (int c = 0; c < cols; c++)
+            {
+                if (_scores[r, c] != null)
+                    _scores[r, c].DOKill(false);
             }
         }
     }

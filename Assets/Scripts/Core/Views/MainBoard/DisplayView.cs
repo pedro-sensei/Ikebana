@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
-//                    Last Update 21/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.1 (April 2026)    =^..^=    =^..^=
+//                    Last Update 27/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 // View for a Display (factory or central).
@@ -68,6 +69,8 @@ public class DisplayView : MonoBehaviour
 
     private void OnDestroy()
     {
+        ResetPendingState();
+
         if (isCentral)
         {
             ViewRegistry.UnregisterCentral();
@@ -83,14 +86,17 @@ public class DisplayView : MonoBehaviour
         GameEvents.OnAIAnimationStart -= HandleAIAnimationStart;
         GameEvents.OnAIAnimationEnd   -= HandleAIAnimationEnd;
     }
+
+    private void OnDisable()
+    {
+        ResetPendingState();
+    }
     #endregion
 
     #region EVENT HANDLERS
-    private void HandleAIAnimationStart(int _)
+    private void HandleAIAnimationStart(int _index)
     {
         // Apply any pending update before freezing again.
-        // This prevents stale visuals when a second animation starts
-        // before the previous pending was consumed.
         if (_pendingClear)
         {
             ClearAllflowerViews();
@@ -102,7 +108,6 @@ public class DisplayView : MonoBehaviour
             _pendingRebuild = false;
             _pendingflowers   = null;
         }
-
         _animationFrozen = true;
     }
 
@@ -154,17 +159,15 @@ public class DisplayView : MonoBehaviour
     private void HandleCentralChanged(IReadOnlyList<FlowerPiece> flowers)
     {
         bool showToken = false;
-        GameController gc = null;
-        if (GameResources.Instance != null && GameResources.Instance.GameController != null)
-            gc = GameResources.Instance.GameController;
-        else
-            gc = GameController.Instance;
+        GameController gc = GameResources.GetGameController();
 
-        if (gc != null)
+        if (gc != null && gc.Model != null)
             showToken = gc.Model.CentralDisplay.HasFirstPlayerToken;
 
         if (_animationFrozen)
         {
+            // Cache the newest full central state and replay it once the animation ends.
+            // We store the whole rebuild input because multiple central changes can happen during one AI move.
             _pendingRebuild   = true;
             _pendingflowers     = flowers;
             _pendingShowToken = showToken;
@@ -184,6 +187,7 @@ public class DisplayView : MonoBehaviour
     {
         ClearAllflowerViews();
 
+        // Token is rendered separately first so it stays visually distinct from normal flower sorting.
         // show the first player token before regular flowers
         if (showFirstPlayerToken)
         {
@@ -290,6 +294,8 @@ public class DisplayView : MonoBehaviour
 
     private void ClearAllflowerViews()
     {
+        // Detach before destroy so layout groups stop referencing these objects immediately.
+        // This avoided one-frame layout glitches while Unity deferred the actual Destroy call.
         for (int i = 0; i < currentflowerViews.Count; i++)
         {
             if (currentflowerViews[i] != null)
@@ -307,6 +313,15 @@ public class DisplayView : MonoBehaviour
             for (int i = flowerContainer.childCount - 1; i >= 0; i--)
                 Destroy(flowerContainer.GetChild(i).gameObject);
         }
+    }
+
+    private void ResetPendingState()
+    {
+        _animationFrozen = false;
+        _pendingRebuild = false;
+        _pendingflowers = null;
+        _pendingShowToken = false;
+        _pendingClear = false;
     }
 
     #endregion

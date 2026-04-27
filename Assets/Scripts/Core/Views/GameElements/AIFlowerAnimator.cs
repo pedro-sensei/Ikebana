@@ -4,8 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 
-//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
-//                    Last Update 21/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.1 (April 2026)    =^..^=    =^..^=
+//                    Last Update 27/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 // Handles all AI flower flight animations:
@@ -89,7 +89,7 @@ public class AIFlowerAnimator : MonoBehaviour
         if (GameResources.Instance != null)
             spriteData = GameResources.Instance.SpriteData;
 
-        //DisplayView ignores the value but needs the event
+        // Call event to freeze displays and block user input. (-2) is ignored.
         GameEvents.AIAnimationStart(-2);
 
         //Counter to track how many animations are still running
@@ -165,6 +165,8 @@ public class AIFlowerAnimator : MonoBehaviour
         while (pending > 0)
             yield return null;
 
+        // Unfreeze views first, then fire the callback that lets gameplay continue.
+        // That ordering prevents the controller from applying the move while the UI is still visually frozen.
         GameEvents.AIAnimationEnd();
         if (onCompleteAnimation != null)
             onCompleteAnimation.Invoke();
@@ -191,9 +193,7 @@ public class AIFlowerAnimator : MonoBehaviour
         return ghost;
     }
 
-    // Find the closest placement line view and trigger its landing punch.
-    // If the closest view is actually a PenaltyLineView, skip the animation
-    // so that penalty-bound flowers don't trigger a neighbouring placement line.
+    // Find the closest placement line view and trigger its landing anim.
     private void TriggerLandingAnimation(Vector3 landWorldPos)
     {
         float closestPlacement = float.MaxValue;
@@ -210,8 +210,6 @@ public class AIFlowerAnimator : MonoBehaviour
             }
         }
 
-        // Check if a penalty line is closer — if so, the flower landed on penalty
-        // and we should not punch a placement line.
         PenaltyLineView[] penaltyViews = FindObjectsByType<PenaltyLineView>(FindObjectsSortMode.None);
         for (int i = 0; i < penaltyViews.Length; i++)
         {

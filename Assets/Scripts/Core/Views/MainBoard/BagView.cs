@@ -1,8 +1,8 @@
 using TMPro;
 using UnityEngine;
 
-//=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
-//                    Last Update 21/04/2026 
+//=^..^=   =^..^=   VERSION 1.1.1 (April 2026)    =^..^=    =^..^=
+//                    Last Update 27/04/2026 
 //=^..^=    =^..^=  By Pedro Sánchez Vázquez      =^..^=    =^..^=
 
 // View for the bag. Shows how many flowers are left.
@@ -32,6 +32,7 @@ public class BagView : MonoBehaviour
 
     private void HandleBagRefilled()
     {
+        // Re-read from the model after a refill.
         if (GameController.Instance != null && countText != null)
             countText.text = GameController.Instance.Model.Bag.Count.ToString();
     }

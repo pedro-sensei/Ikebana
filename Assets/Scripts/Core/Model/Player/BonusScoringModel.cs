@@ -47,7 +47,7 @@ public static class BonusScoringModel
                 if (!grid.IsOccupied(r, c)) { complete = false; break; }
             }
             if (complete) breakdown.RowPoints += GameConfig.COMPLETE_LINE_SCORING_BONUS;
-            Debug.Log("Row " + r + " complete: " + complete);
+            //Debug.Log("Row " + r + " complete: " + complete);
         }
 
         // Complete columns
@@ -59,7 +59,7 @@ public static class BonusScoringModel
                 if (!grid.IsOccupied(r, c)) { complete = false; break; }
             }
             if (complete) breakdown.ColumnPoints += GameConfig.COMPLETE_COLUMN_SCORING_BONUS;
-            Debug.Log("Column " + c + " complete: " + complete);
+            //Debug.Log("Column " + c + " complete: " + complete);
         }
 
         // Complete colors (all 5 of the same color placed on the grid)
@@ -72,7 +72,7 @@ public static class BonusScoringModel
                 if (!grid.IsColorPlacedInRow(r, flowerColor)) { allPlaced = false; break; }
             }
             if (allPlaced) breakdown.ColorPoints += GameConfig.COMPLETE_COLOR_SCORING_BONUS;
-            Debug.Log("Color " + flowerColor + " complete: " + allPlaced);
+            //Debug.Log("Color " + flowerColor + " complete: " + allPlaced);
         }
 
         //TODO: CONTINUE WITH OTHER BONUS CALCULATIONS (SETS, PATTERNS, ETC) WHEN THEY ARE DEFINED
