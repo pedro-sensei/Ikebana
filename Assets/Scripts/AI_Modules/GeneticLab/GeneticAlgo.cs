@@ -428,7 +428,7 @@ public class EvolvableGeneticAlgo
     private static IMinimalAIBrain CreateFriendlyBrain(GAOpponentConfig config, GameConfigSnapshot configSnapshot)
     {
         if (config.OptimizerGenome == null)
-            return new MinFriendlyBrain(null, configSnapshot);
+            return new MinFriendlyBrain((float[])null, configSnapshot);
 
         float[] genes = new float[]
         {

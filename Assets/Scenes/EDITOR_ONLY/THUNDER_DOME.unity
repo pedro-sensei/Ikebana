@@ -1749,27 +1749,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameSimulatorRunner
   playerConfigs:
-  - DisplayName: GoodRandom
-    BrainType: 5
-    OptimizerWeights: {fileID: 11400000, guid: ac702867ec02082459708ad349da5cab, type: 2}
-    EmilyEarlyWeights: {fileID: 0}
-    EmilyMidWeights: {fileID: 0}
-    EmilyLateWeights: {fileID: 0}
-    MinMaxDepth: 0
-    MinMaxTimeLimitMs: 0
-    MinMaxEvaluator: 0
-    RelativeImmediateSimulationWeight: 1
-    RelativeTerminalDeltaWeight: 10000
-    RelativeExpectedMoveWeight: 0.35
-    RelativeUsePhaseAwareImmediateWeight: 1
-    MLAgentModel: {fileID: 0}
-  - DisplayName: GENOME
+  - DisplayName: Genome
     BrainType: 4
-    OptimizerWeights: {fileID: 11400000, guid: fd3a7422b1972444c9c041c08b21009a, type: 2}
+    OptimizerWeights: {fileID: 11400000, guid: a1cd63b544e7a2f4380b8040c7c28ec3, type: 2}
     EmilyEarlyWeights: {fileID: 0}
     EmilyMidWeights: {fileID: 0}
     EmilyLateWeights: {fileID: 0}
-    MinMaxDepth: 15
+    MinMaxDepth: 1
     MinMaxTimeLimitMs: 100
     MinMaxEvaluator: 0
     RelativeImmediateSimulationWeight: 1
@@ -1777,6 +1763,20 @@ MonoBehaviour:
     RelativeExpectedMoveWeight: 0.35
     RelativeUsePhaseAwareImmediateWeight: 1
     MLAgentModel: {fileID: 0}
+  - DisplayName: Optimizer
+    BrainType: 4
+    OptimizerWeights: {fileID: 11400000, guid: bece208f5699dae469bbf46f0dfa2261, type: 2}
+    EmilyEarlyWeights: {fileID: 0}
+    EmilyMidWeights: {fileID: 0}
+    EmilyLateWeights: {fileID: 0}
+    MinMaxDepth: 1
+    MinMaxTimeLimitMs: 100
+    MinMaxEvaluator: 0
+    RelativeImmediateSimulationWeight: 1
+    RelativeTerminalDeltaWeight: 10000
+    RelativeExpectedMoveWeight: 0.35
+    RelativeUsePhaseAwareImmediateWeight: 1
+    MLAgentModel: {fileID: 5022602860645237092, guid: 174f9c926e970e04b8564ecacff8f4c2, type: 3}
   numberOfGames: 10000
   gamesPerBatch: 100
   maxFrameBudgetMs: 8

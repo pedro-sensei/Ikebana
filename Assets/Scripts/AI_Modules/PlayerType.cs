@@ -30,7 +30,9 @@ public enum AIBrainType
     //Evaluator,
     //IkebanaAgentV2,
     MinMaxOptimizer,
-    Emily
+    Emily,
+    IkebanaAgent,
+    MLMCTSValue
 }
 
 [System.Serializable]

@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73f1118f8e80b274dbdb740b9c60c674, type: 3}
+  m_Name: ANTARES_EARLY_CHILD
+  m_EditorClassIdentifier: Assembly-CSharp::BasicGAGenome
+  SimulateScoringWeight: 9.30979
+  PenaltyWeight: 16.109802
+  TilesPlacedWeight: 16.759003
+  LineCompletionWeight: 3.2791462
+  ChaseBonusRowWeights:
+  - 0.38067946
+  - 13.6977
+  - 10.261939
+  - 11.270671
+  - 8.914993
+  ChaseBonusColumnWeights:
+  - 10.400137
+  - 7.165862
+  - 1.9625987
+  - 4.8537335
+  - 3.1730351
+  ChaseBonusColorWeights:
+  - 10.4047365
+  - 8.928017
+  - 2.0294805
+  - 9.928486
+  - 19.945513
+  TryPushPenaltyWeight: 2.823616
+  TryDenyMoveWeight: 1.0569768
+  AvoidPartialLineWeight: 4.123797
+  FirstPlayerTokenWeight: 3.7504802
+  PrioritizeCentralPlacementWeight: 18.417858
+  PrioritizeTopRowsWeight: 1.4309667

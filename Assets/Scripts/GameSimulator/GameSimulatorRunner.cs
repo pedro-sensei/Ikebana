@@ -140,7 +140,10 @@ public class GameSimulatorRunner : MonoBehaviour
                 relativeImmediateSimulationWeight: playerConfigs[i].RelativeImmediateSimulationWeight,
                 relativeTerminalDeltaWeight: playerConfigs[i].RelativeTerminalDeltaWeight,
                 relativeExpectedMoveWeight: playerConfigs[i].RelativeExpectedMoveWeight,
-                relativeUsePhaseAwareImmediateWeight: playerConfigs[i].RelativeUsePhaseAwareImmediateWeight
+                relativeUsePhaseAwareImmediateWeight: playerConfigs[i].RelativeUsePhaseAwareImmediateWeight,
+                mlValueSearchPolicy: playerConfigs[i].MLValueSearchPolicy,
+                mlValueMctsIterations: playerConfigs[i].MLValueMctsIterations,
+                mlValueMctsNewRoundSamples: playerConfigs[i].MLValueMctsNewRoundSamples
             );
             if (string.IsNullOrEmpty(playerConfigs[i].DisplayName))
             {
@@ -297,6 +300,17 @@ public class SimulationPlayerConfig
 
     [Tooltip("Trained .onnx model asset for the MLAgent brain type. Ignored by other brain types.")]
     public UnityEngine.Object MLAgentModel;
+
+    [Tooltip("Search policy used by the MLMCTSValue brain.")]
+    public MLValueSearchPolicy MLValueSearchPolicy = MLValueSearchPolicy.MCTS;
+
+    [Tooltip("MCTS rollout iterations per root move for the MLMCTSValue brain.")]
+    [Range(1, 2048)]
+    public int MLValueMctsIterations = 128;
+
+    [Tooltip("Number of random new-round samples for MCTS after an end of round.")]
+    [Range(1, 16)]
+    public int MLValueMctsNewRoundSamples = 4;
 }
 
 #endregion

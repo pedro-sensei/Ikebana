@@ -1026,7 +1026,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2002856037}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: GeneticAlgoRunner, Assembly-CSharp
         m_MethodName: StartTraining
         m_Mode: 1
@@ -1234,7 +1234,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2002856037}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: GeneticAlgoRunner, Assembly-CSharp
         m_MethodName: StopTraining
         m_Mode: 1
@@ -1693,7 +1693,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2002856038}
-  - component: {fileID: 2002856037}
   - component: {fileID: 2002856039}
   m_Layer: 0
   m_Name: EVO_SYSTEM
@@ -1702,18 +1701,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2002856037
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2002856036}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c948e44e993798b4c847a4e804b6d640, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GeneticAlgoRunner
 --- !u!224 &2002856038
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1746,14 +1733,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8859539424f282b4aa3542cfb2f3e9e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EvolvableGARunner
-  populationSize: 1000
-  generations: 500
-  gamesPerEval: 20
+  populationSize: 100
+  generations: 1500
+  gamesPerEval: 50
   mutationRate: 0.5
-  mutationAmount: 2
+  mutationAmount: 1
   eliteCount: 5
   tournamentSize: 3
-  randomSeed: 42
+  randomSeed: 37
   threadCount: 5
   numPlayers: 2
   gameConfigData: {fileID: 11400000, guid: f828528fc05a67349b826d8b966b71b6, type: 2}
@@ -1768,26 +1755,21 @@ MonoBehaviour:
     EmilyEarlyGenome: {fileID: 0}
     EmilyMidGenome: {fileID: 0}
     EmilyLateGenome: {fileID: 0}
-  - BrainType: 3
-    OptimizerGenome: {fileID: 11400000, guid: ac702867ec02082459708ad349da5cab, type: 2}
-    EmilyEarlyGenome: {fileID: 0}
-    EmilyMidGenome: {fileID: 0}
-    EmilyLateGenome: {fileID: 0}
-  - BrainType: 2
+  - BrainType: 7
     OptimizerGenome: {fileID: 0}
-    EmilyEarlyGenome: {fileID: 0}
-    EmilyMidGenome: {fileID: 0}
-    EmilyLateGenome: {fileID: 0}
+    EmilyEarlyGenome: {fileID: 11400000, guid: a4e171bb63ced0d45a72c496568234e4, type: 2}
+    EmilyMidGenome: {fileID: 11400000, guid: 1d71e003ec4bb2c46b1ba712f4b9d062, type: 2}
+    EmilyLateGenome: {fileID: 11400000, guid: 8032f4d41da5281478b86a282c74c69b, type: 2}
   coevolution: 0
   bestGenomeSelectionMethod: 0
   highlanderChampionsPerGeneration: 2
-  highlanderFinalOpponentCount: 3
+  highlanderFinalOpponentCount: 5
   logEachGeneration: 1
   brainTemplate: 2
   targetOptimizerGenomeAsset: {fileID: 0}
-  targetEmilyEarlyGenomeAsset: {fileID: 11400000, guid: a4e171bb63ced0d45a72c496568234e4, type: 2}
-  targetEmilyMidGenomeAsset: {fileID: 11400000, guid: 1d71e003ec4bb2c46b1ba712f4b9d062, type: 2}
-  targetEmilyLateGenomeAsset: {fileID: 11400000, guid: 8032f4d41da5281478b86a282c74c69b, type: 2}
+  targetEmilyEarlyGenomeAsset: {fileID: 11400000, guid: ff5a59cf26b7941439f3b2c4a5c09401, type: 2}
+  targetEmilyMidGenomeAsset: {fileID: 11400000, guid: 15fe37a32b7fdae4693f0b6e9ef7863f, type: 2}
+  targetEmilyLateGenomeAsset: {fileID: 11400000, guid: 39f003235f5332e409c7fa30a833c983, type: 2}
   autoRun: 1
   logOutput: {fileID: 1246651056}
 --- !u!1 &2027203498

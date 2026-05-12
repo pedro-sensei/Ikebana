@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine;
 
 //=^..^=   =^..^=   VERSION 1.1.0 (April 2026)    =^..^=    =^..^=
 //                    Last Update 21/04/2026 
@@ -26,35 +27,102 @@ public class CreditsMenuController : MonoBehaviour
     [Tooltip("Speed for credits scroll automatically (0 = no auto scroll).")]
     [SerializeField] private float autoScrollSpeed = 20f;
 
+    [Tooltip("Auto scroll waits after the player scrolls manually.")]
+    [SerializeField] private float resumeAutoScrollDelay = 2f;
+
+    private float autoScrollResumeTimer;
+    private bool isApplyingAutoScroll;
+
     private void Awake()
     {
         if (backButton != null)
             backButton.onClick.AddListener(OnBackClicked);
+
+        if (scrollRect != null)
+            scrollRect.onValueChanged.AddListener(OnScrollValueChanged);
+    }
+
+    private void OnDestroy()
+    {
+        if (backButton != null)
+            backButton.onClick.RemoveListener(OnBackClicked);
+
+        if (scrollRect != null)
+            scrollRect.onValueChanged.RemoveListener(OnScrollValueChanged);
     }
 
     private void OnEnable()
     {
-        // Reset scroll position to top when panel opens
-        if (scrollRect != null)
-            scrollRect.verticalNormalizedPosition = 1f;
+        RefreshScrollLayout();
+        SetScrollPosition(1f);
+        autoScrollResumeTimer = 0f;
     }
 
     private void Update()
     {
-        if (autoScrollSpeed > 0f && scrollRect != null)
+        if (autoScrollResumeTimer > 0f)
         {
-            float step = autoScrollSpeed * Time.deltaTime / scrollRect.content.rect.height;
-            scrollRect.verticalNormalizedPosition -= step;
-
-            if (scrollRect.verticalNormalizedPosition <= 0f)
-                scrollRect.verticalNormalizedPosition = 0f;
+            autoScrollResumeTimer -= Time.unscaledDeltaTime;
+            return;
         }
+
+        ApplyAutoScroll();
     }
 
     private void OnBackClicked()
     {
         if (mainMenuController != null)
             mainMenuController.OnBackToMainMenu();
+    }
+
+    private void RefreshScrollLayout()
+    {
+        if (scrollRect == null)
+            return;
+
+        Canvas.ForceUpdateCanvases();
+
+        if (creditsText != null)
+            creditsText.ForceMeshUpdate();
+
+        if (scrollRect.content != null)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(scrollRect.content);
+
+        if (scrollRect.viewport != null)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(scrollRect.viewport);
+
+        Canvas.ForceUpdateCanvases();
+    }
+
+    private void ApplyAutoScroll()
+    {
+        if (autoScrollSpeed <= 0f || scrollRect == null || scrollRect.content == null || scrollRect.viewport == null)
+            return;
+
+        float hiddenHeight = scrollRect.content.rect.height - scrollRect.viewport.rect.height;
+        if (hiddenHeight <= 0f)
+            return;
+
+        float nextPosition = scrollRect.verticalNormalizedPosition - (autoScrollSpeed * Time.unscaledDeltaTime / hiddenHeight);
+        SetScrollPosition(nextPosition);
+    }
+
+    private void SetScrollPosition(float normalizedPosition)
+    {
+        if (scrollRect == null)
+            return;
+
+        isApplyingAutoScroll = true;
+        scrollRect.verticalNormalizedPosition = Mathf.Clamp01(normalizedPosition);
+        isApplyingAutoScroll = false;
+    }
+
+    private void OnScrollValueChanged(Vector2 _)
+    {
+        if (isApplyingAutoScroll)
+            return;
+
+        autoScrollResumeTimer = resumeAutoScrollDelay;
     }
 
 #if UNITY_EDITOR
@@ -74,6 +142,9 @@ public class CreditsMenuController : MonoBehaviour
 
         if (autoScrollSpeed < 0f)
             autoScrollSpeed = 0f;
+
+        if (resumeAutoScrollDelay < 0f)
+            resumeAutoScrollDelay = 0f;
     }
 #endif
 }

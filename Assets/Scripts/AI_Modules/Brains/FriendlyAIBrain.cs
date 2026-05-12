@@ -276,6 +276,20 @@ public class MinFriendlyBrain : IMinimalAIBrain
         }
     }
 
+    public MinFriendlyBrain(BasicGAGenome genome, GameConfigSnapshot config) : this()
+    {
+        if (config != null)
+            _gridSize = config.GridSize;
+
+        if (genome == null)
+            return;
+
+        _simulateScoringWeight = genome.SimulateScoringWeight;
+        _penaltyWeight = genome.PenaltyWeight;
+        _tilesPlacedWeight = genome.TilesPlacedWeight;
+        _lineCompletionWeight = genome.LineCompletionWeight;
+    }
+
     public int ChooseMoveIndex(MinimalGM model, GameMove[] moves, int moveCount)
     {
         int   bestIdx   = 0;
@@ -354,6 +368,46 @@ public class MinFriendlyBrain : IMinimalAIBrain
         if (h > 1) pts += h;
         if (v > 1) pts += v;
         return pts;
+    }
+}
+
+#endregion
+
+#region MINIMAL HYBRID ELITE BRAIN
+public class MinHybridEliteBrain : IMinimalAIBrain
+{
+    public string BrainName => "HybridElite (Minimal)";
+
+    private readonly IMinimalAIBrain _friendly;
+    private readonly IMinimalAIBrain _optimizer;
+    private readonly IMinimalAIBrain _emily;
+
+    public MinHybridEliteBrain(IMinimalAIBrain friendly, IMinimalAIBrain optimizer, IMinimalAIBrain emily)
+    {
+        _friendly = friendly;
+        _optimizer = optimizer;
+        _emily = emily;
+    }
+
+    public int ChooseMoveIndex(MinimalGM model, GameMove[] moves, int moveCount)
+    {
+        int roll = UnityEngine.Random.Range(0, 3);
+
+        switch (roll)
+        {
+            case 0:
+                return _friendly != null
+                    ? _friendly.ChooseMoveIndex(model, moves, moveCount)
+                    : 0;
+            case 1:
+                return _optimizer != null
+                    ? _optimizer.ChooseMoveIndex(model, moves, moveCount)
+                    : 0;
+            default:
+                return _emily != null
+                    ? _emily.ChooseMoveIndex(model, moves, moveCount)
+                    : 0;
+        }
     }
 }
 

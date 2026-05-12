@@ -1,3 +1,6 @@
+using Unity.InferenceEngine;
+using UnityEngine;
+
 // -----------------------------------------------------------------------
 //  RelativeDeltaEvaluator  -  non-zero-sum MinMax evaluator.
 //
@@ -245,3 +248,5 @@ public class RelativeDeltaEvaluator : IMinMaxEvaluator
         }
     }
 }
+
+

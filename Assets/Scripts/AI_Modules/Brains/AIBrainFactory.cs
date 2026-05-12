@@ -24,7 +24,10 @@ public static class AIBrainFactory
         float relativeImmediateSimulationWeight = 1f,
         float relativeTerminalDeltaWeight = 10000f,
         float relativeExpectedMoveWeight = 0.35f,
-        bool relativeUsePhaseAwareImmediateWeight = true)
+        bool relativeUsePhaseAwareImmediateWeight = true,
+        MLValueSearchPolicy mlValueSearchPolicy = MLValueSearchPolicy.MCTS,
+        int mlValueMctsIterations = 128,
+        int mlValueMctsNewRoundSamples = 4)
     {
         switch (brainType)
         {
@@ -84,6 +87,39 @@ public static class AIBrainFactory
 
             case AIBrainType.Emily:
                 return new EmilyAIBrain(emilyEarlyWeights, emilyMidWeights, emilyLateWeights);
+
+            case AIBrainType.IkebanaAgent:
+            {
+                UnityEngine.Object model = mlAgentModel != null
+                    ? mlAgentModel
+                    : Resources.Load<UnityEngine.Object>("IkebanaAgent");
+
+                if (model != null)
+                    return new IkebanaAgentBrain(model);
+
+                Debug.LogWarning("IkebanaAgent brain requires a ModelAsset (.onnx). Falling back to Rookie.");
+                return new RookieAIBrain();
+            }
+
+            case AIBrainType.MLMCTSValue:
+            {
+                UnityEngine.Object model = mlAgentModel != null
+                    ? mlAgentModel
+                    : Resources.Load<UnityEngine.Object>("MLMCTSAgent");
+
+                if (model != null)
+                {
+                    return new MLMCTSBrain(
+                        model,
+                        mlValueSearchPolicy,
+                        minMaxDepth,
+                        mlValueMctsIterations,
+                        mlValueMctsNewRoundSamples);
+                }
+
+                Debug.LogWarning("MLMCTSValue brain requires a ModelAsset (.onnx). Falling back to Rookie.");
+                return new RookieAIBrain();
+            }
 
             //case AIBrainType.IkebanaAgentV2:
             //    if (mlAgentModel != null)

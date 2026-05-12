@@ -2047,44 +2047,64 @@ PrefabInstance:
       objectReference: {fileID: 966206086}
     - target: {fileID: 5449938673450777204, guid: b47962f938f9183418a655ca85354d67, type: 3}
       propertyPath: playerSlots.Array.data[0].AIBrain
-      value: 4
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5449938673450777204, guid: b47962f938f9183418a655ca85354d67, type: 3}
       propertyPath: playerSlots.Array.data[1].AIBrain
-      value: 12
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 5449938673450777204, guid: b47962f938f9183418a655ca85354d67, type: 3}
       propertyPath: playerSlots.Array.data[0].Portrait
       value: 
-      objectReference: {fileID: 502515848, guid: 99941df9b16e4134d89b0b244f1041a6, type: 3}
+      objectReference: {fileID: 2002863927, guid: 09598600f657be9478a6e7f324f37596, type: 3}
     - target: {fileID: 5449938673450777204, guid: b47962f938f9183418a655ca85354d67, type: 3}
       propertyPath: playerSlots.Array.data[1].Portrait
       value: 
-      objectReference: {fileID: -419431673, guid: 09598600f657be9478a6e7f324f37596, type: 3}
+      objectReference: {fileID: 2125919915, guid: 3243807e4857e3e47af88acdeed36814, type: 3}
     - target: {fileID: 5449938673450777204, guid: b47962f938f9183418a655ca85354d67, type: 3}
       propertyPath: playerSlots.Array.data[0].PlayerName
-      value: GENOME
+      value: EMILY
       objectReference: {fileID: 0}
     - target: {fileID: 5449938673450777204, guid: b47962f938f9183418a655ca85354d67, type: 3}
       propertyPath: playerSlots.Array.data[0].PlayerType
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5449938673450777204, guid: b47962f938f9183418a655ca85354d67, type: 3}
       propertyPath: playerSlots.Array.data[1].PlayerName
-      value: Emily
+      value: ML-AGENT
       objectReference: {fileID: 0}
     - target: {fileID: 5449938673450777204, guid: b47962f938f9183418a655ca85354d67, type: 3}
       propertyPath: playerSlots.Array.data[1].PlayerType
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5449938673450777204, guid: b47962f938f9183418a655ca85354d67, type: 3}
+      propertyPath: playerSlots.Array.data[1].MLAgentModel
+      value: 
+      objectReference: {fileID: 5022602860645237092, guid: 3920efbb63468e2489ba9ed3e0034bac, type: 3}
+    - target: {fileID: 5449938673450777204, guid: b47962f938f9183418a655ca85354d67, type: 3}
+      propertyPath: playerSlots.Array.data[0].EmilyMidWeights
+      value: 
+      objectReference: {fileID: 11400000, guid: 1d71e003ec4bb2c46b1ba712f4b9d062, type: 2}
+    - target: {fileID: 5449938673450777204, guid: b47962f938f9183418a655ca85354d67, type: 3}
       propertyPath: playerSlots.Array.data[1].EmilyMidWeights
       value: 
       objectReference: {fileID: 11400000, guid: 50734bc62356780468dd329faea896c0, type: 2}
     - target: {fileID: 5449938673450777204, guid: b47962f938f9183418a655ca85354d67, type: 3}
+      propertyPath: playerSlots.Array.data[0].EmilyLateWeights
+      value: 
+      objectReference: {fileID: 11400000, guid: 8032f4d41da5281478b86a282c74c69b, type: 2}
+    - target: {fileID: 5449938673450777204, guid: b47962f938f9183418a655ca85354d67, type: 3}
+      propertyPath: playerSlots.Array.data[0].OptimizerWeights
+      value: 
+      objectReference: {fileID: 11400000, guid: a1cd63b544e7a2f4380b8040c7c28ec3, type: 2}
+    - target: {fileID: 5449938673450777204, guid: b47962f938f9183418a655ca85354d67, type: 3}
       propertyPath: playerSlots.Array.data[1].EmilyLateWeights
       value: 
       objectReference: {fileID: 11400000, guid: df8132c46ab60034c81e0ca85c85b625, type: 2}
+    - target: {fileID: 5449938673450777204, guid: b47962f938f9183418a655ca85354d67, type: 3}
+      propertyPath: playerSlots.Array.data[0].EmilyEarlyWeights
+      value: 
+      objectReference: {fileID: 11400000, guid: a4e171bb63ced0d45a72c496568234e4, type: 2}
     - target: {fileID: 5449938673450777204, guid: b47962f938f9183418a655ca85354d67, type: 3}
       propertyPath: playerSlots.Array.data[1].EmilyEarlyWeights
       value: 
