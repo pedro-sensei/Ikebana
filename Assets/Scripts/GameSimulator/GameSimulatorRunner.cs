@@ -37,17 +37,21 @@ public class GameSimulatorRunner : MonoBehaviour
     [Tooltip("Progress log cadence when 'Log Every Game' is disabled.")]
     [SerializeField] private int progressLogInterval = 25;
 
+    [Header("Simulation Model")]
+    [Tooltip("Use MinimalGM/MinimalGameSimulator for faster batch simulations when the selected brains support it.")]
+    [SerializeField] private bool useMinimalModelSimulator = true;
+
     [Header("MinMax Safety (Simulator)")]
     [Tooltip("Clamp MinMax depth/time for simulator stability.")]
     [SerializeField] private bool forceFastMinMaxInSimulator = true;
 
     [Tooltip("Max depth used by MinMax brains when fast mode is enabled.")]
     [Range(1, 15)]
-    [SerializeField] private int simulatorMinMaxDepthCap = 6;
+    [SerializeField] private int simulatorMinMaxDepthCap = 3;
 
     [Tooltip("Max time budget (ms) per MinMax move when fast mode is enabled.")]
-    [Range(25, 10000)]
-    [SerializeField] private float simulatorMinMaxTimeCapMs = 250f;
+    [Range(1, 10000)]
+    [SerializeField] private float simulatorMinMaxTimeCapMs = 10f;
 
     [Tooltip("Game config to use for simulations. If null, global defaults are used.")]
     [SerializeField] private GameConfigData gameConfigData;
@@ -107,6 +111,12 @@ public class GameSimulatorRunner : MonoBehaviour
         // Apply the assigned game config (or keep current defaults)
         if (gameConfigData != null)
             GameConfig.Initialize(gameConfigData);
+
+        if (useMinimalModelSimulator)
+        {
+            yield return RunMinimalSimulationCoroutine();
+            yield break;
+        }
 
         // Build brains
         int numPlayers = playerConfigs.Length;
@@ -222,6 +232,115 @@ public class GameSimulatorRunner : MonoBehaviour
 
         string summary = batch.GetSummary();
         summary += $"\n  ********* PERFORMANCE STATS *************";
+        summary += $"\n  Total time:   {elapsedSec:F2}s";
+        summary += $"\n  Games/sec:    {gamesPerSec:F0}";
+        summary += $"\n  *****************************************";
+
+        Debug.Log(summary);
+
+        if (resultsLog != null)
+            resultsLog.AddLog(summary);
+
+        _isRunning = false;
+    }
+
+    private IEnumerator RunMinimalSimulationCoroutine()
+    {
+        int numPlayers = playerConfigs.Length;
+        IMinimalAIBrain[] brains = new IMinimalAIBrain[numPlayers];
+        string[] names = new string[numPlayers];
+
+        for (int i = 0; i < numPlayers; i++)
+        {
+            int depth = playerConfigs[i].MinMaxDepth;
+            float timeLimitMs = playerConfigs[i].MinMaxTimeLimitMs;
+
+            if (forceFastMinMaxInSimulator &&
+                (playerConfigs[i].BrainType == AIBrainType.MinMax ||
+                 playerConfigs[i].BrainType == AIBrainType.MinMaxOptimizer))
+            {
+                if (depth > simulatorMinMaxDepthCap) depth = simulatorMinMaxDepthCap;
+                if (timeLimitMs > simulatorMinMaxTimeCapMs) timeLimitMs = simulatorMinMaxTimeCapMs;
+            }
+
+            brains[i] = AIBrainFactory.CreateMinimalBrain(
+                brainType: playerConfigs[i].BrainType,
+                minMaxDepth: depth,
+                minMaxTimeLimitMs: timeLimitMs,
+                minMaxEvaluator: playerConfigs[i].MinMaxEvaluator,
+                optimizerWeights: playerConfigs[i].OptimizerWeights,
+                relativeImmediateSimulationWeight: playerConfigs[i].RelativeImmediateSimulationWeight,
+                relativeTerminalDeltaWeight: playerConfigs[i].RelativeTerminalDeltaWeight,
+                relativeExpectedMoveWeight: playerConfigs[i].RelativeExpectedMoveWeight,
+                relativeUsePhaseAwareImmediateWeight: playerConfigs[i].RelativeUsePhaseAwareImmediateWeight);
+
+            names[i] = string.IsNullOrEmpty(playerConfigs[i].DisplayName)
+                ? brains[i].BrainName
+                : playerConfigs[i].DisplayName;
+        }
+
+        Debug.Log($"Starting MINIMAL simulation: {numberOfGames} games, {numPlayers} players");
+        AppendResultsLine($"Starting MINIMAL simulation: {numberOfGames} games, {numPlayers} players");
+        for (int i = 0; i < numPlayers; i++)
+        {
+            Debug.Log($"  Player {i}: {names[i]} ({brains[i].BrainName})");
+            AppendResultsLine($"  Player {i}: {names[i]} ({brains[i].BrainName})");
+        }
+
+        MinimalSimulationBatchResult batch = new MinimalSimulationBatchResult(numPlayers, numberOfGames);
+        for (int i = 0; i < numPlayers; i++)
+            batch.PlayerNames[i] = names[i];
+
+        MinimalGameSimulator simulator = gameConfigData != null
+            ? new MinimalGameSimulator(GameConfig.CreateSnapshot())
+            : new MinimalGameSimulator();
+
+        System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        System.Diagnostics.Stopwatch frameStopwatch = new System.Diagnostics.Stopwatch();
+        int gamesCompleted = 0;
+
+        while (gamesCompleted < numberOfGames)
+        {
+            frameStopwatch.Restart();
+            int batchEnd = gamesCompleted + gamesPerBatch;
+            if (batchEnd > numberOfGames)
+                batchEnd = numberOfGames;
+
+            for (int g = gamesCompleted; g < batchEnd; g++)
+            {
+                MinimalSimulationGameResult result = simulator.RunGame(brains, names);
+                batch.AddGameResult(result);
+                gamesCompleted++;
+
+                if (logEveryGame)
+                {
+                    string gameLog = $"Game {g + 1}/{numberOfGames} completed. Winner: {result.PlayerNames[result.WinnerIndex]} (Score: {result.Scores[result.WinnerIndex]})";
+                    Debug.Log(gameLog);
+                    AppendResultsLine(gameLog);
+                }
+                else
+                {
+                    int completed = g + 1;
+                    int safeInterval = progressLogInterval < 1 ? 1 : progressLogInterval;
+                    if (completed == numberOfGames || completed % safeInterval == 0)
+                        Debug.Log($"Completed {completed}/{numberOfGames} minimal games...");
+                }
+
+                if ((float)frameStopwatch.Elapsed.TotalMilliseconds >= maxFrameBudgetMs)
+                    break;
+            }
+
+            yield return null;
+        }
+
+        stopwatch.Stop();
+        batch.FinalizeScoring();
+
+        double elapsedSec = stopwatch.Elapsed.TotalSeconds;
+        double gamesPerSec = numberOfGames / elapsedSec;
+
+        string summary = batch.GetSummary();
+        summary += $"\n  ********* MINIMAL PERFORMANCE STATS *************";
         summary += $"\n  Total time:   {elapsedSec:F2}s";
         summary += $"\n  Games/sec:    {gamesPerSec:F0}";
         summary += $"\n  *****************************************";

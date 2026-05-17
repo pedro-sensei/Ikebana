@@ -34,7 +34,7 @@ public class MinimalGameSimulator
 
     private MinimalGM GetOrCreateMinimalModel(int numPlayers)
     {
-        if (_minimalModel == null)
+        if (_minimalModel == null || _minimalModel.NumPlayers != numPlayers)
            _minimalModel = new MinimalGM(numPlayers, _config);
        return _minimalModel;
     }
@@ -55,13 +55,15 @@ public class MinimalGameSimulator
         model.SimStartRound();
 
         int totalTurns  = 0;
-        int totalRounds = 1;
+        int totalRounds = 0;
         bool abortedBySafety = false;
+        int shortRoundsCount = 0;
 
-        while (!model.IsGameOver && model.CurrentRound <= MAX_ROUNDS_SAFETY)
+        while (!model.IsGameOver && totalRounds < MAX_ROUNDS_SAFETY)
         {
+            totalRounds++;
             int turnsThisRound = 0;
-            while (model.Phase == RoundPhaseEnum.PlacementPhase)
+            while (!model.AreDisplaysEmpty() && !model.IsGameOver)
             {
                 turnsThisRound++;
                 if (turnsThisRound > MAX_TURNS_PER_ROUND || totalTurns >= MAX_TOTAL_TURNS)
@@ -84,26 +86,31 @@ public class MinimalGameSimulator
 
                 model.ExecuteMove(_moveBuffer[chosen]);
                 totalTurns++;
-                model.SimEndTurn(); // may trigger SimEndRound ? SimEndGame
+
+                if (!model.AreDisplaysEmpty())
+                    model.AdvanceTurnMinMax();
             }
 
             if (abortedBySafety)
                 break;
 
-            if (!model.IsGameOver && model.CurrentRound <= MAX_ROUNDS_SAFETY)
-                totalRounds = model.CurrentRound;
-            else
+            if (turnsThisRound < 5)
+                shortRoundsCount++;
+
+            if (!model.IsGameOver)
+                model.SimEndRound();
+
+            if (model.IsGameOver)
                 break;
         }
 
-        if (!abortedBySafety && !model.IsGameOver && model.CurrentRound > MAX_ROUNDS_SAFETY)
+        if (!abortedBySafety && !model.IsGameOver && totalRounds >= MAX_ROUNDS_SAFETY)
         {
             abortedBySafety = true;
             model.SimEndGame();
         }
 
-        int roundsPlayed = System.Math.Max(totalRounds, model.CurrentRound + 1);
-        return BuildResultMinimal(model, brains, names, roundsPlayed, totalTurns, abortedBySafety);
+        return BuildResultMinimal(model, brains, names, totalRounds, totalTurns, abortedBySafety, shortRoundsCount);
     }
 
     public MinimalSimulationBatchResult RunBatch(IMinimalAIBrain[] brains, int numberOfGames, string[] names = null)
@@ -129,7 +136,7 @@ public class MinimalGameSimulator
 
     private MinimalSimulationGameResult BuildResultMinimal(
         MinimalGM model, IMinimalAIBrain[] brains, string[] names,
-        int totalRounds, int totalTurns, bool abortedBySafety)
+        int totalRounds, int totalTurns, bool abortedBySafety, int shortRoundsCount)
     {
         int numPlayers = brains.Length;
         MinimalSimulationGameResult result = new MinimalSimulationGameResult();
@@ -137,6 +144,7 @@ public class MinimalGameSimulator
         result.TotalRounds  = totalRounds;
         result.TotalTurns   = totalTurns;
         result.IsAborted    = abortedBySafety;
+        result.ShortRoundsCount = shortRoundsCount;
         result.Scores       = new int[numPlayers];
         result.PlayerNames  = new string[numPlayers];
 
@@ -164,6 +172,7 @@ public class MinimalGameSimulator
 
         result.AllPlayersHaveZeroScore = allPlayersHaveZeroScore;
         result.EndedInLessThanFiveRounds = totalRounds < 5;
+        result.HasErrors = result.EndedInLessThanFiveRounds || shortRoundsCount > 0 || abortedBySafety;
 
         return result;
     }
@@ -179,8 +188,10 @@ public struct MinimalSimulationGameResult
     public int TotalRounds;
     public int TotalTurns;
     public bool IsAborted;
+    public bool HasErrors;
     public bool AllPlayersHaveZeroScore;
     public bool EndedInLessThanFiveRounds;
+    public int ShortRoundsCount;
 }
 
 public class MinimalSimulationBatchResult
@@ -197,6 +208,8 @@ public class MinimalSimulationBatchResult
     public float[] MedianScore;
     public float[] WinPercentage;
     public int Draws;
+    public int AbortedGames;
+    public int ErrorGames;
 
     // Per-game detail for median calculation
     private List<int>[] allScores;
@@ -219,6 +232,8 @@ public class MinimalSimulationBatchResult
         MedianScore = new float[numPlayers];
         WinPercentage = new float[numPlayers];
         Draws = 0;
+        AbortedGames = 0;
+        ErrorGames = 0;
 
         allScores = new List<int>[numPlayers];
         for (int i = 0; i < numPlayers; i++)
@@ -234,6 +249,11 @@ public class MinimalSimulationBatchResult
 
     public void AddGameResult(MinimalSimulationGameResult result)
     {
+        if (result.IsAborted)
+            AbortedGames++;
+        if (result.HasErrors)
+            ErrorGames++;
+
         if (result.IsDraw)
         {
             Draws++;

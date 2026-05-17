@@ -13,7 +13,7 @@
 using System.Diagnostics;
 using System.Collections.Generic;
 
-public class MinMaxBrain : IPlayerAIBrain
+public class MinMaxBrain : IPlayerAIBrain, IMinimalAIBrain
 {
     #region FIELDS AND PARAMETERS
     public string BrainName { get { return "MinMax (d=" + _maxSearchDepth + ")"; } }
@@ -66,7 +66,7 @@ public class MinMaxBrain : IPlayerAIBrain
 
     public void SetTimeLimitMs(float ms)
     {
-        _searchTimeLimitMs = UnityEngine.Mathf.Max(100f, ms);
+        _searchTimeLimitMs = UnityEngine.Mathf.Max(1f, ms);
     }
 
     public GameMove ChooseMove(GameModel model, List<GameMove> validMoves)
@@ -89,6 +89,7 @@ public class MinMaxBrain : IPlayerAIBrain
 
         _searchAdapter.SetModel(_reusableMinimalModel);
         _searchAdapter.SetRootMoves(_rootMoveBuffer);
+        _searchAdapter.SortRootMoves(moveCount);
 
         int maximizingPlayerIndex = _reusableMinimalModel.CurrentPlayer;
         int estimatedRemainingMoves = _searchAdapter.EstimateRemainingMoves();
@@ -107,9 +108,9 @@ public class MinMaxBrain : IPlayerAIBrain
 
         int bestMoveIndex;
         if (_usesIterativeDeepening)
-            bestMoveIndex = RunIterativeDeepeningSearch(moveCount, maximizingPlayerIndex);
+            bestMoveIndex = RunIterativeDeepeningSearch(moveCount, maximizingPlayerIndex, depthToSearch);
         else
-            bestMoveIndex = RunSingleDepthSearch(moveCount, maximizingPlayerIndex, model);
+            bestMoveIndex = RunSingleDepthSearch(moveCount, maximizingPlayerIndex, model, depthToSearch);
 
         if (bestMoveIndex < 0 || bestMoveIndex >= moveCount)
             bestMoveIndex = 0;
@@ -121,20 +122,47 @@ public class MinMaxBrain : IPlayerAIBrain
 
         return chosenMove;
     }
+
+    public int ChooseMoveIndex(MinimalGM model, GameMove[] moves, int moveCount)
+    {
+        if (moveCount <= 1)
+            return 0;
+
+        int rootMoveCount = model.GetValidMovesMinMax(_rootMoveBuffer);
+        if (rootMoveCount == 0)
+            return 0;
+
+        _searchAdapter.SetModel(model);
+        _searchAdapter.SetRootMoves(_rootMoveBuffer);
+        _searchAdapter.SortRootMoves(rootMoveCount);
+
+        int maximizingPlayerIndex = model.CurrentPlayer;
+        int estimatedRemainingMoves = _searchAdapter.EstimateRemainingMoves();
+        int depthToSearch = System.Math.Min(_maxSearchDepth, estimatedRemainingMoves);
+
+        int bestMoveIndex = _usesIterativeDeepening
+            ? RunIterativeDeepeningSearch(rootMoveCount, maximizingPlayerIndex, depthToSearch)
+            : RunSingleDepthSearch(rootMoveCount, maximizingPlayerIndex, null, depthToSearch);
+
+        if (bestMoveIndex < 0 || bestMoveIndex >= rootMoveCount)
+            bestMoveIndex = 0;
+
+        return MapMinimalMoveToGameMoveIndex(_rootMoveBuffer[bestMoveIndex], moves, moveCount);
+    }
     #endregion
 
     #region INTERNAL HELPERS
 
-    private int RunSingleDepthSearch(int moveCount, int maximizingPlayerIndex, GameModel sourceModel)
+    private int RunSingleDepthSearch(int moveCount, int maximizingPlayerIndex, GameModel sourceModel, int depthToSearch)
     {
         SearchResult result = _searchEngine.FindBestMove(
             moveCount,
-            _maxSearchDepth,
+            depthToSearch,
             maximizingPlayerIndex,
             _searchTimeLimitMs);
 
         if (_writesDebugLogs)
-            LogSearchResult(sourceModel, result, _maxSearchDepth);
+            LogSearchResult(sourceModel, result, depthToSearch);
 
         if (_debugLogger != null)
         {
@@ -150,7 +178,7 @@ public class MinMaxBrain : IPlayerAIBrain
         return result.BestIndex;
     }
 
-    private int RunIterativeDeepeningSearch(int moveCount, int maximizingPlayerIndex)
+    private int RunIterativeDeepeningSearch(int moveCount, int maximizingPlayerIndex, int depthToSearch)
     {
         Stopwatch timer = Stopwatch.StartNew();
         int bestMoveIndex = 0;
@@ -158,7 +186,7 @@ public class MinMaxBrain : IPlayerAIBrain
         int deepestCompletedLayer = 0;
         _lastSearchTimedOut = false;
 
-        for (int currentDepth = 1; currentDepth <= _maxSearchDepth; currentDepth++)
+        for (int currentDepth = 1; currentDepth <= depthToSearch; currentDepth++)
         {
             float remainingTimeMs = _searchTimeLimitMs - (float)timer.Elapsed.TotalMilliseconds;
             if (remainingTimeMs <= 0) break;
@@ -174,6 +202,8 @@ public class MinMaxBrain : IPlayerAIBrain
                 bestMoveIndex = result.BestIndex;
                 bestMoveEvaluation = result.BestEval;
                 deepestCompletedLayer = currentDepth;
+                PromoteRootMoveToFront(bestMoveIndex);
+                bestMoveIndex = 0;
             }
 
             if (_debugLogger != null)
@@ -220,7 +250,7 @@ public class MinMaxBrain : IPlayerAIBrain
 
         if (_writesDebugLogs)
         {
-            UnityEngine.Debug.Log("[MinMax] ID finished: depth=" + deepestCompletedLayer + "/" + _maxSearchDepth +
+            UnityEngine.Debug.Log("[MinMax] ID finished: depth=" + deepestCompletedLayer + "/" + depthToSearch +
                                   " eval=" + bestMoveEvaluation + " index=" + bestMoveIndex +
                                   " totalTime=" + totalSearchTimeMs.ToString("F1") + "ms");
         }
@@ -228,8 +258,21 @@ public class MinMaxBrain : IPlayerAIBrain
         return bestMoveIndex;
     }
 
+    private void PromoteRootMoveToFront(int moveIndex)
+    {
+        if (moveIndex <= 0) return;
+
+        MinimalMoveRecord bestMove = _rootMoveBuffer[moveIndex];
+        for (int i = moveIndex; i > 0; i--)
+            _rootMoveBuffer[i] = _rootMoveBuffer[i - 1];
+        _rootMoveBuffer[0] = bestMove;
+    }
+
     private void LogSearchResult(GameModel model, SearchResult result, int depth)
     {
+        if (model == null)
+            return;
+
         UnityEngine.Debug.Log("[MinMax] Player=" + model.CurrentPlayerIndex +
                   " Round=" + model.CurrentRound + " Turn=" + model.TurnNumber +
                   " Depth=" + depth + " Nodes=" + result.NodesEvaluated +
@@ -279,6 +322,52 @@ public class MinMaxBrain : IPlayerAIBrain
             _debugLogger.RecordFallback();
 
         return validMoves[0];
+    }
+
+    private int MapMinimalMoveToGameMoveIndex(
+        MinimalMoveRecord moveRecord,
+        GameMove[] validMoves,
+        int moveCount)
+    {
+        FlowerColor expectedColor = (FlowerColor)moveRecord.ColorIndex;
+
+        MoveSource expectedSource = MoveSource.Factory;
+        if (moveRecord.IsCentralSource)
+            expectedSource = MoveSource.Central;
+
+        MoveTarget expectedTarget = MoveTarget.PlacementLine;
+        if (moveRecord.TargetIsPenalty)
+            expectedTarget = MoveTarget.PenaltyLine;
+
+        int expectedLine = moveRecord.TargetLineIndex;
+        int expectedFactory = moveRecord.FactoryIndex;
+
+        for (int i = 0; i < moveCount; i++)
+        {
+            GameMove candidateMove = validMoves[i];
+            if (candidateMove.Color != expectedColor) continue;
+            if (candidateMove.SourceEnum != expectedSource) continue;
+            if (candidateMove.TargetEnum != expectedTarget) continue;
+            if (!candidateMove.IsPenalty && candidateMove.TargetLineIndex != expectedLine) continue;
+            if (expectedSource == MoveSource.Factory && candidateMove.FactoryIndex != expectedFactory) continue;
+            return i;
+        }
+
+        for (int i = 0; i < moveCount; i++)
+        {
+            GameMove candidateMove = validMoves[i];
+            bool hasSameColor = candidateMove.Color == expectedColor;
+            bool hasSameTargetType = candidateMove.TargetEnum == expectedTarget;
+            bool hasCompatibleLine = candidateMove.IsPenalty || candidateMove.TargetLineIndex == expectedLine;
+
+            if (hasSameColor && hasSameTargetType && hasCompatibleLine)
+                return i;
+        }
+
+        if (_debugLogger != null)
+            _debugLogger.RecordFallback();
+
+        return 0;
     }
     #endregion
 }

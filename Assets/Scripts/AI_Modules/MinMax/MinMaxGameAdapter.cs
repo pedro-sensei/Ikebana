@@ -76,6 +76,11 @@ public class MinMaxGameAdapter : IMinMaxGameAdapter
     public void SetRootMoves(MinimalMoveRecord[] rootMoves) { _rootMoves = rootMoves; }
     public void SetEvaluator(IMinMaxEvaluator evaluator) { _evaluator = evaluator; }
 
+    public void SortRootMoves(int count)
+    {
+        SortMovesForPruning(_rootMoves, count);
+    }
+
     // Expose model for evaluator use.
     public MinimalGM Model { get { return _model; } }
 
@@ -95,11 +100,10 @@ public class MinMaxGameAdapter : IMinMaxGameAdapter
     //  Priority (descending score):
     //   1. Moves that complete a placement line  (+500)
     //   2. Moves that reach >= 50 % fill ratio   (proportional, max +100)
-    //   3. Factory source over central source    (+30)  – avoids gifting first-player token
-    //   4. Penalty-line placements               (−500) – try last
+    //   3. Penalty-line placements               (−500) – try last
     //
-    //  Uses a pre-allocated score buffer + insertion sort (O(n²) acceptable
-    //  because move counts in Azul are typically < 40 per node).
+    //  Uses a pre-allocated score buffer + insertion sort 
+   
 
     private void SortMovesForPruning(MinimalMoveRecord[] moves, int count)
     {
@@ -138,7 +142,6 @@ public class MinMaxGameAdapter : IMinMaxGameAdapter
 
         float score = fillRatio * 100f;              // 0–100 based on fill achieved
         if (nextCount >= capacity) score += 500f;    // Line-completion bonus
-        if (!moveRecord.IsCentralSource) score += 30f; // Prefer factory pick
         return score;
     }
 

@@ -160,7 +160,7 @@ public class MinRookieBrain : IMinimalAIBrain
             return -3f * move.flowerCount;
 
         int lineIdx = move.TargetLineIndex;
-        int capacity = lineIdx + 1;          // line 0 holds 1, line 1 holds 2, …
+        int capacity = model.Players[model.CurrentPlayer].GetLineCapacity(lineIdx);
         MinimalPlayer me = model.Players[model.CurrentPlayer];
         int lineCount = me.GetLineCount(lineIdx);
         int spaceLeft = capacity - lineCount;

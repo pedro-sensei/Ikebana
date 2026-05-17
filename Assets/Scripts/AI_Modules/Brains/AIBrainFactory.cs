@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine;
+
 
 
 
@@ -10,6 +12,74 @@ using UnityEngine;
 // see AIBrainType enum
 public static class AIBrainFactory
 {
+    public static IMinimalAIBrain CreateMinimalBrain(
+        AIBrainType brainType,
+        int minMaxDepth = 3,
+        float minMaxTimeLimitMs = 5000f,
+        MinMaxEvaluatorType minMaxEvaluator = MinMaxEvaluatorType.ProjectedScore,
+        BasicGAGenome optimizerWeights = null,
+        float relativeImmediateSimulationWeight = 1f,
+        float relativeTerminalDeltaWeight = 10000f,
+        float relativeExpectedMoveWeight = 0.35f,
+        bool relativeUsePhaseAwareImmediateWeight = true)
+    {
+        switch (brainType)
+        {
+            case AIBrainType.Random:
+                return new MinimalRandomBrain();
+
+            case AIBrainType.GoodRandom:
+                return new MinGoodRandomBrain();
+
+            case AIBrainType.Rookie:
+                return new MinRookieBrain();
+
+            case AIBrainType.Optimizer:
+            case AIBrainType.Friendly:
+            case AIBrainType.Emily:
+                return optimizerWeights != null
+                    ? new MinOptimizerBrain(optimizerWeights)
+                    : new MinOptimizerBrain();
+
+            case AIBrainType.MinMax:
+            {
+                var brain = new MinMaxBrain(minMaxDepth, minMaxTimeLimitMs);
+                switch (minMaxEvaluator)
+                {
+                    case MinMaxEvaluatorType.RelativeDelta:
+                        brain.SetEvaluator(new RelativeDeltaEvaluator(
+                            immediateSimulationWeight: relativeImmediateSimulationWeight,
+                            terminalDeltaWeight: relativeTerminalDeltaWeight,
+                            expectedMoveWeight: relativeExpectedMoveWeight,
+                            usePhaseAwareImmediateWeight: relativeUsePhaseAwareImmediateWeight));
+                        break;
+                    case MinMaxEvaluatorType.Optimizer:
+                        brain.SetEvaluator(optimizerWeights != null
+                            ? new OptimizerEvaluator(optimizerWeights)
+                            : new OptimizerEvaluator());
+                        break;
+                    case MinMaxEvaluatorType.ProjectedScore:
+                    default:
+                        break;
+                }
+                return brain;
+            }
+
+            case AIBrainType.MinMaxOptimizer:
+            {
+                var brain = new MinMaxBrain(minMaxDepth, minMaxTimeLimitMs);
+                brain.SetEvaluator(optimizerWeights != null
+                    ? new OptimizerEvaluator(optimizerWeights)
+                    : new OptimizerEvaluator());
+                return brain;
+            }
+
+            default:
+                Debug.LogWarning("Minimal simulator does not support " + brainType + "; using Rookie minimal brain.");
+                return new MinRookieBrain();
+        }
+    }
+
     public static IPlayerAIBrain CreateBrain(
         AIBrainType brainType, 
         int minMaxDepth = 3,

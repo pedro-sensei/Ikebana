@@ -22,6 +22,7 @@ public class MinMax
     private int _visitedNodeCount;
 
     private const int MaxNodeBudget = 5_000_000;
+    private const float MinTimeLimitMs = 1f;
 
     //Debug, null default.
     public MinMaxDebugLogger Logger { get; set; }
@@ -46,6 +47,8 @@ public class MinMax
 
         _visitedNodeCount = 0;
         _hasTimedOut = false;
+        if (timeLimitMs < MinTimeLimitMs)
+            timeLimitMs = MinTimeLimitMs;
         _deadlineTimestamp = Stopwatch.GetTimestamp()
                            + (long)(timeLimitMs * Stopwatch.Frequency / 1000.0);
         long startTicks = Stopwatch.GetTimestamp();
@@ -92,7 +95,7 @@ public class MinMax
                 moveEvaluation = _gameAdapter.Evaluate(maximizingPlayer);
                 Logger?.RecordLeafEval(moveEvaluation);
 
-                if ((_visitedNodeCount & 0x3FF) == 0 && Stopwatch.GetTimestamp() >= _deadlineTimestamp)
+                if (Stopwatch.GetTimestamp() >= _deadlineTimestamp)
                     _hasTimedOut = true;
             }
             else
@@ -167,7 +170,7 @@ public class MinMax
                 _visitedNodeCount++;
                 moveEvaluation = _gameAdapter.Evaluate(maximizingPlayer);
                 Logger?.RecordLeafEval(moveEvaluation);
-                if ((_visitedNodeCount & 0xFFF) == 0 && Stopwatch.GetTimestamp() >= _deadlineTimestamp)
+                if (Stopwatch.GetTimestamp() >= _deadlineTimestamp)
                     _hasTimedOut = true;
             }
             else

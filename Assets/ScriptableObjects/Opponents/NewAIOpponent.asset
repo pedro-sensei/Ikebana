@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96d7af7c49082cd41b531f30989b8f98, type: 3}
+  m_Name: NewAIOpponent
+  m_EditorClassIdentifier: Assembly-CSharp::AIOpponentData
+  OpponentName: Nemesis
+  Portrait: {fileID: 2125919915, guid: 3243807e4857e3e47af88acdeed36814, type: 3}
+  BrainType: 8
+  OptimizerWeights: {fileID: 11400000, guid: bece208f5699dae469bbf46f0dfa2261, type: 2}
+  EmilyEarlyWeights: {fileID: 0}
+  EmilyMidWeights: {fileID: 0}
+  EmilyLateWeights: {fileID: 0}
+  MinMaxDepth: 1
+  MinMaxTimeLimitMs: 100
+  MinMaxEvaluator: 0
+  RelativeImmediateSimulationWeight: 1
+  RelativeTerminalDeltaWeight: 10000
+  RelativeExpectedMoveWeight: 0.35
+  RelativeUsePhaseAwareImmediateWeight: 1
+  NeuralNetwork: {fileID: 5022602860645237092, guid: 3920efbb63468e2489ba9ed3e0034bac, type: 3}

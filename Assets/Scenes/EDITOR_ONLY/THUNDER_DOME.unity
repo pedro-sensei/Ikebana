@@ -1749,42 +1749,49 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameSimulatorRunner
   playerConfigs:
-  - DisplayName: Genome
-    BrainType: 4
+  - DisplayName: Agent001
+    BrainType: 8
     OptimizerWeights: {fileID: 11400000, guid: a1cd63b544e7a2f4380b8040c7c28ec3, type: 2}
-    EmilyEarlyWeights: {fileID: 0}
-    EmilyMidWeights: {fileID: 0}
-    EmilyLateWeights: {fileID: 0}
-    MinMaxDepth: 1
-    MinMaxTimeLimitMs: 100
+    EmilyEarlyWeights: {fileID: 11400000, guid: ff5a59cf26b7941439f3b2c4a5c09401, type: 2}
+    EmilyMidWeights: {fileID: 11400000, guid: 15fe37a32b7fdae4693f0b6e9ef7863f, type: 2}
+    EmilyLateWeights: {fileID: 11400000, guid: 39f003235f5332e409c7fa30a833c983, type: 2}
+    MinMaxDepth: 6
+    MinMaxTimeLimitMs: 10000
+    MinMaxEvaluator: 0
+    RelativeImmediateSimulationWeight: 1
+    RelativeTerminalDeltaWeight: 1
+    RelativeExpectedMoveWeight: 1
+    RelativeUsePhaseAwareImmediateWeight: 0
+    MLAgentModel: {fileID: 5022602860645237092, guid: 3920efbb63468e2489ba9ed3e0034bac, type: 3}
+    MLValueSearchPolicy: 1
+    MLValueMctsIterations: 1
+    MLValueMctsNewRoundSamples: 1
+  - DisplayName: Agent007
+    BrainType: 8
+    OptimizerWeights: {fileID: 11400000, guid: a1cd63b544e7a2f4380b8040c7c28ec3, type: 2}
+    EmilyEarlyWeights: {fileID: 11400000, guid: ff5a59cf26b7941439f3b2c4a5c09401, type: 2}
+    EmilyMidWeights: {fileID: 11400000, guid: 15fe37a32b7fdae4693f0b6e9ef7863f, type: 2}
+    EmilyLateWeights: {fileID: 11400000, guid: 39f003235f5332e409c7fa30a833c983, type: 2}
+    MinMaxDepth: 6
+    MinMaxTimeLimitMs: 30000
     MinMaxEvaluator: 0
     RelativeImmediateSimulationWeight: 1
     RelativeTerminalDeltaWeight: 10000
     RelativeExpectedMoveWeight: 0.35
-    RelativeUsePhaseAwareImmediateWeight: 1
-    MLAgentModel: {fileID: 0}
-  - DisplayName: Optimizer
-    BrainType: 4
-    OptimizerWeights: {fileID: 11400000, guid: bece208f5699dae469bbf46f0dfa2261, type: 2}
-    EmilyEarlyWeights: {fileID: 0}
-    EmilyMidWeights: {fileID: 0}
-    EmilyLateWeights: {fileID: 0}
-    MinMaxDepth: 1
-    MinMaxTimeLimitMs: 100
-    MinMaxEvaluator: 0
-    RelativeImmediateSimulationWeight: 1
-    RelativeTerminalDeltaWeight: 10000
-    RelativeExpectedMoveWeight: 0.35
-    RelativeUsePhaseAwareImmediateWeight: 1
+    RelativeUsePhaseAwareImmediateWeight: 0
     MLAgentModel: {fileID: 5022602860645237092, guid: 174f9c926e970e04b8564ecacff8f4c2, type: 3}
-  numberOfGames: 10000
+    MLValueSearchPolicy: 1
+    MLValueMctsIterations: 128
+    MLValueMctsNewRoundSamples: 4
+  numberOfGames: 1000
   gamesPerBatch: 100
-  maxFrameBudgetMs: 8
-  logEveryGame: 1
-  progressLogInterval: 25
-  forceFastMinMaxInSimulator: 1
-  simulatorMinMaxDepthCap: 6
-  simulatorMinMaxTimeCapMs: 250
+  maxFrameBudgetMs: 33
+  logEveryGame: 0
+  progressLogInterval: 100
+  useMinimalModelSimulator: 0
+  forceFastMinMaxInSimulator: 0
+  simulatorMinMaxDepthCap: 15
+  simulatorMinMaxTimeCapMs: 10000
   gameConfigData: {fileID: 11400000, guid: f828528fc05a67349b826d8b966b71b6, type: 2}
   autoRun: 1
   resultsLog: {fileID: 1246651056}

@@ -403,7 +403,7 @@ public sealed class MinimalGM : IGameModel
     /// (gotFirstPlayerToken, prevPenaltyCount, prevLineCount, prevLineColor)
     /// so that UndoMove can reverse it without a full snapshot.
     /// Pass by ref so the undo fields are written back to the caller.
-    /// </summary>
+    //
     public void ExecuteMove(ref GameMove move)
     {
         MinimalPlayer player = _players[_currentPlayer];
@@ -746,6 +746,7 @@ public sealed class MinimalGM : IGameModel
     private void AppendMinMaxMoves(MinimalMoveRecord[] moves, ref int count,
         MinimalPlayer player, bool isCentral, int factory, byte color, int flowerCount)
     {
+        int firstMoveForColor = count;
         for (int line = 0; line < NUM_PLACEMENT_LINES; line++)
         {
             if (count >= moves.Length) return;
@@ -761,7 +762,7 @@ public sealed class MinimalGM : IGameModel
             };
             moves[count++] = m;
         }
-        if (count < moves.Length)
+        if (count == firstMoveForColor && count < moves.Length)
         {
             moves[count++] = new MinimalMoveRecord
             {

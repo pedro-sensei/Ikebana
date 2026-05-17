@@ -367,13 +367,14 @@ MonoBehaviour:
   m_text: "\nPedro S\xE1nchez V\xE1zquez.\n\nThis game is part of my TFG project
     in Universitat Oberta de Catalunya for my degree on Computer Science and Engineering.
     \n\nThe original game mechanics were taken from Azul boardgame by Kiesling M.
-    \n\nArt: \nMost art in the game was AI generated using Nano Banana 2.  \n\nMusic:\nMenu:
-    Stay by my side - Rodrigo Flores\nGame: Fields of Grain Piano - Jacob Lives\n\nDevelopement:\nPedro
-    S\xE1nchez V\xE1zquez\n2026\n\nDisclaimer: I respect the work of the wonderful
-    artists that create inmersive and liveful gaming experiences. However, given
-    my time restrictions and available resources as a student  I opted for AI as
-    a source of quick prototype images for the game.\n\nAcknowledgments: \nAlpha
-    & Beta testers: \nNuma84 - \n\n \n"
+    \n\nArt: \nMost art in the game was AI generated using Nano Banana 2.  \n\nAlpha
+    Testers:\n\nRub\xE9n Mart\xEDnez\nHuang Ming (Juan Miguel Cespedes Naveros)\nJuegos
+    N\xF3madas\nNuma84\n\nMusic:\nMenu: Stay by my side - Rodrigo Flores\nGame: Fields
+    of Grain Piano - Jacob Lives\n\nDevelopement:\nPedro S\xE1nchez V\xE1zquez\n2026\n\nDisclaimer:
+    I respect the work of the wonderful artists that create inmersive and liveful
+    gaming experiences. However, given my time restrictions and available resources
+    as a student  I opted for AI as a source of quick prototype images for the game.\n\nThanks
+    for playing.\n\n\n\n\n\n\n\n\n\n\n\n\n\n \n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
